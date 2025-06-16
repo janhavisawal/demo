@@ -1,4 +1,4 @@
-// pages/index.js - SINDA Chatbot with Fixed Styling
+// pages/index.js - Complete SINDA Chatbot with Full Functionality
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 
@@ -151,6 +151,15 @@ export default function Home() {
         } else {
           response = `${updatedInfo.name}, please call our emergency line at 6298 8775 right now. Your safety is the most important thing.`;
         }
+        break;
+
+      case 'contact_details':
+        response = `Thank you ${updatedInfo.name}. I've noted everything down. Our team will reach out to you soon with the right support. Remember, you're not alone in this.`;
+        nextStage = 'complete';
+        break;
+
+      case 'complete':
+        response = `I'm still here if you need to talk more, ${updatedInfo.name}. You've taken a really positive step today by reaching out.`;
         break;
 
       default:
@@ -309,7 +318,10 @@ export default function Home() {
       <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
         
         {/* SINDA Official Header */}
-        <header className="sinda-gradient" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+        <header style={{ 
+          background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)', 
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)' 
+        }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -367,7 +379,14 @@ export default function Home() {
           
           {/* Welcome Screen */}
           {currentStep === 'welcome' && (
-            <div className="sinda-card" style={{ overflow: 'hidden', border: '4px solid #3b82f6' }}>
+            <div style={{ 
+              background: 'white',
+              borderRadius: '24px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+              border: '1px solid #fed7aa',
+              overflow: 'hidden', 
+              border: '4px solid #3b82f6' 
+            }}>
               
               {/* Hero Section */}
               <div style={{ 
@@ -462,12 +481,27 @@ export default function Home() {
                 <div style={{ textAlign: 'center' }}>
                   <button
                     onClick={handleWelcomeStart}
-                    className="sinda-button"
                     style={{ 
-                      fontSize: '20px', 
-                      padding: '16px 48px', 
+                      background: '#ea580c',
+                      color: 'white',
+                      border: 'none',
+                      padding: '16px 48px',
                       borderRadius: '50px',
+                      fontSize: '20px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
                       boxShadow: '0 8px 20px rgba(234, 88, 12, 0.3)'
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.background = '#dc2626';
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 12px 24px rgba(234, 88, 12, 0.4)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.background = '#ea580c';
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 8px 20px rgba(234, 88, 12, 0.3)';
                     }}
                   >
                     💬 Start Conversation
@@ -482,7 +516,14 @@ export default function Home() {
 
           {/* Language Selection */}
           {currentStep === 'language' && (
-            <div className="sinda-card" style={{ padding: '60px 40px', border: '4px solid #3b82f6' }}>
+            <div style={{ 
+              background: 'white',
+              borderRadius: '24px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+              border: '1px solid #fed7aa',
+              padding: '60px 40px', 
+              border: '4px solid #3b82f6' 
+            }}>
               <div style={{ textAlign: 'center', marginBottom: '50px' }}>
                 <div style={{ 
                   width: '100px', 
@@ -516,8 +557,26 @@ export default function Home() {
                   <button
                     key={key}
                     onClick={() => handleLanguageSelect(key)}
-                    className="language-card"
-                    style={{ padding: '32px 24px' }}
+                    style={{ 
+                      background: 'white',
+                      border: '2px solid #fed7aa',
+                      borderRadius: '12px',
+                      padding: '32px 24px',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      margin: '8px'
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.borderColor = '#ea580c';
+                      e.target.style.background = '#fff7ed';
+                      e.target.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.borderColor = '#fed7aa';
+                      e.target.style.background = 'white';
+                      e.target.style.transform = 'translateY(0)';
+                    }}
                   >
                     <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#111827', marginBottom: '12px' }}>
                       {lang.name}
@@ -529,12 +588,13 @@ export default function Home() {
                       {key === 'telugu' && 'నేను ఎవరితోనైనా మాట్లాడాలి'}
                       {key === 'malayalam' && 'എനിക്ക് ആരെങ്കിലുമായി സംസാരിക്കണം'}
                     </div>
-                    <div className="sinda-button" style={{ 
+                    <div style={{ 
+                      background: '#ea580c',
+                      color: 'white',
                       padding: '8px 16px', 
                       borderRadius: '50px', 
                       fontSize: '12px', 
-                      background: '#ea580c',
-                      color: 'white',
+                      fontWeight: 'bold',
                       border: 'none'
                     }}>
                       Select Language
@@ -547,10 +607,21 @@ export default function Home() {
 
           {/* Chat Interface */}
           {currentStep === 'chat' && (
-            <div className="sinda-card" style={{ overflow: 'hidden', border: '4px solid #3b82f6' }}>
+            <div style={{ 
+              background: 'white',
+              borderRadius: '24px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+              border: '1px solid #fed7aa',
+              overflow: 'hidden', 
+              border: '4px solid #3b82f6' 
+            }}>
               
               {/* Chat Header */}
-              <div className="sinda-gradient" style={{ padding: '24px', color: 'white' }}>
+              <div style={{ 
+                background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)', 
+                padding: '24px', 
+                color: 'white' 
+              }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{ position: 'relative' }}>
@@ -563,40 +634,7 @@ export default function Home() {
                         alignItems: 'center', 
                         justifyContent: 'center',
                         fontSize: '24px',
-                        backdropFilter: 'blur(10px)'
-                      }}>
-                        💙
-                      </div>
-                      <div style={{ 
-                        position: 'absolute', 
-                        top: '-2px', 
-                        right: '-2px', 
-                        width: '20px', 
-                        height: '20px', 
-                        background: '#10b981', 
-                        borderRadius: '50%',
-                        border: '2px solid white'
-                      }}></div>
-                    </div>
-                    <div>
-                      <h3 style={{ fontSize: '20px', fontWeight: 'bold', margin: '0' }}>
-                        SINDA Support Helper
-                      </h3>
-                      <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: '4px 0 0 0' }}>
-                        Online • Ready to listen and help
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowContactForm(true)}
-                    style={{ 
-                      background: 'rgba(255,255,255,0.2)', 
-                      color: 'white',
-                      border: 'none',
-                      padding: '12px 20px', 
-                      borderRadius: '16px', 
-                      fontWeight: 'bold',
-                      backdropFilter: 'blur(10px)',
+                        backdropFilter: 'blur(10px)',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease'
                     }}
@@ -623,12 +661,190 @@ export default function Home() {
                       <button
                         key={index}
                         onClick={() => handleQuickHelp(help)}
-                        className="sinda-button"
                         style={{ 
+                          background: help.type === 'crisis' ? '#dc2626' : '#ea580c',
+                          color: 'white',
+                          border: 'none',
                           padding: '16px', 
                           borderRadius: '12px', 
                           fontSize: '14px',
-                          background: help.type === 'crisis' ? '#dc2626' : '#ea580c'
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.background = help.type === 'crisis' ? '#b91c1c' : '#dc2626';
+                          e.target.style.transform = 'translateY(-2px)';
+                          e.target.style.boxShadow = '0 4px 12px rgba(234, 88, 12, 0.3)';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (contactData.name && contactData.phone) {
+                        e.target.style.background = '#ea580c';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = 'none';
+                      }
+                    }}
+                  >
+                    💙 Request Call Back
+                  </button>
+                </div>
+
+                <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                  <div style={{ 
+                    background: '#f9fafb', 
+                    padding: '20px', 
+                    borderRadius: '12px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <p style={{
+                      fontSize: '14px',
+                      color: '#6b7280',
+                      lineHeight: '1.5',
+                      margin: '0'
+                    }}>
+                      <strong>Your privacy matters:</strong> All conversations are confidential. 
+                      Our counselors will respond within 24 hours. Free consultation with no obligations.
+                    </p>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Custom Styles */}
+        <style jsx>{`
+          @keyframes bounce {
+            0%, 80%, 100% { 
+              transform: scale(0.8); 
+              opacity: 0.5; 
+            }
+            40% { 
+              transform: scale(1.2); 
+              opacity: 1; 
+            }
+          }
+
+          /* Mobile responsiveness */
+          @media (max-width: 768px) {
+            .sinda-card {
+              margin: 10px !important;
+              padding: 20px !important;
+            }
+            
+            .grid-responsive {
+              grid-template-columns: 1fr !important;
+            }
+            
+            h1 {
+              font-size: 20px !important;
+            }
+            
+            h2 {
+              font-size: 32px !important;
+            }
+            
+            .language-card {
+              padding: 20px !important;
+            }
+          }
+
+          @media (max-width: 480px) {
+            .sinda-card {
+              border-radius: 16px !important;
+              padding: 16px !important;
+            }
+            
+            h2 {
+              font-size: 28px !important;
+            }
+            
+            .hero-section {
+              padding: 40px 20px !important;
+            }
+          }
+
+          /* Smooth scrolling for chat */
+          .chat-messages {
+            scrollbar-width: thin;
+            scrollbar-color: #ea580c #f3f4f6;
+          }
+          
+          .chat-messages::-webkit-scrollbar {
+            width: 8px;
+          }
+          
+          .chat-messages::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 4px;
+          }
+          
+          .chat-messages::-webkit-scrollbar-thumb {
+            background: #ea580c;
+            border-radius: 4px;
+          }
+          
+          .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #dc2626;
+          }
+
+          /* Animation classes */
+          .fade-in {
+            animation: fadeIn 0.6s ease-out;
+          }
+          
+          @keyframes fadeIn {
+            from { 
+              opacity: 0; 
+              transform: translateY(20px); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateY(0); 
+            }
+          }
+          
+          .scale-in {
+            animation: scaleIn 0.4s ease-out;
+          }
+          
+          @keyframes scaleIn {
+            from { 
+              opacity: 0; 
+              transform: scale(0.9); 
+            }
+            to { 
+              opacity: 1; 
+              transform: scale(1); 
+            }
+          }
+
+          /* Focus states for accessibility */
+          input:focus,
+          textarea:focus,
+          select:focus,
+          button:focus {
+            outline: 2px solid #ea580c;
+            outline-offset: 2px;
+          }
+
+          /* Print styles */
+          @media print {
+            .no-print {
+              display: none !important;
+            }
+          }
+        `}</style>
+      </div>
+    </>
+  );
+}, 0.3)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.background = help.type === 'crisis' ? '#dc2626' : '#ea580c';
+                          e.target.style.transform = 'translateY(0)';
+                          e.target.style.boxShadow = 'none';
                         }}
                       >
                         {help.text}
@@ -668,4 +884,650 @@ export default function Home() {
                         background: 'white',
                         color: '#111827',
                         borderBottomLeftRadius: '6px',
-                        border: '
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      })
+                    }}>
+                      <p style={{ margin: '0 0 8px 0', lineHeight: '1.5', fontSize: '14px' }}>
+                        {message.content}
+                      </p>
+                      <p style={{ 
+                        fontSize: '12px', 
+                        margin: '0',
+                        opacity: message.isUser ? '0.8' : '0.6'
+                      }}>
+                        {message.timestamp}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Typing Indicator */}
+                {isTyping && (
+                  <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                    <div style={{ 
+                      background: 'white',
+                      borderRadius: '20px',
+                      borderBottomLeftRadius: '6px',
+                      padding: '16px 20px',
+                      border: '1px solid #e5e7eb',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          {[0, 1, 2].map(i => (
+                            <div
+                              key={i}
+                              style={{ 
+                                width: '8px', 
+                                height: '8px', 
+                                background: '#ea580c', 
+                                borderRadius: '50%',
+                                animation: `bounce 1.4s infinite ease-in-out`,
+                                animationDelay: `${i * 0.16}s`
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <span style={{ fontSize: '14px', color: '#6b7280' }}>
+                          SINDA helper is listening...
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Chat Input */}
+              <div style={{ padding: '24px', background: 'white', borderTop: '1px solid #e5e7eb' }}>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Type your message here..."
+                    disabled={isTyping}
+                    style={{ 
+                      flex: '1',
+                      border: '2px solid #d1d5db',
+                      borderRadius: '16px',
+                      padding: '16px 20px',
+                      fontSize: '16px',
+                      outline: 'none',
+                      transition: 'border-color 0.3s ease',
+                      opacity: isTyping ? '0.5' : '1'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#ea580c'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={isTyping || !inputMessage.trim()}
+                    style={{ 
+                      background: '#ea580c',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 24px',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      width: '56px',
+                      height: '56px',
+                      borderRadius: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: (isTyping || !inputMessage.trim()) ? 'not-allowed' : 'pointer',
+                      opacity: (isTyping || !inputMessage.trim()) ? '0.5' : '1'
+                    }}
+                    onMouseOver={(e) => {
+                      if (!isTyping && inputMessage.trim()) {
+                        e.target.style.background = '#dc2626';
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 4px 12px rgba(234, 88, 12, 0.3)';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!isTyping && inputMessage.trim()) {
+                        e.target.style.background = '#ea580c';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = 'none';
+                      }
+                    }}
+                  >
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                    </svg>
+                  </button>
+                </div>
+                
+                <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                  <span style={{ 
+                    background: '#fef2f2', 
+                    color: '#dc2626', 
+                    padding: '8px 16px', 
+                    borderRadius: '50px', 
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    border: '1px solid #fecaca'
+                  }}>
+                    🚨 Emergency? Call 6298 8775 immediately
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SINDA Contact Information */}
+          <div style={{ 
+            background: 'white',
+            borderRadius: '24px',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+            border: '1px solid #fed7aa',
+            marginTop: '48px', 
+            padding: '40px', 
+            border: '4px solid #f59e0b' 
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+              <h3 style={{ fontSize: '32px', fontWeight: 'bold', color: '#111827', marginBottom: '16px' }}>
+                SINDA is Always Here for You
+              </h3>
+              <p style={{ fontSize: '18px', color: '#6b7280' }}>
+                Multiple ways to get the support you need
+              </p>
+            </div>
+            
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+              gap: '32px' 
+            }}>
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '32px', 
+                borderRadius: '16px', 
+                background: 'linear-gradient(135deg, #fef2f2, #fee2e2)', 
+                border: '4px solid #fca5a5',
+                transition: 'transform 0.3s ease'
+              }}
+              onMouseOver={(e) => e.target.style.transform = 'translateY(-4px)'}
+              onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+              >
+                <div style={{ 
+                  width: '80px', 
+                  height: '80px', 
+                  background: '#dc2626', 
+                  borderRadius: '50%', 
+                  margin: '0 auto 24px auto', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '32px',
+                  color: 'white',
+                  boxShadow: '0 8px 20px rgba(220, 38, 38, 0.3)'
+                }}>
+                  🚨
+                </div>
+                <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#991b1b', marginBottom: '12px' }}>
+                  24/7 Crisis Support
+                </h4>
+                <a 
+                  href="tel:62988775" 
+                  style={{ 
+                    fontSize: '28px', 
+                    fontWeight: 'bold', 
+                    color: '#dc2626', 
+                    textDecoration: 'none',
+                    display: 'block',
+                    marginBottom: '12px'
+                  }}
+                  onMouseOver={(e) => e.target.style.color = '#991b1b'}
+                  onMouseOut={(e) => e.target.style.color = '#dc2626'}
+                >
+                  6298 8775
+                </a>
+                <p style={{ color: '#dc2626', fontWeight: '600' }}>
+                  Always available • Immediate help
+                </p>
+              </div>
+              
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '32px', 
+                borderRadius: '16px', 
+                background: 'linear-gradient(135deg, #eff6ff, #dbeafe)', 
+                border: '4px solid #93c5fd',
+                transition: 'transform 0.3s ease'
+              }}
+              onMouseOver={(e) => e.target.style.transform = 'translateY(-4px)'}
+              onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+              >
+                <div style={{ 
+                  width: '80px', 
+                  height: '80px', 
+                  background: '#2563eb', 
+                  borderRadius: '50%', 
+                  margin: '0 auto 24px auto', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '32px',
+                  color: 'white',
+                  boxShadow: '0 8px 20px rgba(37, 99, 235, 0.3)'
+                }}>
+                  ✉️
+                </div>
+                <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1d4ed8', marginBottom: '12px' }}>
+                  Email Support
+                </h4>
+                <a 
+                  href="mailto:info@sinda.org.sg" 
+                  style={{ 
+                    fontSize: '16px', 
+                    fontWeight: 'bold', 
+                    color: '#2563eb', 
+                    textDecoration: 'none',
+                    display: 'block',
+                    marginBottom: '12px'
+                  }}
+                  onMouseOver={(e) => e.target.style.color = '#1d4ed8'}
+                  onMouseOut={(e) => e.target.style.color = '#2563eb'}
+                >
+                  info@sinda.org.sg
+                </a>
+                <p style={{ color: '#2563eb', fontWeight: '600' }}>
+                  Response within 24 hours
+                </p>
+              </div>
+              
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '32px', 
+                borderRadius: '16px', 
+                background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', 
+                border: '4px solid #86efac',
+                transition: 'transform 0.3s ease'
+              }}
+              onMouseOver={(e) => e.target.style.transform = 'translateY(-4px)'}
+              onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+              >
+                <div style={{ 
+                  width: '80px', 
+                  height: '80px', 
+                  background: '#16a34a', 
+                  borderRadius: '50%', 
+                  margin: '0 auto 24px auto', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '32px',
+                  color: 'white',
+                  boxShadow: '0 8px 20px rgba(22, 163, 74, 0.3)'
+                }}>
+                  🏢
+                </div>
+                <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#15803d', marginBottom: '12px' }}>
+                  Visit Our Center
+                </h4>
+                <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#16a34a', marginBottom: '12px' }}>
+                  1 Beatty Road
+                </p>
+                <p style={{ color: '#16a34a', fontWeight: '600' }}>
+                  Singapore 209943 • Mon-Fri 9AM-6PM
+                </p>
+              </div>
+            </div>
+            
+            {/* SINDA Heritage & Values */}
+            <div style={{ 
+              marginTop: '48px', 
+              padding: '32px', 
+              background: 'linear-gradient(135deg, #fff7ed, #fed7aa)', 
+              borderRadius: '24px', 
+              border: '4px solid #fdba74' 
+            }}>
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
+                  <div style={{ 
+                    width: '48px', 
+                    height: '48px', 
+                    background: '#fbbf24', 
+                    borderRadius: '12px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center' 
+                  }}>
+                    <span style={{ color: '#ea580c', fontWeight: 'bold', fontSize: '24px' }}>S</span>
+                  </div>
+                  <h4 style={{ fontSize: '28px', fontWeight: 'bold', color: '#c2410c', margin: '0' }}>
+                    Since 1991: Serving Our Community
+                  </h4>
+                </div>
+                <p style={{ color: '#ea580c', fontSize: '16px', lineHeight: '1.6', maxWidth: '800px', margin: '0 auto' }}>
+                  SINDA has been the cornerstone of support for Indian families in Singapore for over three decades. 
+                  We understand your culture, values, and the unique challenges you face. Our experienced counselors 
+                  and social workers are here to provide compassionate, culturally-sensitive support when you need it most.
+                </p>
+              </div>
+              
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                gap: '24px' 
+              }}>
+                {[
+                  { icon: '🤝', title: 'Trusted Support', desc: '30+ years serving families' },
+                  { icon: '🏠', title: 'Cultural Understanding', desc: 'Respects your values & traditions' },
+                  { icon: '🔒', title: 'Completely Confidential', desc: 'Your privacy is protected' },
+                  { icon: '💝', title: 'Free Services', desc: 'No cost for support & counseling' }
+                ].map((item, index) => (
+                  <div key={index} style={{ textAlign: 'center' }}>
+                    <div style={{ 
+                      width: '64px', 
+                      height: '64px', 
+                      background: '#ea580c', 
+                      borderRadius: '50%', 
+                      margin: '0 auto 12px auto', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      fontSize: '24px',
+                      color: 'white'
+                    }}>
+                      {item.icon}
+                    </div>
+                    <h5 style={{ fontWeight: 'bold', color: '#c2410c', marginBottom: '4px' }}>
+                      {item.title}
+                    </h5>
+                    <p style={{ fontSize: '14px', color: '#ea580c' }}>
+                      {item.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              
+              <div style={{ textAlign: 'center', marginTop: '32px' }}>
+                <a 
+                  href="https://sinda.org.sg/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ 
+                    background: '#ea580c',
+                    color: 'white',
+                    border: 'none',
+                    padding: '12px 32px',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '12px 32px', 
+                    borderRadius: '50px',
+                    textDecoration: 'none',
+                    fontWeight: 'bold'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.background = '#dc2626';
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(234, 88, 12, 0.3)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.background = '#ea580c';
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  🌐 Learn More About SINDA
+                </a>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        {/* Contact Form Modal */}
+        {showContactForm && (
+          <div style={{
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0, 0, 0, 0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: '1000',
+            backdropFilter: 'blur(4px)',
+            padding: '20px'
+          }}>
+            <div style={{
+              background: 'white',
+              borderRadius: '24px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+              border: '1px solid #fed7aa',
+              padding: '40px',
+              maxWidth: '500px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              border: '4px solid #f59e0b'
+            }}>
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{
+                  width: '96px',
+                  height: '96px',
+                  background: 'linear-gradient(135deg, #ea580c, #dc2626)',
+                  borderRadius: '50%',
+                  margin: '0 auto 24px auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '40px',
+                  color: 'white',
+                  boxShadow: '0 8px 20px rgba(234, 88, 12, 0.3)'
+                }}>
+                  📞
+                </div>
+                <h3 style={{
+                  fontSize: '28px',
+                  fontWeight: 'bold',
+                  color: '#111827',
+                  marginBottom: '12px'
+                }}>
+                  Request Support Call
+                </h3>
+                <p style={{
+                  color: '#6b7280',
+                  fontSize: '16px'
+                }}>
+                  Our caring counselors will reach out to you personally
+                </p>
+              </div>
+
+              <form onSubmit={handleContactSubmit}>
+                {[
+                  { label: 'Your Name', type: 'text', value: contactData.name, key: 'name', placeholder: 'What should we call you?' },
+                  { label: 'Phone Number', type: 'tel', value: contactData.phone, key: 'phone', placeholder: '+65 XXXX XXXX' }
+                ].map((field, index) => (
+                  <div key={index} style={{ marginBottom: '24px' }}>
+                    <label style={{ 
+                      display: 'block',
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                      color: '#374151',
+                      marginBottom: '8px'
+                    }}>
+                      {field.label}
+                    </label>
+                    <input
+                      type={field.type}
+                      value={field.value}
+                      onChange={(e) => setContactData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                      required
+                      placeholder={field.placeholder}
+                      style={{
+                        width: '100%',
+                        padding: '16px',
+                        border: '2px solid #d1d5db',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        outline: 'none',
+                        transition: 'border-color 0.3s ease'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#ea580c'}
+                      onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                    />
+                  </div>
+                ))}
+
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ 
+                    display: 'block',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    color: '#374151',
+                    marginBottom: '8px'
+                  }}>
+                    Best time to call
+                  </label>
+                  <select
+                    value={contactData.preferredTime}
+                    onChange={(e) => setContactData(prev => ({ ...prev, preferredTime: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      padding: '16px',
+                      border: '2px solid #d1d5db',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      outline: 'none',
+                      transition: 'border-color 0.3s ease'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#ea580c'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                  >
+                    <option value="">When would you prefer we call?</option>
+                    <option value="urgent">As soon as possible (urgent)</option>
+                    <option value="morning">Morning (9 AM - 12 PM)</option>
+                    <option value="afternoon">Afternoon (1 PM - 5 PM)</option>
+                    <option value="evening">Evening (6 PM - 8 PM)</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '32px' }}>
+                  <label style={{ 
+                    display: 'block',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    color: '#374151',
+                    marginBottom: '8px'
+                  }}>
+                    How can we help? (optional)
+                  </label>
+                  <textarea
+                    value={contactData.description}
+                    onChange={(e) => setContactData(prev => ({ ...prev, description: e.target.value }))}
+                    rows="4"
+                    placeholder="Share anything you'd like us to know beforehand..."
+                    style={{
+                      width: '100%',
+                      padding: '16px',
+                      border: '2px solid #d1d5db',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      outline: 'none',
+                      resize: 'vertical',
+                      transition: 'border-color 0.3s ease'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#ea580c'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowContactForm(false)}
+                    style={{
+                      flex: '1',
+                      padding: '16px',
+                      border: '2px solid #d1d5db',
+                      borderRadius: '12px',
+                      background: 'white',
+                      color: '#6b7280',
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.borderColor = '#9ca3af';
+                      e.target.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.transform = 'translateY(0)';
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!contactData.name || !contactData.phone}
+                    style={{
+                      flex: '2',
+                      background: '#ea580c',
+                      color: 'white',
+                      border: 'none',
+                      padding: '16px',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      opacity: (!contactData.name || !contactData.phone) ? '0.5' : '1',
+                      cursor: (!contactData.name || !contactData.phone) ? 'not-allowed' : 'pointer'
+                    }}
+                    onMouseOver={(e) => {
+                      if (contactData.name && contactData.phone) {
+                        e.target.style.background = '#dc2626';
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 4px 12px rgba(234, 88, 12Filter: 'blur(10px)'
+                      }}>
+                        💙
+                      </div>
+                      <div style={{ 
+                        position: 'absolute', 
+                        top: '-2px', 
+                        right: '-2px', 
+                        width: '20px', 
+                        height: '20px', 
+                        background: '#10b981', 
+                        borderRadius: '50%',
+                        border: '2px solid white'
+                      }}></div>
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '20px', fontWeight: 'bold', margin: '0' }}>
+                        SINDA Support Helper
+                      </h3>
+                      <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: '4px 0 0 0' }}>
+                        Online • Ready to listen and help
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowContactForm(true)}
+                    style={{ 
+                      background: 'rgba(255,255,255,0.2)', 
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 20px', 
+                      borderRadius: '16px', 
+                      fontWeight: 'bold',
+                      backdropFilter: 'blur(10px)',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
