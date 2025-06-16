@@ -1,4 +1,4 @@
-// pages/index.js - Enhanced SINDA Community Support Chatbot
+// pages/index.js - SINDA Community Support Chatbot with Tailwind CSS
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 
@@ -73,6 +73,57 @@ export default function Home() {
     { text: 'Job-related help', type: 'employment', priority: 'medium' },
     { text: 'Just have questions', type: 'general', priority: 'low' }
   ];
+
+  // Enhanced Mistral AI Integration
+  const queryMistralAI = useCallback(async (userMessage) => {
+    try {
+      const response = await fetch('/api/mistral', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'system',
+              content: `You are a compassionate SINDA counselor helping ${userInfo.name || 'someone'} who needs community support.
+              
+              Conversation context:
+              - User's name: ${userInfo.name}
+              - Current situation: ${userInfo.situation}
+              - Stage: ${conversationStage}
+              
+              SINDA provides:
+              - Educational support and tuition assistance
+              - Family counseling and relationship guidance  
+              - Financial assistance and emergency aid
+              - Employment help and skills training
+              - Elderly care and youth programs
+              - Crisis support and legal guidance
+              
+              Respond with empathy, keep it conversational (1-2 sentences), and focus on understanding their feelings. Ask gentle follow-up questions to learn more about their situation.`
+            },
+            {
+              role: 'user',
+              content: userMessage
+            }
+          ],
+          max_tokens: 120,
+          temperature: 0.8
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+
+      const data = await response.json();
+      return data.choices[0]?.message?.content || getConversationResponse(userMessage);
+    } catch (error) {
+      console.error('Mistral AI Error:', error);
+      return getConversationResponse(userMessage);
+    }
+  }, [userInfo, conversationStage]);
 
   // Conversation flow logic
   const getConversationResponse = useCallback((userMessage) => {
@@ -187,7 +238,7 @@ export default function Home() {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Enhanced send message function
+  // Enhanced send message function with Mistral AI
   const handleSendMessage = useCallback(async () => {
     if (!inputMessage.trim() || isTyping) return;
 
@@ -196,23 +247,31 @@ export default function Home() {
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate realistic typing delay
-    const typingDelay = Math.random() * 1000 + 1500; // 1.5-2.5 seconds
-
-    setTimeout(() => {
-      const response = getConversationResponse(userMessage);
-      addMessage(response, false, true);
-      setIsTyping(false);
+    try {
+      // Try AI first, fallback to conversation flow
+      const response = await queryMistralAI(userMessage);
       
-      // Add crisis support message if needed
-      const message = userMessage.toLowerCase();
-      if (message.includes('urgent') || message.includes('crisis') || message.includes('emergency')) {
-        setTimeout(() => {
-          addMessage("If this is an urgent situation, please don't hesitate to call our 24/7 helpline at 6298 8775 immediately. Our crisis counselors are trained to provide immediate support.", false, true);
-        }, 2000);
-      }
-    }, typingDelay);
-  }, [inputMessage, isTyping, addMessage, getConversationResponse]);
+      setTimeout(() => {
+        addMessage(response, false, true);
+        setIsTyping(false);
+        
+        // Add crisis support message if needed
+        const message = userMessage.toLowerCase();
+        if (message.includes('urgent') || message.includes('crisis') || message.includes('emergency')) {
+          setTimeout(() => {
+            addMessage("If this is an urgent situation, please don't hesitate to call our 24/7 helpline at 6298 8775 immediately. Our crisis counselors are trained to provide immediate support.", false, true);
+          }, 2000);
+        }
+      }, Math.random() * 1000 + 1500); // 1.5-2.5 seconds realistic delay
+      
+    } catch (error) {
+      setTimeout(() => {
+        const fallbackResponse = getConversationResponse(userMessage);
+        addMessage(fallbackResponse, false, true);
+        setIsTyping(false);
+      }, 1500);
+    }
+  }, [inputMessage, isTyping, addMessage, queryMistralAI, getConversationResponse]);
 
   const handleQuickHelp = useCallback((help) => {
     setInputMessage(help.text);
@@ -265,376 +324,125 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div style={{ 
-        minHeight: '100vh', 
-        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%)',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 relative overflow-hidden">
         
         {/* Animated Background Elements */}
-        <div style={{
-          position: 'absolute',
-          top: '10%',
-          left: '5%',
-          width: '100px',
-          height: '100px',
-          borderRadius: '50%',
-          background: 'rgba(14, 165, 233, 0.1)',
-          animation: 'float 6s ease-in-out infinite'
-        }} />
-        <div style={{
-          position: 'absolute',
-          top: '60%',
-          right: '10%',
-          width: '150px',
-          height: '150px',
-          borderRadius: '50%',
-          background: 'rgba(14, 165, 233, 0.05)',
-          animation: 'float 8s ease-in-out infinite reverse'
-        }} />
+        <div className="absolute top-[10%] left-[5%] w-24 h-24 rounded-full bg-blue-200 opacity-20 animate-pulse"></div>
+        <div className="absolute top-[60%] right-[10%] w-36 h-36 rounded-full bg-sky-200 opacity-15 animate-bounce"></div>
 
         {/* Header */}
-        <header style={{ 
-          background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)', 
-          color: 'white',
-          padding: '20px 0',
-          boxShadow: '0 4px 20px rgba(14, 165, 233, 0.3)',
-          position: 'relative',
-          zIndex: 10
-        }}>
-          <div style={{ 
-            maxWidth: '1200px', 
-            margin: '0 auto', 
-            padding: '0 20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '20px'
-        `}</style>
-      </div>
-    </>
-  );
-}}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ 
-                background: 'rgba(255, 255, 255, 0.2)', 
-                width: '60px', 
-                height: '60px', 
-                borderRadius: '15px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '28px',
-                backdropFilter: 'blur(10px)',
-                animation: 'pulse 3s infinite'
-              }}>
-                🤝
+        <header className="sinda-gradient shadow-lg relative z-10">
+          <div className="max-w-6xl mx-auto px-4 py-5">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <div className="bg-white bg-opacity-20 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-sm animate-pulse">
+                  🤝
+                </div>
+                <div>
+                  <h1 className="text-2xl lg:text-3xl font-bold text-white drop-shadow-sm">
+                    SINDA Community Support
+                  </h1>
+                  <p className="text-sm text-white opacity-90">
+                    💙 Here to help you through life's challenges
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 style={{ 
-                  fontSize: '28px', 
-                  fontWeight: 'bold', 
-                  margin: '0',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                }}>
-                  SINDA Community Support
-                </h1>
-                <p style={{ 
-                  fontSize: '14px', 
-                  margin: '5px 0 0 0',
-                  opacity: '0.9'
-                }}>
-                  💙 Here to help you through life's challenges
-                </p>
-              </div>
+              <a 
+                href="tel:62988775"
+                className="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-full text-sm font-bold transition-all duration-300 hover:scale-105 hover:shadow-lg animate-pulse"
+              >
+                🚨 Crisis Helpline: 6298 8775
+              </a>
             </div>
-            <a 
-              href="tel:62988775"
-              style={{ 
-                background: '#dc2626',
-                color: 'white',
-                padding: '12px 20px',
-                borderRadius: '25px',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                textDecoration: 'none',
-                transition: 'all 0.3s ease',
-                animation: 'glow 2s infinite'
-              }}
-              onMouseOver={(e) => {
-                e.target.style.transform = 'scale(1.05)';
-                e.target.style.boxShadow = '0 8px 25px rgba(220, 38, 38, 0.4)';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.transform = 'scale(1)';
-                e.target.style.boxShadow = 'none';
-              }}
-            >
-              🚨 Crisis Helpline: 6298 8775
-            </a>
           </div>
         </header>
 
         {/* Main Content */}
-        <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', position: 'relative', zIndex: 5 }}>
+        <main className="max-w-6xl mx-auto p-4 lg:p-8 relative z-5">
           
           {/* Welcome Screen */}
           {currentStep === 'welcome' && (
-            <div style={{ 
-              background: 'white', 
-              borderRadius: '25px', 
-              padding: '60px 40px',
-              boxShadow: '0 15px 35px rgba(0,0,0,0.1)',
-              border: '3px solid #0ea5e9',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
+            <div className="sinda-card p-8 lg:p-12 text-center relative overflow-hidden">
               {/* Animated background pattern */}
-              <div style={{
-                position: 'absolute',
-                top: '-50%',
-                left: '-50%',
-                width: '200%',
-                height: '200%',
-                background: 'radial-gradient(circle, rgba(14, 165, 233, 0.05) 0%, transparent 70%)',
-                animation: 'rotate 30s infinite linear'
-              }} />
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-sky-50 opacity-50 animate-pulse"></div>
               
-              <div style={{ 
-                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', 
-                width: '120px', 
-                height: '120px', 
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 30px auto',
-                fontSize: '48px',
-                boxShadow: '0 15px 35px rgba(14, 165, 233, 0.3)',
-                animation: 'bounce 2s infinite',
-                position: 'relative',
-                zIndex: 1
-              }}>
-                💙
+              <div className="relative z-10">
+                <div className="sinda-gradient w-28 h-28 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-xl animate-bounce">
+                  💙
+                </div>
+                
+                <h2 className="text-3xl lg:text-5xl font-bold text-gray-800 mb-4">
+                  We're Here to Help
+                </h2>
+                
+                <p className="text-lg lg:text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+                  Whether you're facing challenges with family, education, finances, or just need someone to talk to - SINDA's community support is here for you.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-4xl mx-auto">
+                  {[
+                    { icon: '🤗', title: 'Caring Support', desc: 'Empathetic assistance from trained counselors' },
+                    { icon: '🏠', title: 'Community Focus', desc: 'Understanding your culture and values' },
+                    { icon: '🌟', title: 'Real Solutions', desc: 'Practical help and resources available' }
+                  ].map((feature, index) => (
+                    <div 
+                      key={index}
+                      className="bg-gradient-to-br from-blue-50 to-sky-100 p-6 rounded-xl border-2 border-sky-200 hover:border-blue-400 hover:shadow-lg transform hover:-translate-y-2 transition-all duration-300 cursor-pointer"
+                    >
+                      <div className="text-3xl mb-3">{feature.icon}</div>
+                      <h4 className="text-blue-700 font-bold mb-2">{feature.title}</h4>
+                      <p className="text-gray-600 text-sm">{feature.desc}</p>
+                    </div>
+                  ))}
+                </div>
+                
+                <button
+                  onClick={handleWelcomeStart}
+                  className="sinda-button text-xl px-12 py-4 rounded-full shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300"
+                >
+                  💙 Get Support Now
+                </button>
+                
+                <p className="text-sm text-gray-500 mt-4">
+                  ✓ Confidential • Free support • Available in multiple languages
+                </p>
               </div>
-              
-              <h2 style={{ 
-                fontSize: '48px', 
-                fontWeight: 'bold', 
-                color: '#1f2937', 
-                margin: '0 0 20px 0',
-                position: 'relative',
-                zIndex: 1
-              }}>
-                We're Here to Help
-              </h2>
-              
-              <p style={{ 
-                fontSize: '22px', 
-                color: '#4b5563', 
-                margin: '0 0 40px 0',
-                lineHeight: '1.5',
-                maxWidth: '600px',
-                marginLeft: 'auto',
-                marginRight: 'auto',
-                position: 'relative',
-                zIndex: 1
-              }}>
-                Whether you're facing challenges with family, education, finances, or just need someone to talk to - SINDA's community support is here for you.
-              </p>
-              
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                gap: '25px',
-                margin: '40px 0',
-                maxWidth: '800px',
-                marginLeft: 'auto',
-                marginRight: 'auto',
-                position: 'relative',
-                zIndex: 1
-              }}>
-                {[
-                  { icon: '🤗', title: 'Caring Support', desc: 'Empathetic assistance from trained counselors' },
-                  { icon: '🏠', title: 'Community Focus', desc: 'Understanding your culture and values' },
-                  { icon: '🌟', title: 'Real Solutions', desc: 'Practical help and resources available' }
-                ].map((feature, index) => (
-                  <div 
-                    key={index}
-                    style={{ 
-                      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', 
-                      padding: '30px 20px', 
-                      borderRadius: '20px',
-                      border: '2px solid #bae6fd',
-                      transition: 'all 0.3s ease',
-                      cursor: 'pointer'
-                    }}
-                    onMouseOver={(e) => {
-                      e.target.style.transform = 'translateY(-5px)';
-                      e.target.style.boxShadow = '0 10px 25px rgba(14, 165, 233, 0.2)';
-                      e.target.style.borderColor = '#0ea5e9';
-                    }}
-                    onMouseOut={(e) => {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = 'none';
-                      e.target.style.borderColor = '#bae6fd';
-                    }}
-                  >
-                    <div style={{ fontSize: '32px', marginBottom: '10px' }}>{feature.icon}</div>
-                    <h4 style={{ color: '#0284c7', fontWeight: 'bold', margin: '0 0 5px 0' }}>{feature.title}</h4>
-                    <p style={{ color: '#6b7280', fontSize: '14px', margin: '0' }}>{feature.desc}</p>
-                  </div>
-                ))}
-              </div>
-              
-              <button
-                onClick={handleWelcomeStart}
-                style={{ 
-                  background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '50px',
-                  padding: '20px 50px',
-                  fontSize: '20px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  boxShadow: '0 10px 30px rgba(14, 165, 233, 0.3)',
-                  transition: 'all 0.3s ease',
-                  position: 'relative',
-                  zIndex: 1
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.transform = 'translateY(-3px) scale(1.02)';
-                  e.target.style.boxShadow = '0 15px 40px rgba(14, 165, 233, 0.4)';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.transform = 'translateY(0) scale(1)';
-                  e.target.style.boxShadow = '0 10px 30px rgba(14, 165, 233, 0.3)';
-                }}
-              >
-                💙 Get Support Now
-              </button>
-              
-              <p style={{ 
-                fontSize: '14px', 
-                color: '#9ca3af',
-                margin: '20px 0 0 0',
-                position: 'relative',
-                zIndex: 1
-              }}>
-                ✓ Confidential • Free support • Available in multiple languages
-              </p>
             </div>
           )}
 
           {/* Language Selection */}
           {currentStep === 'language' && (
-            <div style={{ 
-              background: 'white', 
-              borderRadius: '25px', 
-              padding: '50px',
-              boxShadow: '0 15px 35px rgba(0,0,0,0.1)',
-              border: '3px solid #0ea5e9'
-            }}>
-              <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <div style={{ 
-                  background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', 
-                  width: '100px', 
-                  height: '100px', 
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 25px auto',
-                  fontSize: '40px',
-                  boxShadow: '0 8px 25px rgba(14, 165, 233, 0.3)',
-                  animation: 'pulse 2s infinite'
-                }}>
+            <div className="sinda-card p-8 lg:p-12">
+              <div className="text-center mb-8">
+                <div className="sinda-gradient w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-lg animate-pulse">
                   🌏
                 </div>
-                <h2 style={{ 
-                  fontSize: '36px', 
-                  fontWeight: 'bold', 
-                  color: '#1f2937', 
-                  margin: '0 0 15px 0'
-                }}>
+                <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-3">
                   Choose Your Language
                 </h2>
-                <p style={{ 
-                  fontSize: '18px', 
-                  color: '#6b7280', 
-                  margin: '0'
-                }}>
+                <p className="text-lg text-gray-600">
                   We want you to feel comfortable expressing yourself
                 </p>
               </div>
               
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
-                gap: '25px'
-              }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Object.entries(languages).map(([key, lang]) => (
                   <button
                     key={key}
                     onClick={() => handleLanguageSelect(key)}
-                    style={{ 
-                      padding: '25px',
-                      borderRadius: '20px',
-                      border: '3px solid #bae6fd',
-                      background: 'white',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      transition: 'all 0.3s ease',
-                      fontSize: '16px',
-                      position: 'relative',
-                      overflow: 'hidden'
-                    }}
-                    onMouseOver={(e) => {
-                      e.target.style.borderColor = '#0ea5e9';
-                      e.target.style.background = '#f0f9ff';
-                      e.target.style.transform = 'translateY(-3px) scale(1.02)';
-                      e.target.style.boxShadow = '0 8px 25px rgba(14, 165, 233, 0.2)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.target.style.borderColor = '#bae6fd';
-                      e.target.style.background = 'white';
-                      e.target.style.transform = 'translateY(0) scale(1)';
-                      e.target.style.boxShadow = 'none';
-                    }}
+                    className="language-card group"
                   >
-                    <div style={{ 
-                      fontSize: '24px', 
-                      fontWeight: 'bold', 
-                      color: '#1f2937',
-                      marginBottom: '10px'
-                    }}>
+                    <div className="text-xl font-bold text-gray-800 group-hover:text-orange-600 mb-2 transition-colors">
                       {lang.name}
                     </div>
-                    <div style={{ 
-                      fontSize: '12px', 
-                      color: '#6b7280',
-                      marginBottom: '10px'
-                    }}>
+                    <div className="text-sm text-gray-500 mb-3">
                       {key === 'english' && 'I need help'}
                       {key === 'tamil' && 'எனக்கு உதவி வேண்டும்'}
                       {key === 'hindi' && 'मुझे मदद चाहिए'}
                       {key === 'telugu' && 'నాకు సహాయం కావాలి'}
                       {key === 'malayalam' && 'എനിക്ക് സഹായം വേണം'}
                     </div>
-                    <div style={{
-                      background: '#0ea5e9',
-                      color: 'white',
-                      padding: '5px 10px',
-                      borderRadius: '10px',
-                      fontSize: '10px',
-                      fontWeight: 'bold',
-                      marginTop: '10px'
-                    }}>
+                    <div className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-bold">
                       💙 CARING SUPPORT
                     </div>
                   </button>
@@ -645,70 +453,27 @@ export default function Home() {
 
           {/* Chat Interface */}
           {currentStep === 'chat' && (
-            <div style={{ 
-              background: 'white', 
-              borderRadius: '25px', 
-              overflow: 'hidden',
-              boxShadow: '0 15px 35px rgba(0,0,0,0.1)',
-              border: '3px solid #0ea5e9'
-            }}>
+            <div className="sinda-card overflow-hidden">
               
               {/* Chat Header */}
-              <div style={{ 
-                background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
-                color: 'white',
-                padding: '25px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ 
-                      background: 'rgba(255,255,255,0.2)', 
-                      padding: '10px', 
-                      borderRadius: '15px',
-                      fontSize: '24px',
-                      backdropFilter: 'blur(10px)'
-                    }}>
+              <div className="sinda-gradient text-white p-6">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-white bg-opacity-20 p-3 rounded-2xl text-xl backdrop-blur-sm">
                       💙
                     </div>
                     <div>
-                      <h3 style={{ 
-                        fontSize: '20px', 
-                        fontWeight: 'bold', 
-                        margin: '0'
-                      }}>
+                      <h3 className="text-lg font-bold">
                         SINDA Support Helper
                       </h3>
-                      <p style={{ 
-                        fontSize: '14px', 
-                        opacity: '0.9',
-                        margin: '5px 0 0 0'
-                      }}>
+                      <p className="text-sm opacity-90">
                         🟢 Here to listen and help • Confidential support
                       </p>
                     </div>
                   </div>
                   <button
                     onClick={() => setShowContactForm(true)}
-                    style={{
-                      background: 'rgba(255,255,255,0.2)',
-                      color: 'white',
-                      border: 'none',
-                      padding: '10px 16px',
-                      borderRadius: '20px',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                    onMouseOver={(e) => {
-                      e.target.style.background = 'rgba(255,255,255,0.3)';
-                      e.target.style.transform = 'scale(1.05)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.target.style.background = 'rgba(255,255,255,0.2)';
-                      e.target.style.transform = 'scale(1)';
-                    }}
+                    className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-2xl text-sm font-bold transition-all hover:scale-105 backdrop-blur-sm"
                   >
                     📞 Request Call Back
                   </button>
@@ -716,57 +481,22 @@ export default function Home() {
               </div>
 
               {/* Support Areas */}
-              <div style={{ 
-                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', 
-                padding: '25px',
-                borderBottom: '2px solid #e0f2fe'
-              }}>
-                <h4 style={{ 
-                  fontSize: '16px', 
-                  color: '#0284c7', 
-                  fontWeight: 'bold',
-                  margin: '0 0 20px 0',
-                  textAlign: 'center'
-                }}>
+              <div className="bg-gradient-to-r from-blue-50 to-sky-50 p-6 border-b-2 border-sky-100">
+                <h4 className="text-blue-700 font-bold text-center mb-5">
                   💙 What kind of support do you need today?
                 </h4>
                 
                 {/* Quick Help Options */}
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
-                  gap: '15px',
-                  marginBottom: '25px'
-                }}>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
                   {quickHelp.map((help, index) => (
                     <button
                       key={index}
                       onClick={() => handleQuickHelp(help)}
-                      style={{ 
-                        background: help.priority === 'high' ? '#fef2f2' : 'white',
-                        border: `2px solid ${help.priority === 'high' ? '#f87171' : '#bae6fd'}`,
-                        borderRadius: '15px',
-                        padding: '15px 12px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        textAlign: 'center',
-                        fontSize: '13px',
-                        fontWeight: 'bold',
-                        color: help.priority === 'high' ? '#dc2626' : '#0284c7',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        ...(help.priority === 'high' && {
-                          animation: 'urgentPulse 2s infinite'
-                        })
-                      }}
-                      onMouseOver={(e) => {
-                        e.target.style.transform = 'translateY(-2px) scale(1.02)';
-                        e.target.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15)';
-                      }}
-                      onMouseOut={(e) => {
-                        e.target.style.transform = 'translateY(0) scale(1)';
-                        e.target.style.boxShadow = 'none';
-                      }}
+                      className={`p-3 rounded-2xl text-sm font-bold transition-all hover:scale-105 hover:shadow-lg ${
+                        help.priority === 'high' 
+                          ? 'bg-red-50 border-2 border-red-300 text-red-600 hover:bg-red-100 animate-pulse' 
+                          : 'bg-white border-2 border-sky-200 text-blue-600 hover:bg-sky-50'
+                      }`}
                     >
                       {help.priority === 'high' && '🚨 '}
                       {help.text}
@@ -775,49 +505,18 @@ export default function Home() {
                 </div>
 
                 {/* Support Areas Grid */}
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', 
-                  gap: '15px'
-                }}>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {supportAreas.slice(0, 4).map((area) => (
                     <div
                       key={area.id}
                       onClick={() => handleSupportAreaClick(area)}
-                      style={{ 
-                        background: 'white',
-                        border: '2px solid #e0f2fe',
-                        borderRadius: '15px',
-                        padding: '15px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        textAlign: 'center'
-                      }}
-                      onMouseOver={(e) => {
-                        e.target.style.borderColor = '#0ea5e9';
-                        e.target.style.transform = 'translateY(-3px)';
-                        e.target.style.boxShadow = '0 8px 20px rgba(14, 165, 233, 0.2)';
-                      }}
-                      onMouseOut={(e) => {
-                        e.target.style.borderColor = '#e0f2fe';
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = 'none';
-                      }}
+                      className="bg-white border-2 border-sky-100 hover:border-blue-400 rounded-2xl p-4 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 text-center"
                     >
-                      <div style={{ fontSize: '20px', marginBottom: '8px' }}>{area.emoji}</div>
-                      <div style={{ 
-                        fontSize: '12px', 
-                        fontWeight: 'bold',
-                        color: '#1f2937',
-                        marginBottom: '5px'
-                      }}>
+                      <div className="text-2xl mb-2">{area.emoji}</div>
+                      <div className="text-xs font-bold text-gray-800 mb-1">
                         {area.name}
                       </div>
-                      <div style={{ 
-                        fontSize: '10px', 
-                        color: '#6b7280',
-                        lineHeight: '1.3'
-                      }}>
+                      <div className="text-xs text-gray-600 leading-tight">
                         {area.description}
                       </div>
                     </div>
@@ -826,92 +525,43 @@ export default function Home() {
               </div>
 
               {/* Chat Messages */}
-              <div style={{ 
-                height: '400px', 
-                overflowY: 'auto', 
-                padding: '25px',
-                background: '#fafafa'
-              }}>
+              <div className="h-96 overflow-y-auto p-6 bg-gray-50 space-y-4">
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    style={{ 
-                      display: 'flex',
-                      justifyContent: message.isUser ? 'flex-end' : 'flex-start',
-                      marginBottom: '20px',
-                      opacity: 0,
-                      animation: 'fadeInUp 0.5s ease forwards'
-                    }}
+                    className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} animate-fadeIn`}
                   >
                     <div
-                      style={{ 
-                        maxWidth: '75%',
-                        padding: '15px 20px',
-                        borderRadius: '20px',
-                        position: 'relative',
-                        ...(message.isUser ? {
-                          background: 'linear-gradient(135deg, #6b7280, #4b5563)',
-                          color: 'white',
-                          borderBottomRightRadius: '5px'
-                        } : {
-                          background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-                          color: 'white',
-                          borderBottomLeftRadius: '5px'
-                        })
-                      }}
+                      className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
+                        message.isUser
+                          ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white rounded-br-sm shadow-lg'
+                          : 'bg-gradient-to-r from-blue-500 to-sky-500 text-white rounded-bl-sm shadow-lg'
+                      }`}
                     >
-                      <p style={{ 
-                        fontSize: '14px', 
-                        margin: '0 0 8px 0',
-                        lineHeight: '1.5'
-                      }}>
-                        {message.content}
-                      </p>
-                      <p style={{ 
-                        fontSize: '11px',
-                        margin: '0',
-                        opacity: '0.7'
-                      }}>
-                        {message.timestamp}
-                      </p>
+                      <p className="text-sm leading-relaxed">{message.content}</p>
+                      <p className="text-xs opacity-70 mt-2">{message.timestamp}</p>
                     </div>
                   </div>
                 ))}
                 
                 {/* Typing Indicator */}
                 {isTyping && (
-                  <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '20px' }}>
-                    <div style={{ 
-                      background: 'white',
-                      borderRadius: '20px',
-                      borderBottomLeftRadius: '5px',
-                      padding: '15px 20px',
-                      border: '2px solid #e5e7eb',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px'
-                    }}>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        {[0, 1, 2].map(i => (
-                          <div
-                            key={i}
-                            style={{ 
-                              width: '8px', 
-                              height: '8px', 
-                              background: '#0ea5e9', 
-                              borderRadius: '50%',
-                              animation: `typing 1.4s infinite ease-in-out`,
-                              animationDelay: `${i * 0.16}s`
-                            }}
-                          />
-                        ))}
+                  <div className="flex justify-start">
+                    <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 border-2 border-gray-200 shadow-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-1">
+                          {[0, 1, 2].map(i => (
+                            <div
+                              key={i}
+                              className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+                              style={{ animationDelay: `${i * 0.16}s` }}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm text-gray-600">
+                          Support helper is listening...
+                        </span>
                       </div>
-                      <span style={{ 
-                        fontSize: '12px', 
-                        color: '#6b7280'
-                      }}>
-                        Support helper is listening...
-                      </span>
                     </div>
                   </div>
                 )}
@@ -919,12 +569,8 @@ export default function Home() {
               </div>
 
               {/* Chat Input */}
-              <div style={{ 
-                borderTop: '2px solid #e5e7eb',
-                background: 'white',
-                padding: '25px'
-              }}>
-                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+              <div className="border-t-2 border-gray-200 bg-white p-6">
+                <div className="flex gap-4 items-center">
                   <input
                     ref={inputRef}
                     type="text"
@@ -933,235 +579,64 @@ export default function Home() {
                     onKeyPress={handleKeyPress}
                     placeholder="Share what's on your mind... we're here to listen"
                     disabled={isTyping}
-                    style={{ 
-                      flex: '1',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '25px',
-                      padding: '15px 25px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      transition: 'all 0.3s ease',
-                      ...(isTyping && { opacity: '0.7' })
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#0ea5e9';
-                      e.target.style.boxShadow = '0 0 0 4px rgba(14, 165, 233, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#e5e7eb';
-                      e.target.style.boxShadow = 'none';
-                    }}
+                    className="flex-1 border-2 border-gray-300 focus:border-blue-500 rounded-full px-6 py-3 text-sm outline-none transition-all disabled:opacity-70"
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={isTyping || !inputMessage.trim()}
-                    style={{ 
-                      background: (isTyping || !inputMessage.trim()) ? '#d1d5db' : 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '50%',
-                      width: '50px',
-                      height: '50px',
-                      cursor: (isTyping || !inputMessage.trim()) ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '18px',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onMouseOver={(e) => {
-                      if (!isTyping && inputMessage.trim()) {
-                        e.target.style.transform = 'scale(1.1)';
-                      }
-                    }}
-                    onMouseOut={(e) => {
-                      if (!isTyping && inputMessage.trim()) {
-                        e.target.style.transform = 'scale(1)';
-                      }
-                    }}
+                    className="sinda-button w-12 h-12 rounded-full flex items-center justify-center text-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:scale-110"
                   >
                     💙
                   </button>
                 </div>
                 
-                <div style={{ 
-                  marginTop: '15px',
-                  textAlign: 'center',
-                  fontSize: '12px',
-                  color: '#6b7280'
-                }}>
-                  💡 Need urgent help? Call our 24/7 crisis line: <strong style={{ color: '#dc2626' }}>6298 8775</strong>
+                <div className="text-center text-sm text-gray-600 mt-4">
+                  💡 Need urgent help? Call our 24/7 crisis line: <strong className="text-red-600">6298 8775</strong>
                 </div>
               </div>
             </div>
           )}
 
           {/* Contact Information */}
-          <div style={{ 
-            marginTop: '30px',
-            background: 'white',
-            borderRadius: '20px',
-            padding: '30px',
-            boxShadow: '0 8px 25px rgba(0,0,0,0.08)',
-            border: '2px solid #bae6fd'
-          }}>
-            <h3 style={{ 
-              fontSize: '20px', 
-              fontWeight: 'bold', 
-              color: '#1f2937', 
-              margin: '0 0 20px 0',
-              textAlign: 'center'
-            }}>
+          <div className="sinda-card p-6 mt-6">
+            <h3 className="text-xl font-bold text-gray-800 text-center mb-6">
               💙 SINDA is Here When You Need Us
             </h3>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-              gap: '20px'
-            }}>
-              <div style={{ 
-                background: '#fef2f2',
-                border: '2px solid #fca5a5',
-                borderRadius: '15px',
-                padding: '20px',
-                textAlign: 'center'
-              }}>
-                <span style={{ fontSize: '28px', display: 'block', marginBottom: '10px' }}>🚨</span>
-                <h4 style={{ 
-                  fontSize: '16px', 
-                  fontWeight: 'bold', 
-                  margin: '0 0 5px 0',
-                  color: '#dc2626'
-                }}>
-                  Crisis Helpline (24/7)
-                </h4>
-                <p style={{ 
-                  fontSize: '18px', 
-                  fontWeight: 'bold',
-                  color: '#dc2626',
-                  margin: '0 0 5px 0'
-                }}>
-                  6298 8775
-                </p>
-                <p style={{ 
-                  fontSize: '12px', 
-                  color: '#7f1d1d',
-                  margin: '0'
-                }}>
-                  Immediate support available
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-5 text-center hover:shadow-lg transition-all">
+                <span className="text-3xl block mb-3">🚨</span>
+                <h4 className="font-bold text-red-600 mb-2">Crisis Helpline (24/7)</h4>
+                <p className="text-lg font-bold text-red-600 mb-1">6298 8775</p>
+                <p className="text-sm text-red-800">Immediate support available</p>
               </div>
               
-              <div style={{ 
-                background: '#f0f9ff',
-                border: '2px solid #bae6fd',
-                borderRadius: '15px',
-                padding: '20px',
-                textAlign: 'center'
-              }}>
-                <span style={{ fontSize: '28px', display: 'block', marginBottom: '10px' }}>📧</span>
-                <h4 style={{ 
-                  fontSize: '16px', 
-                  fontWeight: 'bold', 
-                  margin: '0 0 5px 0',
-                  color: '#0284c7'
-                }}>
-                  Email Support
-                </h4>
-                <p style={{ 
-                  fontSize: '14px', 
-                  fontWeight: 'bold',
-                  color: '#0284c7',
-                  margin: '0 0 5px 0'
-                }}>
-                  info@sinda.org.sg
-                </p>
-                <p style={{ 
-                  fontSize: '12px', 
-                  color: '#0369a1',
-                  margin: '0'
-                }}>
-                  Response within 24 hours
-                </p>
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-5 text-center hover:shadow-lg transition-all">
+                <span className="text-3xl block mb-3">📧</span>
+                <h4 className="font-bold text-blue-600 mb-2">Email Support</h4>
+                <p className="text-sm font-bold text-blue-600 mb-1">info@sinda.org.sg</p>
+                <p className="text-sm text-blue-800">Response within 24 hours</p>
               </div>
               
-              <div style={{ 
-                background: '#f0f9ff',
-                border: '2px solid #bae6fd',
-                borderRadius: '15px',
-                padding: '20px',
-                textAlign: 'center'
-              }}>
-                <span style={{ fontSize: '28px', display: 'block', marginBottom: '10px' }}>🏢</span>
-                <h4 style={{ 
-                  fontSize: '16px', 
-                  fontWeight: 'bold', 
-                  margin: '0 0 5px 0',
-                  color: '#0284c7'
-                }}>
-                  Visit Our Center
-                </h4>
-                <p style={{ 
-                  fontSize: '13px', 
-                  fontWeight: 'bold',
-                  color: '#0284c7',
-                  margin: '0 0 5px 0'
-                }}>
-                  1 Beatty Road, Singapore 209943
-                </p>
-                <p style={{ 
-                  fontSize: '12px', 
-                  color: '#0369a1',
-                  margin: '0'
-                }}>
-                  Walk-ins welcome • Mon-Fri 9AM-6PM
-                </p>
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-5 text-center hover:shadow-lg transition-all">
+                <span className="text-3xl block mb-3">🏢</span>
+                <h4 className="font-bold text-blue-600 mb-2">Visit Our Center</h4>
+                <p className="text-sm font-bold text-blue-600 mb-1">1 Beatty Road, Singapore 209943</p>
+                <p className="text-sm text-blue-800">Walk-ins welcome • Mon-Fri 9AM-6PM</p>
               </div>
             </div>
             
-            <div style={{
-              background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
-              padding: '20px',
-              borderRadius: '15px',
-              marginTop: '20px',
-              textAlign: 'center',
-              border: '2px solid #bae6fd'
-            }}>
-              <p style={{
-                fontSize: '14px',
-                color: '#0369a1',
-                margin: '0 0 10px 0',
-                fontWeight: 'bold'
-              }}>
+            <div className="bg-gradient-to-r from-blue-50 to-sky-50 p-5 rounded-2xl mt-6 text-center border-2 border-sky-200">
+              <p className="font-bold text-blue-800 mb-3">
                 💙 Remember: You're not alone in this journey
               </p>
-              <p style={{
-                fontSize: '12px',
-                color: '#075985',
-                margin: '0 0 10px 0',
-                lineHeight: '1.4'
-              }}>
+              <p className="text-sm text-blue-700 mb-3 leading-relaxed">
                 SINDA has been supporting families like yours since 1991. Whatever challenges you're facing, our caring team is here to help you find solutions and move forward with confidence.
               </p>
               <a 
                 href="https://sinda.org.sg/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                style={{ 
-                  color: '#0284c7', 
-                  textDecoration: 'none', 
-                  fontWeight: 'bold', 
-                  fontSize: '12px',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.color = '#0ea5e9';
-                  e.target.style.textDecoration = 'underline';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.color = '#0284c7';
-                  e.target.style.textDecoration = 'none';
-                }}
+                className="text-blue-600 hover:text-blue-800 font-bold text-sm hover:underline transition-all"
               >
                 🌐 Learn more about SINDA
               </a>
@@ -1171,72 +646,23 @@ export default function Home() {
 
         {/* Contact Form Modal */}
         {showContactForm && (
-          <div style={{
-            position: 'fixed',
-            top: '0',
-            left: '0',
-            width: '100%',
-            height: '100%',
-            background: 'rgba(0, 0, 0, 0.6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: '1000',
-            backdropFilter: 'blur(5px)'
-          }}>
-            <div style={{
-              background: 'white',
-              borderRadius: '25px',
-              padding: '40px',
-              maxWidth: '500px',
-              width: '90%',
-              maxHeight: '80%',
-              overflowY: 'auto',
-              border: '3px solid #0ea5e9',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
-              animation: 'scaleIn 0.3s ease'
-            }}>
-              <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                <div style={{
-                  background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 20px auto',
-                  fontSize: '36px',
-                  animation: 'pulse 2s infinite'
-                }}>
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-3xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto border-3 border-blue-500 shadow-2xl animate-scaleIn">
+              <div className="text-center mb-6">
+                <div className="sinda-gradient w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl animate-pulse">
                   📞
                 </div>
-                <h3 style={{
-                  fontSize: '24px',
-                  fontWeight: 'bold',
-                  color: '#1f2937',
-                  margin: '0 0 10px 0'
-                }}>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">
                   Request Support Call
                 </h3>
-                <p style={{
-                  fontSize: '14px',
-                  color: '#6b7280',
-                  margin: '0'
-                }}>
+                <p className="text-sm text-gray-600">
                   Our counselors will reach out to provide personalized assistance
                 </p>
               </div>
 
-              <form onSubmit={handleContactSubmit}>
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ 
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    color: '#374151',
-                    marginBottom: '8px'
-                  }}>
+              <form onSubmit={handleContactSubmit} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
                     Your Name
                   </label>
                   <input
@@ -1244,28 +670,12 @@ export default function Home() {
                     value={contactData.name}
                     onChange={(e) => setContactData(prev => ({ ...prev, name: e.target.value }))}
                     required
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '10px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      transition: 'border-color 0.3s ease'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#0ea5e9'}
-                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-xl text-sm outline-none transition-all"
                   />
                 </div>
 
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ 
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    color: '#374151',
-                    marginBottom: '8px'
-                  }}>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
                     Phone Number
                   </label>
                   <input
@@ -1273,44 +683,18 @@ export default function Home() {
                     value={contactData.phone}
                     onChange={(e) => setContactData(prev => ({ ...prev, phone: e.target.value }))}
                     required
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '10px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      transition: 'border-color 0.3s ease'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#0ea5e9'}
-                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-xl text-sm outline-none transition-all"
                   />
                 </div>
 
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ 
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    color: '#374151',
-                    marginBottom: '8px'
-                  }}>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
                     Best time to call
                   </label>
                   <select
                     value={contactData.preferredTime}
                     onChange={(e) => setContactData(prev => ({ ...prev, preferredTime: e.target.value }))}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '10px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      transition: 'border-color 0.3s ease'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#0ea5e9'}
-                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-xl text-sm outline-none transition-all"
                   >
                     <option value="">Select preferred time</option>
                     <option value="urgent">As soon as possible (urgent)</option>
@@ -1320,14 +704,8 @@ export default function Home() {
                   </select>
                 </div>
 
-                <div style={{ marginBottom: '25px' }}>
-                  <label style={{ 
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    color: '#374151',
-                    marginBottom: '8px'
-                  }}>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
                     Brief description of how we can help (optional)
                   </label>
                   <textarea
@@ -1335,92 +713,28 @@ export default function Home() {
                     onChange={(e) => setContactData(prev => ({ ...prev, description: e.target.value }))}
                     rows="3"
                     placeholder="Feel free to share what kind of support you're looking for..."
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '10px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      resize: 'vertical',
-                      transition: 'border-color 0.3s ease'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#0ea5e9'}
-                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-xl text-sm outline-none resize-vertical transition-all"
                   />
                 </div>
 
-                <div style={{ 
-                  display: 'flex',
-                  gap: '15px',
-                  marginTop: '25px'
-                }}>
+                <div className="flex gap-4 pt-4">
                   <button
                     type="button"
                     onClick={() => setShowContactForm(false)}
-                    style={{
-                      flex: '1',
-                      padding: '12px',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '10px',
-                      background: 'white',
-                      color: '#6b7280',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onMouseOver={(e) => {
-                      e.target.style.borderColor = '#9ca3af';
-                      e.target.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.target.style.borderColor = '#e5e7eb';
-                      e.target.style.transform = 'translateY(0)';
-                    }}
+                    className="flex-1 px-4 py-3 border-2 border-gray-300 hover:border-gray-400 rounded-xl bg-white text-gray-600 text-sm font-bold transition-all hover:-translate-y-0.5"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={!contactData.name || !contactData.phone}
-                    style={{
-                      flex: '2',
-                      padding: '12px',
-                      border: 'none',
-                      borderRadius: '10px',
-                      background: (contactData.name && contactData.phone) 
-                        ? 'linear-gradient(135deg, #0ea5e9, #0284c7)' 
-                        : '#d1d5db',
-                      color: 'white',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      cursor: (contactData.name && contactData.phone) ? 'pointer' : 'not-allowed',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onMouseOver={(e) => {
-                      if (contactData.name && contactData.phone) {
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 8px 20px rgba(14, 165, 233, 0.3)';
-                      }
-                    }}
-                    onMouseOut={(e) => {
-                      if (contactData.name && contactData.phone) {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = 'none';
-                      }
-                    }}
+                    className="flex-2 px-6 py-3 sinda-button rounded-xl text-sm disabled:bg-gray-300 disabled:cursor-not-allowed hover:scale-105 transition-all"
                   >
                     💙 Request Call Back
                   </button>
                 </div>
 
-                <p style={{
-                  fontSize: '11px',
-                  color: '#9ca3af',
-                  textAlign: 'center',
-                  marginTop: '15px',
-                  lineHeight: '1.4'
-                }}>
+                <p className="text-xs text-gray-500 text-center pt-3 leading-relaxed">
                   ✓ Confidential support • Response within 24 hours • No cost for consultation
                 </p>
               </form>
@@ -1428,100 +742,34 @@ export default function Home() {
           </div>
         )}
 
-        {/* CSS Animations */}
+        {/* Custom CSS for animations */}
         <style jsx>{`
-          @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
           }
-
-          @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-          }
-
-          @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-          }
-
-          @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-
-          @keyframes glow {
-            0%, 100% { box-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(220, 38, 38, 0.8); }
-          }
-
-          @keyframes urgentPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-          }
-
-          @keyframes typing {
-            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-            40% { transform: scale(1.2); opacity: 1; }
-          }
-
-          @keyframes fadeInUp {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-
+          
           @keyframes scaleIn {
-            from {
-              opacity: 0;
-              transform: scale(0.9);
-            }
-            to {
-              opacity: 1;
-              transform: scale(1);
-            }
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+          }
+          
+          .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
+          }
+          
+          .animate-scaleIn {
+            animation: scaleIn 0.3s ease-out;
           }
 
-          /* Mobile responsiveness */
-          @media (max-width: 768px) {
-            .header-content {
-              flex-direction: column;
-              text-align: center;
-            }
-            
-            .quick-help-grid {
-              grid-template-columns: 1fr 1fr;
-            }
-            
-            .support-grid {
-              grid-template-columns: 1fr 1fr;
-            }
-
-            .feature-grid {
-              grid-template-columns: 1fr;
-            }
-
-            .language-grid {
-              grid-template-columns: 1fr;
-            }
-
-            .contact-grid {
+          /* Mobile responsiveness improvements */
+          @media (max-width: 640px) {
+            .grid-cols-2 {
               grid-template-columns: 1fr;
             }
           }
-
-          @media (max-width: 480px) {
-            .quick-help-grid {
-              grid-template-columns: 1fr;
-            }
-            
-            .support-grid {
-              grid-template-columns: 1fr;
-            }
-          }
+        `}</style>
+      </div>
+    </>
+  );
+}
