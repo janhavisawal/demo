@@ -34,7 +34,7 @@ export default async function handler(req, res) {
 
     // Use the correct FREE tier model
     const chatResponse = await client.chat({
-      model: 'mistral-tiny', // FREE model (correct name)
+      model: 'mistral-small', // FREE model (correct name)
       messages: req.body.messages,
       maxTokens: req.body.max_tokens || 100, // Reduced for free tier
       temperature: req.body.temperature || 0.7
