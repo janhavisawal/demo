@@ -1,4 +1,4 @@
-// api/mistral.js - Using Official Mistral SDK
+// api/mistral.js - Fixed for Mistral Free Tier
 import { Mistral } from '@mistralai/mistralai';
 
 export default async function handler(req, res) {
@@ -30,13 +30,13 @@ export default async function handler(req, res) {
       apiKey: process.env.MISTRAL_API_KEY
     });
 
-    console.log('Calling Mistral API...');
+    console.log('Calling Mistral API with free tier model...');
 
-    // Make the chat completion request
+    // Use the FREE tier model instead of mistral-large-latest
     const chatResponse = await client.chat.complete({
-      model: 'mistral-large-latest',
+      model: 'mistral-7b-instruct-v0.1', // FREE model
       messages: req.body.messages,
-      maxTokens: req.body.max_tokens || 150,
+      maxTokens: req.body.max_tokens || 100, // Reduced for free tier
       temperature: req.body.temperature || 0.7
     });
 
@@ -53,6 +53,18 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Mistral API Error:', error);
+    
+    // Handle specific rate limit error
+    if (error.statusCode === 429) {
+      return res.status(200).json({
+        choices: [{
+          message: {
+            content: "I'm currently experiencing high demand. Our community team is available at 6298 8775 for immediate assistance with SINDA programs and services."
+          }
+        }]
+      });
+    }
+    
     res.status(500).json({ 
       error: 'SINDA AI assistant temporarily unavailable',
       message: 'Our community team is available at 6298 8775 for immediate assistance.'
