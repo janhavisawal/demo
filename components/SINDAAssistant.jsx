@@ -9,6 +9,7 @@ const SINDAAssistant = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [conversationContext, setConversationContext] = useState([]);
+  const [lastAIMessage, setLastAIMessage] = useState('');
   const messagesEndRef = useRef(null);
 
   const languages = {
@@ -43,26 +44,33 @@ const SINDAAssistant = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'mistral-tiny',
+          model: 'mistral-small',
           messages: [
             {
               role: 'system',
-              content: `You are SINDA's support assistant. Speak warmly and respectfully, but do NOT use words like "hey", "yo", or overly casual expressions. Focus on offering emotional and practical support for issues like education, financial help, family, employment, or crisis. Keep responses under 3 lines. Always end with a clear and supportive follow-up question.`
+              content: `You are SINDA's assistant. Speak with clarity, empathy, and professionalism. Do NOT use the words "hi", "hey", "yo", or repeat the same message twice. If the user's input is short, guide the conversation by asking whether they need help with education, finances, family, or job support. Keep replies concise (under 3 lines) and useful. Always include a follow-up question.`
             },
             ...conversationContext.slice(-4),
             { role: 'user', content: userMessage }
           ],
-          max_tokens: 130,
+          max_tokens: 140,
           temperature: 0.7
         })
       });
 
       if (!response.ok) {
-        return "Sorry, I'm facing a technical issue right now. Please call 6298 8775 for immediate support.";
+        return "Sorry, I'm facing a technical issue. Please call SINDA at 6298 8775 for urgent help.";
       }
 
       const data = await response.json();
-      const aiReply = data.choices[0]?.message?.content?.trim();
+      let aiReply = data.choices[0]?.message?.content?.trim() || '';
+
+      // Prevent exact repetition
+      if (aiReply === lastAIMessage) {
+        aiReply = "To assist you better, could you share whether this is about school, financial support, job help, or something else?";
+      }
+
+      setLastAIMessage(aiReply);
 
       setConversationContext(prev => [
         ...prev.slice(-4),
@@ -70,10 +78,10 @@ const SINDAAssistant = () => {
         { role: 'assistant', content: aiReply }
       ]);
 
-      return aiReply || "I'm here to help. Could you tell me a bit more about what you're going through?";
+      return aiReply;
     } catch (error) {
       console.error('Mistral API Error:', error);
-      return "I'm currently unavailable due to a technical issue. Please reach out to SINDA at 6298 8775 for urgent help.";
+      return "I'm currently unavailable due to a technical issue. Please contact SINDA at 6298 8775.";
     }
   };
 
@@ -124,7 +132,7 @@ const SINDAAssistant = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-800">SINDA Assistant</h1>
-              <p className="text-sm text-gray-600">Helping you with SINDA services</p>
+              <p className="text-sm text-gray-600">Here to support you with clarity and care</p>
             </div>
           </div>
           <div className="text-sm text-gray-600">
