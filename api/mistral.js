@@ -1,9 +1,13 @@
 export default async function handler(req, res) {
+  // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -18,10 +22,17 @@ export default async function handler(req, res) {
       body: JSON.stringify(req.body)
     });
 
+    if (!response.ok) {
+      throw new Error(`Mistral API error: ${response.status}`);
+    }
+
     const data = await response.json();
     res.status(200).json(data);
   } catch (error) {
     console.error('Mistral API Error:', error);
-    res.status(500).json({ error: 'AI service temporarily unavailable' });
+    res.status(500).json({ 
+      error: 'SINDA AI assistant temporarily unavailable',
+      message: 'Please try again or contact our support team at 6298 8775'
+    });
   }
 }
