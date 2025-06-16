@@ -37,7 +37,7 @@ const SINDAAssistant = () => {
     setMessages(prev => [...prev, message]);
   };
 
-  const queryMistral = async (userMessage) => {
+  const queryMistralAI = async (userMessage) => {
     try {
       const response = await fetch('/api/mistral', {
         method: 'POST',
@@ -47,20 +47,22 @@ const SINDAAssistant = () => {
           messages: [
             {
               role: 'system',
-              content: `You are SINDA's assistant. Respond warmly in 2–3 lines. Help users with education, finance, family, and crisis support.`
+              content: `You are SINDA's support assistant. Speak warmly and respectfully, but do NOT use words like "hey", "yo", or overly casual expressions. Focus on offering emotional and practical support for issues like education, financial help, family, employment, or crisis. Keep responses under 3 lines. Always end with a clear and supportive follow-up question.`
             },
             ...conversationContext.slice(-4),
             { role: 'user', content: userMessage }
           ],
-          max_tokens: 120,
+          max_tokens: 130,
           temperature: 0.7
         })
       });
 
-      if (!response.ok) throw new Error("API error");
+      if (!response.ok) {
+        return "Sorry, I'm facing a technical issue right now. Please call 6298 8775 for immediate support.";
+      }
 
       const data = await response.json();
-      const aiReply = data.choices[0]?.message?.content || "I'm here to help! You can also call 6298 8775.";
+      const aiReply = data.choices[0]?.message?.content?.trim();
 
       setConversationContext(prev => [
         ...prev.slice(-4),
@@ -68,10 +70,10 @@ const SINDAAssistant = () => {
         { role: 'assistant', content: aiReply }
       ]);
 
-      return aiReply;
-    } catch (err) {
-      console.error('Mistral error:', err);
-      return "I'm facing a technical issue. Please call 6298 8775 for immediate help.";
+      return aiReply || "I'm here to help. Could you tell me a bit more about what you're going through?";
+    } catch (error) {
+      console.error('Mistral API Error:', error);
+      return "I'm currently unavailable due to a technical issue. Please reach out to SINDA at 6298 8775 for urgent help.";
     }
   };
 
@@ -83,9 +85,10 @@ const SINDAAssistant = () => {
     setInputMessage('');
     setIsLoading(true);
 
-    const response = await queryMistral(userMessage);
+    const reply = await queryMistralAI(userMessage);
+
     setTimeout(() => {
-      addMessage(response, false);
+      addMessage(reply, false);
       setIsLoading(false);
     }, 1000);
   };
@@ -199,7 +202,7 @@ const SINDAAssistant = () => {
               </button>
             </div>
             <div className="text-center text-xs text-gray-500 mt-2">
-              Need help? Call SINDA at <strong>6298 8775</strong>
+              Need urgent help? Call SINDA: <strong>6298 8775</strong>
             </div>
           </div>
         )}
