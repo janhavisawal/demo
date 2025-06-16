@@ -1,4 +1,4 @@
-// pages/index.js - SINDA Community Support Chatbot with Tailwind CSS
+// pages/index.js - Beautiful SINDA Community Support Chatbot
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 
@@ -14,13 +14,14 @@ export default function Home() {
   const inputRef = useRef(null);
 
   // User conversation state
-  const [conversationStage, setConversationStage] = useState('greeting');
+  const [conversationStage, setConversationStage] = useState('name');
   const [userInfo, setUserInfo] = useState({
     name: '',
+    age: '',
+    location: '',
     situation: '',
     urgency: '',
-    supportType: '',
-    details: ''
+    supportType: ''
   });
 
   // Contact form data
@@ -34,45 +35,147 @@ export default function Home() {
   const languages = {
     english: { 
       name: 'English', 
-      greeting: 'Hello! I\'m here to listen and help you with whatever you\'re going through. What\'s your name?'
+      greeting: 'Hello! I\'m here to help and support you. To start, may I know your name?'
     },
     tamil: { 
       name: 'தமிழ்', 
-      greeting: 'வணக்கம்! நீங்கள் எதை எதிர்கொண்டாலும் நான் கேட்டு உதவ இங்கே இருக்கிறேன். உங்கள் பெயர் என்ன?'
+      greeting: 'வணக்கம்! நான் உங்களுக்கு உதவி மற்றும் ஆதரவு வழங்க இங்கே இருக்கிறேன். தொடங்க, உங்கள் பெயரைக் கூற முடியுமா?'
     },
     hindi: { 
       name: 'हिंदी', 
-      greeting: 'नमस्ते! आप जो भी सामना कर रहे हैं, मैं सुनने और मदद करने के लिए यहाँ हूँ। आपका नाम क्या है?'
+      greeting: 'नमस्ते! मैं आपकी मदद और सहायता के लिए यहाँ हूँ। शुरुआत के लिए, क्या मैं आपका नाम जान सकता हूँ?'
     },
     telugu: { 
       name: 'తెలుగు', 
-      greeting: 'నమస్కారం! మీరు ఎదుర్కొంటున్న దేనికైనా నేను వినడానికి మరియు సహాయం చేయడానికి ఇక్కడ ఉన్నాను. మీ పేరు ఏమిటి?'
+      greeting: 'నమస్కారం! నేను మీకు సహాయం మరియు మద్దతు అందించడానికి ఇక్కడ ఉన్నాను. ప్రారంభించడానికి, మీ పేరు తెలుసుకోవచ్చా?'
     },
     malayalam: { 
       name: 'മലയാളം', 
-      greeting: 'നമസ്കാരം! നിങ്ങൾ അഭിമുഖീകരിക്കുന്ന എന്തിനും ഞാൻ കേൾക്കാനും സഹായിക്കാനും ഇവിടെയുണ്ട്. നിങ്ങളുടെ പേര് എന്താണ്?'
+      greeting: 'നമസ്കാരം! ഞാൻ നിങ്ങളെ സഹായിക്കാനും പിന്തുണയ്ക്കാനും ഇവിടെയുണ്ട്. ആരംഭിക്കാൻ, നിങ്ങളുടെ പേര് അറിയാമോ?'
     }
   };
 
-  const supportAreas = [
-    { id: 'education', name: 'Educational Support', emoji: '📚', description: 'Tuition assistance, study materials, academic guidance' },
-    { id: 'financial', name: 'Financial Assistance', emoji: '💰', description: 'Emergency aid, grants, financial counseling' },
-    { id: 'family', name: 'Family Support', emoji: '👨‍👩‍👧‍👦', description: 'Family counseling, parenting support, relationship guidance' },
-    { id: 'employment', name: 'Employment Help', emoji: '💼', description: 'Job search assistance, skills training, career guidance' },
-    { id: 'elderly', name: 'Elderly Care', emoji: '👴👵', description: 'Senior citizen support, healthcare, social activities' },
-    { id: 'youth', name: 'Youth Programs', emoji: '🌟', description: 'Youth development, mentorship, leadership programs' },
-    { id: 'crisis', name: 'Crisis Support', emoji: '🚨', description: 'Emergency assistance, crisis counseling, immediate help' },
-    { id: 'legal', name: 'Legal Guidance', emoji: '⚖️', description: 'Legal advice, documentation help, rights awareness' }
+  const quickHelp = [
+    { text: '🚨 Urgent Help Needed', type: 'crisis', style: 'bg-red-100 border-red-300 text-red-700 hover:bg-red-200' },
+    { text: '💰 Money Problems', type: 'financial', style: 'bg-orange-100 border-orange-300 text-orange-700 hover:bg-orange-200' },
+    { text: '👨‍👩‍👧‍👦 Family Issues', type: 'family', style: 'bg-blue-100 border-blue-300 text-blue-700 hover:bg-blue-200' },
+    { text: '📚 Education Help', type: 'education', style: 'bg-green-100 border-green-300 text-green-700 hover:bg-green-200' },
+    { text: '💼 Job Support', type: 'employment', style: 'bg-purple-100 border-purple-300 text-purple-700 hover:bg-purple-200' },
+    { text: '💬 Just Need to Talk', type: 'general', style: 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200' }
   ];
 
-  const quickHelp = [
-    { text: 'I need urgent help', type: 'crisis', priority: 'high' },
-    { text: 'Financial difficulties', type: 'financial', priority: 'high' },
-    { text: 'Family problems', type: 'family', priority: 'medium' },
-    { text: 'Educational support', type: 'education', priority: 'medium' },
-    { text: 'Job-related help', type: 'employment', priority: 'medium' },
-    { text: 'Just have questions', type: 'general', priority: 'low' }
-  ];
+  // Natural conversation flow
+  const getConversationResponse = useCallback((userMessage) => {
+    const message = userMessage.toLowerCase().trim();
+    let response = "";
+    let nextStage = conversationStage;
+    const updatedInfo = { ...userInfo };
+
+    switch (conversationStage) {
+      case 'name':
+        if (message.length > 1) {
+          updatedInfo.name = userMessage.trim();
+          nextStage = 'age';
+          response = `Nice to meet you, ${updatedInfo.name}! How old are you?`;
+        } else {
+          response = "I'd love to know what to call you. What's your name?";
+        }
+        break;
+
+      case 'age':
+        updatedInfo.age = userMessage.trim();
+        nextStage = 'location';
+        response = `Thank you, ${updatedInfo.name}. Which area of Singapore are you from?`;
+        break;
+
+      case 'location':
+        updatedInfo.location = userMessage.trim();
+        nextStage = 'understanding';
+        response = `I see you're from ${updatedInfo.location}. Now ${updatedInfo.name}, I'm here to listen. What's been troubling you lately?`;
+        break;
+
+      case 'understanding':
+        updatedInfo.situation = userMessage;
+        
+        if (message.includes('urgent') || message.includes('emergency') || message.includes('crisis') || message.includes('help now')) {
+          nextStage = 'crisis';
+          response = `${updatedInfo.name}, this sounds urgent. Are you safe right now? Do you need immediate help?`;
+        } else if (message.includes('money') || message.includes('financial') || message.includes('bill') || message.includes('debt')) {
+          nextStage = 'financial_details';
+          response = `I understand money worries can be really stressful, ${updatedInfo.name}. Can you tell me a bit more about your financial situation? Are you struggling with bills, or is it something else?`;
+        } else if (message.includes('family') || message.includes('husband') || message.includes('wife') || message.includes('marriage') || message.includes('relationship')) {
+          nextStage = 'family_details';
+          response = `Family situations can be really challenging, ${updatedInfo.name}. Would you feel comfortable sharing more about what's happening at home?`;
+        } else if (message.includes('job') || message.includes('work') || message.includes('unemployment') || message.includes('career')) {
+          nextStage = 'employment_details';
+          response = `Work-related stress can be overwhelming, ${updatedInfo.name}. Are you currently employed, or are you looking for work?`;
+        } else if (message.includes('school') || message.includes('education') || message.includes('study') || message.includes('tuition')) {
+          nextStage = 'education_details';
+          response = `Education is so important, ${updatedInfo.name}. Is this about your own studies, or are you concerned about your children's education?`;
+        } else {
+          nextStage = 'general_support';
+          response = `Thank you for sharing that with me, ${updatedInfo.name}. It takes courage to reach out. How long has this been bothering you?`;
+        }
+        break;
+
+      case 'financial_details':
+        nextStage = 'support_offer';
+        response = `I hear you, ${updatedInfo.name}. Financial stress affects the whole family. SINDA has emergency financial assistance and budgeting support. Would you like me to connect you with our financial counselor?`;
+        break;
+
+      case 'family_details':
+        nextStage = 'support_offer';
+        response = `${updatedInfo.name}, family relationships are precious but can be complex. We have professional family counselors who understand our community. Would you be interested in speaking with one of them?`;
+        break;
+
+      case 'employment_details':
+        nextStage = 'support_offer';
+        response = `${updatedInfo.name}, finding good work or dealing with job stress is tough. We have employment coaches and skills training programs. Would you like to know more about these?`;
+        break;
+
+      case 'education_details':
+        nextStage = 'support_offer';
+        response = `Education opens so many doors, ${updatedInfo.name}. We offer tuition assistance, study materials, and academic guidance. Would you like me to have our education coordinator contact you?`;
+        break;
+
+      case 'general_support':
+        nextStage = 'support_offer';
+        response = `${updatedInfo.name}, sometimes we all need someone to talk to. That's completely normal. Would you like me to arrange for one of our counselors to give you a call?`;
+        break;
+
+      case 'support_offer':
+        nextStage = 'contact_details';
+        response = `I'm glad you're open to getting help, ${updatedInfo.name}. Would you like me to have someone from our team call you within the next day or two? It would be completely confidential.`;
+        // Auto-show contact form after response
+        setTimeout(() => setShowContactForm(true), 2000);
+        break;
+
+      case 'crisis':
+        if (message.includes('yes') || message.includes('safe') || message.includes('okay')) {
+          response = `I'm glad you're safe, ${updatedInfo.name}. Let's get you the right help. What would be most helpful right now - someone to talk to, or practical assistance?`;
+          nextStage = 'crisis_support';
+        } else {
+          response = `${updatedInfo.name}, please call our emergency line at 6298 8775 right now. If it's life-threatening, call 995 immediately. Your safety is the most important thing.`;
+        }
+        break;
+
+      case 'contact_details':
+        response = `Thank you ${updatedInfo.name}. I've noted everything down. Our team will reach out to you soon with the right support. Remember, you're not alone in this.`;
+        nextStage = 'complete';
+        break;
+
+      case 'complete':
+        response = `I'm still here if you need to talk more, ${updatedInfo.name}. You've taken a really positive step today by reaching out.`;
+        break;
+
+      default:
+        response = "I'm here to listen and help. What would you like to talk about?";
+    }
+
+    setUserInfo(updatedInfo);
+    setConversationStage(nextStage);
+    return response;
+  }, [conversationStage, userInfo]);
 
   // Enhanced Mistral AI Integration
   const queryMistralAI = useCallback(async (userMessage) => {
@@ -86,30 +189,27 @@ export default function Home() {
           messages: [
             {
               role: 'system',
-              content: `You are a compassionate SINDA counselor helping ${userInfo.name || 'someone'} who needs community support.
+              content: `You are a caring SINDA counselor talking to ${userInfo.name || 'someone'} (age: ${userInfo.age}, from: ${userInfo.location}).
               
-              Conversation context:
-              - User's name: ${userInfo.name}
-              - Current situation: ${userInfo.situation}
-              - Stage: ${conversationStage}
+              Current conversation stage: ${conversationStage}
               
-              SINDA provides:
-              - Educational support and tuition assistance
-              - Family counseling and relationship guidance  
-              - Financial assistance and emergency aid
-              - Employment help and skills training
-              - Elderly care and youth programs
-              - Crisis support and legal guidance
+              Guidelines:
+              - Be warm, empathetic, and conversational
+              - Ask ONE follow-up question max
+              - Keep responses to 1-2 sentences
+              - Use their name when appropriate
+              - Focus on understanding their feelings
+              - Avoid generic responses
               
-              Respond with empathy, keep it conversational (1-2 sentences), and focus on understanding their feelings. Ask gentle follow-up questions to learn more about their situation.`
+              SINDA services: education support, family counseling, financial assistance, employment help, elderly care, youth programs, crisis support.`
             },
             {
               role: 'user',
               content: userMessage
             }
           ],
-          max_tokens: 120,
-          temperature: 0.8
+          max_tokens: 100,
+          temperature: 0.9
         })
       });
 
@@ -123,99 +223,7 @@ export default function Home() {
       console.error('Mistral AI Error:', error);
       return getConversationResponse(userMessage);
     }
-  }, [userInfo, conversationStage]);
-
-  // Conversation flow logic
-  const getConversationResponse = useCallback((userMessage) => {
-    const message = userMessage.toLowerCase();
-    let response = "";
-    let nextStage = conversationStage;
-    const updatedInfo = { ...userInfo };
-
-    switch (conversationStage) {
-      case 'greeting':
-        if (message.length > 2) {
-          updatedInfo.name = userMessage.split(' ')[0];
-          nextStage = 'understanding';
-          response = `Nice to meet you, ${updatedInfo.name}. I'm here to support you. Can you tell me a bit about what's been on your mind lately?`;
-        } else {
-          response = "I'd love to know what to call you. What's your name?";
-        }
-        break;
-
-      case 'understanding':
-        updatedInfo.situation = userMessage;
-        
-        if (message.includes('urgent') || message.includes('emergency') || message.includes('crisis') || message.includes('help now')) {
-          nextStage = 'crisis';
-          response = `${updatedInfo.name}, I can hear this is urgent. Are you in immediate danger or need emergency help right now?`;
-        } else {
-          nextStage = 'familyContext';
-          response = `I can hear that this is important to you, ${updatedInfo.name}. How long has this been a concern for you?`;
-        }
-        break;
-
-      case 'familyContext':
-        nextStage = 'urgency';
-        response = `Thank you for sharing that with me, ${updatedInfo.name}. Are you dealing with this alone, or do you have family support?`;
-        break;
-
-      case 'urgency':
-        updatedInfo.urgency = userMessage;
-        nextStage = 'specific_help';
-        
-        if (message.includes('urgent') || message.includes('immediate') || message.includes('now')) {
-          response = `I understand this is urgent, ${updatedInfo.name}. Let me help you right away. For immediate assistance, you can call our 24/7 helpline at 6298 8775. Would you also like me to have someone call you back today?`;
-        } else {
-          response = `Based on what you've shared, ${updatedInfo.name}, I think I can help connect you with the right support. What kind of help would be most useful for you right now?`;
-        }
-        break;
-
-      case 'specific_help':
-        updatedInfo.supportType = userMessage;
-        nextStage = 'next_steps';
-        
-        if (message.includes('education') || message.includes('school') || message.includes('study')) {
-          response = `${updatedInfo.name}, I can definitely help with educational support. We have tuition assistance, study programs, and academic counseling. Would you like me to connect you with our education team?`;
-        } else if (message.includes('money') || message.includes('financial') || message.includes('bill')) {
-          response = `I understand financial stress can be overwhelming, ${updatedInfo.name}. We have emergency assistance and financial counseling available. Shall I arrange for our financial counselor to speak with you?`;
-        } else if (message.includes('family') || message.includes('marriage') || message.includes('relationship')) {
-          response = `Family challenges can be really difficult, ${updatedInfo.name}. We offer free family counseling and support. Would you like me to set up a consultation for you?`;
-        } else if (message.includes('job') || message.includes('work') || message.includes('employment')) {
-          response = `Employment challenges can be stressful, ${updatedInfo.name}. We have job search assistance, skills training, and career guidance available. Would you like me to connect you with our employment services team?`;
-        } else {
-          response = `I'm thinking about how to help you best, ${updatedInfo.name}. Would you like to know about the specific programs we have that might help?`;
-        }
-        break;
-
-      case 'next_steps':
-        response = `Thank you for sharing so much with me, ${updatedInfo.name}. Based on everything you've told me, I think our team can really help you. I'll arrange for one of our specialists to call you within 24 hours. In the meantime, remember you can always call 6298 8775 if you need immediate support. Is there anything else you'd like to know right now?`;
-        nextStage = 'complete';
-        // Auto-show contact form after response
-        setTimeout(() => setShowContactForm(true), 3000);
-        break;
-
-      case 'crisis':
-        if (message.includes('yes') || message.includes('danger')) {
-          response = `${updatedInfo.name}, please call 6298 8775 right now or if it's a life-threatening emergency, call 995. Is there someone who can be with you? Don't hesitate to reach out immediately.`;
-        } else {
-          response = `I'm glad you're safe, ${updatedInfo.name}. Let's work together to get you the help you need. Can you tell me what specific support would help you most right now?`;
-          nextStage = 'specific_help';
-        }
-        break;
-
-      case 'complete':
-        response = `I'm here if you need to talk more, ${updatedInfo.name}. You've taken a brave step by reaching out. Our team will be in touch soon. Is there anything else on your mind?`;
-        break;
-
-      default:
-        response = "I'm here to listen and help. Can you tell me more about what's going on?";
-    }
-
-    setUserInfo(updatedInfo);
-    setConversationStage(nextStage);
-    return response;
-  }, [conversationStage, userInfo]);
+  }, [userInfo, conversationStage, getConversationResponse]);
 
   // Message handling functions
   const addMessage = useCallback((content, isUser = false, isHelper = false) => {
@@ -248,39 +256,34 @@ export default function Home() {
     setIsTyping(true);
 
     try {
-      // Try AI first, fallback to conversation flow
-      const response = await queryMistralAI(userMessage);
+      // Use AI for more natural responses after name collection
+      const response = conversationStage === 'name' || conversationStage === 'age' || conversationStage === 'location'
+        ? getConversationResponse(userMessage)
+        : await queryMistralAI(userMessage);
       
       setTimeout(() => {
         addMessage(response, false, true);
         setIsTyping(false);
         
         // Add crisis support message if needed
-        const message = userMessage.toLowerCase();
-        if (message.includes('urgent') || message.includes('crisis') || message.includes('emergency')) {
+        if (userMessage.toLowerCase().includes('urgent') || userMessage.toLowerCase().includes('crisis') || userMessage.toLowerCase().includes('emergency')) {
           setTimeout(() => {
-            addMessage("If this is an urgent situation, please don't hesitate to call our 24/7 helpline at 6298 8775 immediately. Our crisis counselors are trained to provide immediate support.", false, true);
-          }, 2000);
+            addMessage("🚨 If this is an emergency, please call our 24/7 helpline at 6298 8775 immediately.", false, true);
+          }, 1500);
         }
-      }, Math.random() * 1000 + 1500); // 1.5-2.5 seconds realistic delay
+      }, Math.random() * 800 + 1200); // 1.2-2 seconds realistic delay
       
     } catch (error) {
       setTimeout(() => {
         const fallbackResponse = getConversationResponse(userMessage);
         addMessage(fallbackResponse, false, true);
         setIsTyping(false);
-      }, 1500);
+      }, 1200);
     }
-  }, [inputMessage, isTyping, addMessage, queryMistralAI, getConversationResponse]);
+  }, [inputMessage, isTyping, addMessage, queryMistralAI, getConversationResponse, conversationStage]);
 
   const handleQuickHelp = useCallback((help) => {
     setInputMessage(help.text);
-    setTimeout(() => handleSendMessage(), 100);
-  }, [handleSendMessage]);
-
-  const handleSupportAreaClick = useCallback((area) => {
-    const message = `I need help with ${area.name.toLowerCase()}`;
-    setInputMessage(message);
     setTimeout(() => handleSendMessage(), 100);
   }, [handleSendMessage]);
 
@@ -309,7 +312,7 @@ export default function Home() {
     e.preventDefault();
     console.log('Contact form submitted:', contactData, userInfo);
     setShowContactForm(false);
-    addMessage(`Thank you, ${contactData.name}! I've noted your information. A SINDA counselor will contact you within 24 hours to provide personalized assistance. In the meantime, if you have any urgent needs, please call 6298 8775.`, false, true);
+    addMessage(`Thank you, ${contactData.name}! I've passed your details to our team. A SINDA counselor will contact you within 24 hours. Remember, you can always call 6298 8775 if you need immediate support.`, false, true);
     
     // Reset contact form
     setContactData({ name: '', phone: '', preferredTime: '', description: '' });
@@ -318,111 +321,113 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>SINDA Community Support | We're Here to Help You</title>
-        <meta name="description" content="SINDA provides caring community support for Indian families in Singapore. Get help with education, family, financial, and personal challenges." />
+        <title>SINDA Community Support | Caring Help When You Need It</title>
+        <meta name="description" content="SINDA provides compassionate community support for Indian families in Singapore. Talk to someone who understands and cares." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
         
-        {/* Animated Background Elements */}
-        <div className="absolute top-[10%] left-[5%] w-24 h-24 rounded-full bg-blue-200 opacity-20 animate-pulse"></div>
-        <div className="absolute top-[60%] right-[10%] w-36 h-36 rounded-full bg-sky-200 opacity-15 animate-bounce"></div>
+        {/* Floating background elements */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-br from-blue-200 to-purple-200 opacity-20 animate-spin-slow"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-br from-green-200 to-blue-200 opacity-20 animate-pulse"></div>
+        </div>
 
         {/* Header */}
-        <header className="sinda-gradient shadow-lg relative z-10">
-          <div className="max-w-6xl mx-auto px-4 py-5">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-white bg-opacity-20 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-sm animate-pulse">
-                  🤝
+        <header className="relative z-10 bg-white shadow-xl border-b-4 border-gradient-to-r from-blue-500 to-purple-600">
+          <div className="max-w-6xl mx-auto px-6 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-2xl text-white shadow-lg">
+                    🤝
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center text-xs">
+                    💚
+                  </div>
                 </div>
                 <div>
-                  <h1 className="text-2xl lg:text-3xl font-bold text-white drop-shadow-sm">
-                    SINDA Community Support
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    SINDA Support
                   </h1>
-                  <p className="text-sm text-white opacity-90">
-                    💙 Here to help you through life's challenges
-                  </p>
+                  <p className="text-gray-600 font-medium">Caring community support when you need it most</p>
                 </div>
               </div>
-              <a 
-                href="tel:62988775"
-                className="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-full text-sm font-bold transition-all duration-300 hover:scale-105 hover:shadow-lg animate-pulse"
-              >
-                🚨 Crisis Helpline: 6298 8775
-              </a>
+              
+              <div className="hidden md:flex items-center space-x-4">
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">24/7 Crisis Support</p>
+                  <a href="tel:62988775" className="text-xl font-bold text-red-600 hover:text-red-700 transition-colors">
+                    6298 8775
+                  </a>
+                </div>
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-xl animate-pulse">
+                  🆘
+                </div>
+              </div>
             </div>
           </div>
         </header>
 
         {/* Main Content */}
-        <main className="max-w-6xl mx-auto p-4 lg:p-8 relative z-5">
+        <main className="relative z-10 max-w-4xl mx-auto p-6">
           
           {/* Welcome Screen */}
           {currentStep === 'welcome' && (
-            <div className="sinda-card p-8 lg:p-12 text-center relative overflow-hidden">
-              {/* Animated background pattern */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-sky-50 opacity-50 animate-pulse"></div>
-              
-              <div className="relative z-10">
-                <div className="sinda-gradient w-28 h-28 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-xl animate-bounce">
-                  💙
+            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+              <div className="bg-gradient-to-br from-blue-500 via-purple-600 to-cyan-500 p-12 text-center text-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-black opacity-10"></div>
+                <div className="relative z-10">
+                  <div className="w-24 h-24 bg-white bg-opacity-20 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl backdrop-blur-sm">
+                    💙
+                  </div>
+                  <h2 className="text-4xl font-bold mb-4">We're Here for You</h2>
+                  <p className="text-xl opacity-90 max-w-2xl mx-auto">
+                    Life can be challenging. You don't have to face it alone. Our caring team understands and is ready to help.
+                  </p>
                 </div>
-                
-                <h2 className="text-3xl lg:text-5xl font-bold text-gray-800 mb-4">
-                  We're Here to Help
-                </h2>
-                
-                <p className="text-lg lg:text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-                  Whether you're facing challenges with family, education, finances, or just need someone to talk to - SINDA's community support is here for you.
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-4xl mx-auto">
+              </div>
+              
+              <div className="p-12">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
                   {[
-                    { icon: '🤗', title: 'Caring Support', desc: 'Empathetic assistance from trained counselors' },
-                    { icon: '🏠', title: 'Community Focus', desc: 'Understanding your culture and values' },
-                    { icon: '🌟', title: 'Real Solutions', desc: 'Practical help and resources available' }
+                    { icon: '👂', title: 'Someone to Listen', desc: 'Compassionate counselors who understand your culture' },
+                    { icon: '🛡️', title: 'Real Support', desc: 'Practical help with education, family, and finances' },
+                    { icon: '🤲', title: 'No Judgment', desc: 'Safe, confidential space to share your concerns' }
                   ].map((feature, index) => (
-                    <div 
-                      key={index}
-                      className="bg-gradient-to-br from-blue-50 to-sky-100 p-6 rounded-xl border-2 border-sky-200 hover:border-blue-400 hover:shadow-lg transform hover:-translate-y-2 transition-all duration-300 cursor-pointer"
-                    >
-                      <div className="text-3xl mb-3">{feature.icon}</div>
-                      <h4 className="text-blue-700 font-bold mb-2">{feature.title}</h4>
-                      <p className="text-gray-600 text-sm">{feature.desc}</p>
+                    <div key={index} className="text-center group">
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl mx-auto mb-4 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                        {feature.icon}
+                      </div>
+                      <h3 className="font-bold text-gray-800 mb-2">{feature.title}</h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">{feature.desc}</p>
                     </div>
                   ))}
                 </div>
                 
-                <button
-                  onClick={handleWelcomeStart}
-                  className="sinda-button text-xl px-12 py-4 rounded-full shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300"
-                >
-                  💙 Get Support Now
-                </button>
-                
-                <p className="text-sm text-gray-500 mt-4">
-                  ✓ Confidential • Free support • Available in multiple languages
-                </p>
+                <div className="text-center">
+                  <button
+                    onClick={handleWelcomeStart}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-12 rounded-full text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+                  >
+                    💬 Start Conversation
+                  </button>
+                  <p className="text-gray-500 text-sm mt-4">Free • Confidential • Available in your language</p>
+                </div>
               </div>
             </div>
           )}
 
           {/* Language Selection */}
           {currentStep === 'language' && (
-            <div className="sinda-card p-8 lg:p-12">
-              <div className="text-center mb-8">
-                <div className="sinda-gradient w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-lg animate-pulse">
-                  🌏
+            <div className="bg-white rounded-3xl shadow-2xl p-10 border border-gray-100">
+              <div className="text-center mb-10">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl text-white">
+                  🌍
                 </div>
-                <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-3">
-                  Choose Your Language
-                </h2>
-                <p className="text-lg text-gray-600">
-                  We want you to feel comfortable expressing yourself
-                </p>
+                <h2 className="text-3xl font-bold text-gray-800 mb-3">Choose Your Language</h2>
+                <p className="text-gray-600">We want you to feel comfortable expressing yourself</p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -430,20 +435,20 @@ export default function Home() {
                   <button
                     key={key}
                     onClick={() => handleLanguageSelect(key)}
-                    className="language-card group"
+                    className="p-6 rounded-2xl border-2 border-gray-200 hover:border-blue-400 hover:shadow-lg hover:bg-blue-50 transition-all duration-200 text-center group"
                   >
-                    <div className="text-xl font-bold text-gray-800 group-hover:text-orange-600 mb-2 transition-colors">
+                    <div className="text-xl font-bold text-gray-800 group-hover:text-blue-600 mb-2">
                       {lang.name}
                     </div>
                     <div className="text-sm text-gray-500 mb-3">
-                      {key === 'english' && 'I need help'}
-                      {key === 'tamil' && 'எனக்கு உதவி வேண்டும்'}
-                      {key === 'hindi' && 'मुझे मदद चाहिए'}
-                      {key === 'telugu' && 'నాకు సహాయం కావాలి'}
-                      {key === 'malayalam' && 'എനിക്ക് സഹായം വേണം'}
+                      {key === 'english' && 'I need someone to talk to'}
+                      {key === 'tamil' && 'எனக்கு யாராவது பேச வேண்டும்'}
+                      {key === 'hindi' && 'मुझे किसी से बात करनी है'}
+                      {key === 'telugu' && 'నేను ఎవరితోనైనా మాట్లాడాలి'}
+                      {key === 'malayalam' && 'എനിക്ക് ആരെങ്കിലുമായി സംസാരിക്കണം'}
                     </div>
-                    <div className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-bold">
-                      💙 CARING SUPPORT
+                    <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full text-xs font-bold">
+                      Select Language
                     </div>
                   </button>
                 ))}
@@ -453,76 +458,49 @@ export default function Home() {
 
           {/* Chat Interface */}
           {currentStep === 'chat' && (
-            <div className="sinda-card overflow-hidden">
+            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
               
               {/* Chat Header */}
-              <div className="sinda-gradient text-white p-6">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-white bg-opacity-20 p-3 rounded-2xl text-xl backdrop-blur-sm">
-                      💙
+              <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="relative">
+                      <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-xl backdrop-blur-sm">
+                        💙
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full"></div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold">
-                        SINDA Support Helper
-                      </h3>
-                      <p className="text-sm opacity-90">
-                        🟢 Here to listen and help • Confidential support
-                      </p>
+                      <h3 className="font-bold text-lg">SINDA Support Helper</h3>
+                      <p className="text-blue-100 text-sm">Online • Here to listen and help</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setShowContactForm(true)}
-                    className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-2xl text-sm font-bold transition-all hover:scale-105 backdrop-blur-sm"
+                    className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-xl text-sm font-bold backdrop-blur-sm transition-all"
                   >
-                    📞 Request Call Back
+                    📞 Get Call Back
                   </button>
                 </div>
               </div>
 
-              {/* Support Areas */}
-              <div className="bg-gradient-to-r from-blue-50 to-sky-50 p-6 border-b-2 border-sky-100">
-                <h4 className="text-blue-700 font-bold text-center mb-5">
-                  💙 What kind of support do you need today?
-                </h4>
-                
-                {/* Quick Help Options */}
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-                  {quickHelp.map((help, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleQuickHelp(help)}
-                      className={`p-3 rounded-2xl text-sm font-bold transition-all hover:scale-105 hover:shadow-lg ${
-                        help.priority === 'high' 
-                          ? 'bg-red-50 border-2 border-red-300 text-red-600 hover:bg-red-100 animate-pulse' 
-                          : 'bg-white border-2 border-sky-200 text-blue-600 hover:bg-sky-50'
-                      }`}
-                    >
-                      {help.priority === 'high' && '🚨 '}
-                      {help.text}
-                    </button>
-                  ))}
+              {/* Quick Help Buttons */}
+              {messages.length === 0 && (
+                <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
+                  <p className="text-center text-gray-600 font-medium mb-4">Or choose what you need help with:</p>
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                    {quickHelp.map((help, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleQuickHelp(help)}
+                        className={`p-3 rounded-xl border-2 text-sm font-medium transition-all hover:scale-105 hover:shadow-md ${help.style}`}
+                      >
+                        {help.text}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-
-                {/* Support Areas Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  {supportAreas.slice(0, 4).map((area) => (
-                    <div
-                      key={area.id}
-                      onClick={() => handleSupportAreaClick(area)}
-                      className="bg-white border-2 border-sky-100 hover:border-blue-400 rounded-2xl p-4 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 text-center"
-                    >
-                      <div className="text-2xl mb-2">{area.emoji}</div>
-                      <div className="text-xs font-bold text-gray-800 mb-1">
-                        {area.name}
-                      </div>
-                      <div className="text-xs text-gray-600 leading-tight">
-                        {area.description}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              )}
 
               {/* Chat Messages */}
               <div className="h-96 overflow-y-auto p-6 bg-gray-50 space-y-4">
@@ -531,15 +509,17 @@ export default function Home() {
                     key={message.id}
                     className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} animate-fadeIn`}
                   >
-                    <div
-                      className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
-                        message.isUser
-                          ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white rounded-br-sm shadow-lg'
-                          : 'bg-gradient-to-r from-blue-500 to-sky-500 text-white rounded-bl-sm shadow-lg'
-                      }`}
-                    >
-                      <p className="text-sm leading-relaxed">{message.content}</p>
-                      <p className="text-xs opacity-70 mt-2">{message.timestamp}</p>
+                    <div className={`max-w-xs lg:max-w-md px-5 py-3 rounded-2xl shadow-md ${
+                      message.isUser
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md'
+                        : 'bg-white text-gray-800 rounded-bl-md border border-gray-200'
+                    }`}>
+                      <p className="leading-relaxed">{message.content}</p>
+                      <p className={`text-xs mt-2 ${
+                        message.isUser ? 'text-blue-100' : 'text-gray-500'
+                      }`}>
+                        {message.timestamp}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -547,9 +527,9 @@ export default function Home() {
                 {/* Typing Indicator */}
                 {isTyping && (
                   <div className="flex justify-start">
-                    <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 border-2 border-gray-200 shadow-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="flex gap-1">
+                    <div className="bg-white rounded-2xl rounded-bl-md px-5 py-3 border border-gray-200 shadow-md">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex space-x-1">
                           {[0, 1, 2].map(i => (
                             <div
                               key={i}
@@ -558,9 +538,7 @@ export default function Home() {
                             />
                           ))}
                         </div>
-                        <span className="text-sm text-gray-600">
-                          Support helper is listening...
-                        </span>
+                        <span className="text-sm text-gray-600">Listening...</span>
                       </div>
                     </div>
                   </div>
@@ -569,134 +547,145 @@ export default function Home() {
               </div>
 
               {/* Chat Input */}
-              <div className="border-t-2 border-gray-200 bg-white p-6">
-                <div className="flex gap-4 items-center">
+              <div className="p-6 bg-white border-t border-gray-100">
+                <div className="flex space-x-4 items-center">
                   <input
                     ref={inputRef}
                     type="text"
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Share what's on your mind... we're here to listen"
+                    placeholder="Type your message here..."
                     disabled={isTyping}
-                    className="flex-1 border-2 border-gray-300 focus:border-blue-500 rounded-full px-6 py-3 text-sm outline-none transition-all disabled:opacity-70"
+                    className="flex-1 border-2 border-gray-300 focus:border-blue-500 rounded-2xl px-6 py-3 outline-none transition-all disabled:opacity-50"
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={isTyping || !inputMessage.trim()}
-                    className="sinda-button w-12 h-12 rounded-full flex items-center justify-center text-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:scale-110"
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white p-3 rounded-2xl transition-all disabled:cursor-not-allowed hover:scale-110 shadow-lg"
                   >
-                    💙
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                    </svg>
                   </button>
                 </div>
                 
-                <div className="text-center text-sm text-gray-600 mt-4">
-                  💡 Need urgent help? Call our 24/7 crisis line: <strong className="text-red-600">6298 8775</strong>
+                <div className="text-center text-sm text-gray-500 mt-4">
+                  <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full font-medium">
+                    🚨 Emergency? Call 6298 8775 immediately
+                  </span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Contact Information */}
-          <div className="sinda-card p-6 mt-6">
-            <h3 className="text-xl font-bold text-gray-800 text-center mb-6">
-              💙 SINDA is Here When You Need Us
-            </h3>
+          {/* Contact Information Card */}
+          <div className="mt-8 bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+                SINDA is Always Here for You
+              </h3>
+              <p className="text-gray-600">Multiple ways to get the support you need</p>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-5 text-center hover:shadow-lg transition-all">
-                <span className="text-3xl block mb-3">🚨</span>
-                <h4 className="font-bold text-red-600 mb-2">Crisis Helpline (24/7)</h4>
-                <p className="text-lg font-bold text-red-600 mb-1">6298 8775</p>
-                <p className="text-sm text-red-800">Immediate support available</p>
+              <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-200 hover:shadow-lg transition-all">
+                <div className="w-16 h-16 bg-red-500 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl text-white">
+                  🆘
+                </div>
+                <h4 className="font-bold text-red-700 mb-2">24/7 Crisis Support</h4>
+                <a href="tel:62988775" className="text-2xl font-bold text-red-600 hover:text-red-700 block mb-2">
+                  6298 8775
+                </a>
+                <p className="text-sm text-red-600">Always available • Immediate help</p>
               </div>
               
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-5 text-center hover:shadow-lg transition-all">
-                <span className="text-3xl block mb-3">📧</span>
-                <h4 className="font-bold text-blue-600 mb-2">Email Support</h4>
-                <p className="text-sm font-bold text-blue-600 mb-1">info@sinda.org.sg</p>
-                <p className="text-sm text-blue-800">Response within 24 hours</p>
+              <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 hover:shadow-lg transition-all">
+                <div className="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl text-white">
+                  ✉️
+                </div>
+                <h4 className="font-bold text-blue-700 mb-2">Email Support</h4>
+                <a href="mailto:info@sinda.org.sg" className="font-bold text-blue-600 hover:text-blue-700 block mb-2">
+                  info@sinda.org.sg
+                </a>
+                <p className="text-sm text-blue-600">Response within 24 hours</p>
               </div>
               
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-5 text-center hover:shadow-lg transition-all">
-                <span className="text-3xl block mb-3">🏢</span>
-                <h4 className="font-bold text-blue-600 mb-2">Visit Our Center</h4>
-                <p className="text-sm font-bold text-blue-600 mb-1">1 Beatty Road, Singapore 209943</p>
-                <p className="text-sm text-blue-800">Walk-ins welcome • Mon-Fri 9AM-6PM</p>
+              <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 hover:shadow-lg transition-all">
+                <div className="w-16 h-16 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl text-white">
+                  🏢
+                </div>
+                <h4 className="font-bold text-green-700 mb-2">Visit Our Center</h4>
+                <p className="font-bold text-green-600 mb-2">1 Beatty Road</p>
+                <p className="text-sm text-green-600">Singapore 209943 • Mon-Fri 9AM-6PM</p>
               </div>
             </div>
             
-            <div className="bg-gradient-to-r from-blue-50 to-sky-50 p-5 rounded-2xl mt-6 text-center border-2 border-sky-200">
-              <p className="font-bold text-blue-800 mb-3">
-                💙 Remember: You're not alone in this journey
+            <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border-2 border-blue-200 text-center">
+              <div className="flex items-center justify-center space-x-2 mb-3">
+                <span className="text-2xl">💙</span>
+                <h4 className="font-bold text-blue-800">Remember: You're Not Alone</h4>
+                <span className="text-2xl">💙</span>
+              </div>
+              <p className="text-blue-700 leading-relaxed mb-4">
+                SINDA has been supporting families in our community since 1991. Whatever you're going through, 
+                we understand your culture, values, and challenges. Our caring team is here to listen and help you find solutions.
               </p>
-              <p className="text-sm text-blue-700 mb-3 leading-relaxed">
-                SINDA has been supporting families like yours since 1991. Whatever challenges you're facing, our caring team is here to help you find solutions and move forward with confidence.
-              </p>
-              <a 
-                href="https://sinda.org.sg/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 font-bold text-sm hover:underline transition-all"
-              >
-                🌐 Learn more about SINDA
-              </a>
+              <div className="flex flex-wrap justify-center gap-4 text-sm">
+                <span className="bg-white px-4 py-2 rounded-full text-blue-700 font-medium">✓ Completely Confidential</span>
+                <span className="bg-white px-4 py-2 rounded-full text-blue-700 font-medium">✓ Culturally Sensitive</span>
+                <span className="bg-white px-4 py-2 rounded-full text-blue-700 font-medium">✓ Free Support</span>
+                <span className="bg-white px-4 py-2 rounded-full text-blue-700 font-medium">✓ Multiple Languages</span>
+              </div>
             </div>
           </div>
         </main>
 
         {/* Contact Form Modal */}
         {showContactForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-3xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto border-3 border-blue-500 shadow-2xl animate-scaleIn">
-              <div className="text-center mb-6">
-                <div className="sinda-gradient w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl animate-pulse">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-3xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 animate-scaleIn">
+              <div className="text-center mb-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl text-white">
                   📞
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                  Request Support Call
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Our counselors will reach out to provide personalized assistance
-                </p>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">Request Support Call</h3>
+                <p className="text-gray-600">Our caring team will reach out to you personally</p>
               </div>
 
-              <form onSubmit={handleContactSubmit} className="space-y-5">
+              <form onSubmit={handleContactSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Your Name
-                  </label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Your Name</label>
                   <input
                     type="text"
                     value={contactData.name}
                     onChange={(e) => setContactData(prev => ({ ...prev, name: e.target.value }))}
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-xl text-sm outline-none transition-all"
+                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-xl outline-none transition-all"
+                    placeholder="What should we call you?"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Phone Number
-                  </label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Phone Number</label>
                   <input
                     type="tel"
                     value={contactData.phone}
                     onChange={(e) => setContactData(prev => ({ ...prev, phone: e.target.value }))}
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-xl text-sm outline-none transition-all"
+                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-xl outline-none transition-all"
+                    placeholder="+65 XXXX XXXX"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Best time to call
-                  </label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Best time to call</label>
                   <select
                     value={contactData.preferredTime}
                     onChange={(e) => setContactData(prev => ({ ...prev, preferredTime: e.target.value }))}
-                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-xl text-sm outline-none transition-all"
+                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-xl outline-none transition-all"
                   >
-                    <option value="">Select preferred time</option>
+                    <option value="">When would you prefer we call?</option>
                     <option value="urgent">As soon as possible (urgent)</option>
                     <option value="morning">Morning (9 AM - 12 PM)</option>
                     <option value="afternoon">Afternoon (1 PM - 5 PM)</option>
@@ -705,44 +694,44 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Brief description of how we can help (optional)
-                  </label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">How can we help? (optional)</label>
                   <textarea
                     value={contactData.description}
                     onChange={(e) => setContactData(prev => ({ ...prev, description: e.target.value }))}
                     rows="3"
-                    placeholder="Feel free to share what kind of support you're looking for..."
-                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-xl text-sm outline-none resize-vertical transition-all"
+                    placeholder="Share anything you'd like us to know beforehand..."
+                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-xl outline-none resize-vertical transition-all"
                   />
                 </div>
 
-                <div className="flex gap-4 pt-4">
+                <div className="flex space-x-4 pt-4">
                   <button
                     type="button"
                     onClick={() => setShowContactForm(false)}
-                    className="flex-1 px-4 py-3 border-2 border-gray-300 hover:border-gray-400 rounded-xl bg-white text-gray-600 text-sm font-bold transition-all hover:-translate-y-0.5"
+                    className="flex-1 px-6 py-3 border-2 border-gray-300 hover:border-gray-400 rounded-xl bg-white text-gray-600 font-bold transition-all hover:shadow-md"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={!contactData.name || !contactData.phone}
-                    className="flex-2 px-6 py-3 sinda-button rounded-xl text-sm disabled:bg-gray-300 disabled:cursor-not-allowed hover:scale-105 transition-all"
+                    className="flex-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed hover:shadow-lg"
                   >
                     💙 Request Call Back
                   </button>
                 </div>
 
-                <p className="text-xs text-gray-500 text-center pt-3 leading-relaxed">
-                  ✓ Confidential support • Response within 24 hours • No cost for consultation
-                </p>
+                <div className="text-center pt-4">
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    ✓ Confidential support • ✓ Response within 24 hours • ✓ Free consultation
+                  </p>
+                </div>
               </form>
             </div>
           </div>
         )}
 
-        {/* Custom CSS for animations */}
+        {/* Custom Styles */}
         <style jsx>{`
           @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -754,6 +743,11 @@ export default function Home() {
             to { opacity: 1; transform: scale(1); }
           }
           
+          @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          
           .animate-fadeIn {
             animation: fadeIn 0.5s ease-out;
           }
@@ -761,12 +755,33 @@ export default function Home() {
           .animate-scaleIn {
             animation: scaleIn 0.3s ease-out;
           }
+          
+          .animate-spin-slow {
+            animation: spin-slow 20s linear infinite;
+          }
 
-          /* Mobile responsiveness improvements */
-          @media (max-width: 640px) {
-            .grid-cols-2 {
-              grid-template-columns: 1fr;
-            }
+          /* Smooth scrolling for chat */
+          .overflow-y-auto {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+          }
+          
+          .overflow-y-auto::-webkit-scrollbar {
+            width: 6px;
+          }
+          
+          .overflow-y-auto::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+          }
+          
+          .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+          }
+          
+          .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
           }
         `}</style>
       </div>
