@@ -1,8 +1,9 @@
-// pages/api/mistral.js - Fixed for Mistral Free Tier (mistral-small)
+// pages/api/mistral.js
 import { MistralClient } from '@mistralai/mistralai';
 
+const client = new MistralClient({ apiKey: process.env.MISTRAL_API_KEY });
+
 export default async function handler(req, res) {
-  // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -10,18 +11,15 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Check API key
   if (!process.env.MISTRAL_API_KEY) {
-    console.error('MISTRAL_API_KEY not found');
+    console.error('Missing MISTRAL_API_KEY');
     return res.status(500).json({
-      error: 'API key not configured',
+      error: 'API key missing',
       message: 'Please contact our support team at 6298 8775 for assistance'
     });
   }
 
   try {
-    const client = new MistralClient({ apiKey: process.env.MISTRAL_API_KEY });
-
     const {
       model = 'mistral-small',
       messages = [],
@@ -31,7 +29,7 @@ export default async function handler(req, res) {
 
     const response = await client.chat({
       model,
-      messages: messages.slice(-6),
+      messages,
       temperature,
       maxTokens: max_tokens
     });
@@ -59,8 +57,7 @@ export default async function handler(req, res) {
 
     res.status(500).json({
       error: 'SINDA AI assistant temporarily unavailable',
-      message: 'Our community team is available at 6298 8775 for immediate assistance.'
+      message: error.message
     });
   }
 }
-
