@@ -383,9 +383,8 @@ export default function Home() {
               background: 'white',
               borderRadius: '24px',
               boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-              border: '1px solid #fed7aa',
-              overflow: 'hidden', 
-              border: '4px solid #3b82f6' 
+              border: '4px solid #3b82f6',
+              overflow: 'hidden'
             }}>
               
               {/* Hero Section */}
@@ -454,12 +453,12 @@ export default function Home() {
                         cursor: 'pointer'
                       }}
                       onMouseOver={(e) => {
-                        e.target.style.transform = 'translateY(-4px)';
-                        e.target.style.boxShadow = '0 12px 24px rgba(0,0,0,0.1)';
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.1)';
                       }}
                       onMouseOut={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = 'none';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
@@ -520,9 +519,8 @@ export default function Home() {
               background: 'white',
               borderRadius: '24px',
               boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-              border: '1px solid #fed7aa',
-              padding: '60px 40px', 
-              border: '4px solid #3b82f6' 
+              border: '4px solid #3b82f6',
+              padding: '60px 40px'
             }}>
               <div style={{ textAlign: 'center', marginBottom: '50px' }}>
                 <div style={{ 
@@ -611,9 +609,8 @@ export default function Home() {
               background: 'white',
               borderRadius: '24px',
               boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-              border: '1px solid #fed7aa',
-              overflow: 'hidden', 
-              border: '4px solid #3b82f6' 
+              border: '4px solid #3b82f6',
+              overflow: 'hidden'
             }}>
               
               {/* Chat Header */}
@@ -634,7 +631,40 @@ export default function Home() {
                         alignItems: 'center', 
                         justifyContent: 'center',
                         fontSize: '24px',
-                        backdropFilter: 'blur(10px)',
+                        backdropFilter: 'blur(10px)'
+                      }}>
+                        💙
+                      </div>
+                      <div style={{ 
+                        position: 'absolute', 
+                        top: '-2px', 
+                        right: '-2px', 
+                        width: '20px', 
+                        height: '20px', 
+                        background: '#10b981', 
+                        borderRadius: '50%',
+                        border: '2px solid white'
+                      }}></div>
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '20px', fontWeight: 'bold', margin: '0' }}>
+                        SINDA Support Helper
+                      </h3>
+                      <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: '4px 0 0 0' }}>
+                        Online • Ready to listen and help
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowContactForm(true)}
+                    style={{ 
+                      background: 'rgba(255,255,255,0.2)', 
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 20px', 
+                      borderRadius: '16px', 
+                      fontWeight: 'bold',
+                      backdropFilter: 'blur(10px)',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease'
                     }}
@@ -676,170 +706,6 @@ export default function Home() {
                           e.target.style.background = help.type === 'crisis' ? '#b91c1c' : '#dc2626';
                           e.target.style.transform = 'translateY(-2px)';
                           e.target.style.boxShadow = '0 4px 12px rgba(234, 88, 12, 0.3)';
-                      }
-                    }}
-                    onMouseOut={(e) => {
-                      if (contactData.name && contactData.phone) {
-                        e.target.style.background = '#ea580c';
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = 'none';
-                      }
-                    }}
-                  >
-                    💙 Request Call Back
-                  </button>
-                </div>
-
-                <div style={{ textAlign: 'center', marginTop: '24px' }}>
-                  <div style={{ 
-                    background: '#f9fafb', 
-                    padding: '20px', 
-                    borderRadius: '12px',
-                    border: '1px solid #e5e7eb'
-                  }}>
-                    <p style={{
-                      fontSize: '14px',
-                      color: '#6b7280',
-                      lineHeight: '1.5',
-                      margin: '0'
-                    }}>
-                      <strong>Your privacy matters:</strong> All conversations are confidential. 
-                      Our counselors will respond within 24 hours. Free consultation with no obligations.
-                    </p>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* Custom Styles */}
-        <style jsx>{`
-          @keyframes bounce {
-            0%, 80%, 100% { 
-              transform: scale(0.8); 
-              opacity: 0.5; 
-            }
-            40% { 
-              transform: scale(1.2); 
-              opacity: 1; 
-            }
-          }
-
-          /* Mobile responsiveness */
-          @media (max-width: 768px) {
-            .sinda-card {
-              margin: 10px !important;
-              padding: 20px !important;
-            }
-            
-            .grid-responsive {
-              grid-template-columns: 1fr !important;
-            }
-            
-            h1 {
-              font-size: 20px !important;
-            }
-            
-            h2 {
-              font-size: 32px !important;
-            }
-            
-            .language-card {
-              padding: 20px !important;
-            }
-          }
-
-          @media (max-width: 480px) {
-            .sinda-card {
-              border-radius: 16px !important;
-              padding: 16px !important;
-            }
-            
-            h2 {
-              font-size: 28px !important;
-            }
-            
-            .hero-section {
-              padding: 40px 20px !important;
-            }
-          }
-
-          /* Smooth scrolling for chat */
-          .chat-messages {
-            scrollbar-width: thin;
-            scrollbar-color: #ea580c #f3f4f6;
-          }
-          
-          .chat-messages::-webkit-scrollbar {
-            width: 8px;
-          }
-          
-          .chat-messages::-webkit-scrollbar-track {
-            background: #f3f4f6;
-            border-radius: 4px;
-          }
-          
-          .chat-messages::-webkit-scrollbar-thumb {
-            background: #ea580c;
-            border-radius: 4px;
-          }
-          
-          .chat-messages::-webkit-scrollbar-thumb:hover {
-            background: #dc2626;
-          }
-
-          /* Animation classes */
-          .fade-in {
-            animation: fadeIn 0.6s ease-out;
-          }
-          
-          @keyframes fadeIn {
-            from { 
-              opacity: 0; 
-              transform: translateY(20px); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateY(0); 
-            }
-          }
-          
-          .scale-in {
-            animation: scaleIn 0.4s ease-out;
-          }
-          
-          @keyframes scaleIn {
-            from { 
-              opacity: 0; 
-              transform: scale(0.9); 
-            }
-            to { 
-              opacity: 1; 
-              transform: scale(1); 
-            }
-          }
-
-          /* Focus states for accessibility */
-          input:focus,
-          textarea:focus,
-          select:focus,
-          button:focus {
-            outline: 2px solid #ea580c;
-            outline-offset: 2px;
-          }
-
-          /* Print styles */
-          @media print {
-            .no-print {
-              display: none !important;
-            }
-          }
-        `}</style>
-      </div>
-    </>
-  );
-}, 0.3)';
                         }}
                         onMouseOut={(e) => {
                           e.target.style.background = help.type === 'crisis' ? '#dc2626' : '#ea580c';
@@ -970,10 +836,6 @@ export default function Home() {
                       background: '#ea580c',
                       color: 'white',
                       border: 'none',
-                      padding: '12px 24px',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
                       width: '56px',
                       height: '56px',
                       borderRadius: '16px',
@@ -981,7 +843,8 @@ export default function Home() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: (isTyping || !inputMessage.trim()) ? 'not-allowed' : 'pointer',
-                      opacity: (isTyping || !inputMessage.trim()) ? '0.5' : '1'
+                      opacity: (isTyping || !inputMessage.trim()) ? '0.5' : '1',
+                      transition: 'all 0.3s ease'
                     }}
                     onMouseOver={(e) => {
                       if (!isTyping && inputMessage.trim()) {
@@ -1026,10 +889,9 @@ export default function Home() {
             background: 'white',
             borderRadius: '24px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-            border: '1px solid #fed7aa',
+            border: '4px solid #f59e0b',
             marginTop: '48px', 
-            padding: '40px', 
-            border: '4px solid #f59e0b' 
+            padding: '40px'
           }}>
             <div style={{ textAlign: 'center', marginBottom: '40px' }}>
               <h3 style={{ fontSize: '32px', fontWeight: 'bold', color: '#111827', marginBottom: '16px' }}>
@@ -1053,8 +915,8 @@ export default function Home() {
                 border: '4px solid #fca5a5',
                 transition: 'transform 0.3s ease'
               }}
-              onMouseOver={(e) => e.target.style.transform = 'translateY(-4px)'}
-              onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
               >
                 <div style={{ 
                   width: '80px', 
@@ -1102,8 +964,8 @@ export default function Home() {
                 border: '4px solid #93c5fd',
                 transition: 'transform 0.3s ease'
               }}
-              onMouseOver={(e) => e.target.style.transform = 'translateY(-4px)'}
-              onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
               >
                 <div style={{ 
                   width: '80px', 
@@ -1151,8 +1013,8 @@ export default function Home() {
                 border: '4px solid #86efac',
                 transition: 'transform 0.3s ease'
               }}
-              onMouseOver={(e) => e.target.style.transform = 'translateY(-4px)'}
-              onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
               >
                 <div style={{ 
                   width: '80px', 
@@ -1257,17 +1119,13 @@ export default function Home() {
                   style={{ 
                     background: '#ea580c',
                     color: 'white',
-                    border: 'none',
                     padding: '12px 32px',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    padding: '12px 32px', 
                     borderRadius: '50px',
                     textDecoration: 'none',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    transition: 'all 0.3s ease'
                   }}
                   onMouseOver={(e) => {
                     e.target.style.background = '#dc2626';
@@ -1307,13 +1165,12 @@ export default function Home() {
               background: 'white',
               borderRadius: '24px',
               boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-              border: '1px solid #fed7aa',
+              border: '4px solid #f59e0b',
               padding: '40px',
               maxWidth: '500px',
               width: '100%',
               maxHeight: '90vh',
-              overflowY: 'auto',
-              border: '4px solid #f59e0b'
+              overflowY: 'auto'
             }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <div style={{
@@ -1485,49 +1342,176 @@ export default function Home() {
                       borderRadius: '12px',
                       fontSize: '16px',
                       fontWeight: 'bold',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
+                      cursor: (!contactData.name || !contactData.phone) ? 'not-allowed' : 'pointer',
                       opacity: (!contactData.name || !contactData.phone) ? '0.5' : '1',
-                      cursor: (!contactData.name || !contactData.phone) ? 'not-allowed' : 'pointer'
+                      transition: 'all 0.3s ease'
                     }}
                     onMouseOver={(e) => {
                       if (contactData.name && contactData.phone) {
                         e.target.style.background = '#dc2626';
                         e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 4px 12px rgba(234, 88, 12Filter: 'blur(10px)'
-                      }}>
-                        💙
-                      </div>
-                      <div style={{ 
-                        position: 'absolute', 
-                        top: '-2px', 
-                        right: '-2px', 
-                        width: '20px', 
-                        height: '20px', 
-                        background: '#10b981', 
-                        borderRadius: '50%',
-                        border: '2px solid white'
-                      }}></div>
-                    </div>
-                    <div>
-                      <h3 style={{ fontSize: '20px', fontWeight: 'bold', margin: '0' }}>
-                        SINDA Support Helper
-                      </h3>
-                      <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: '4px 0 0 0' }}>
-                        Online • Ready to listen and help
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowContactForm(true)}
-                    style={{ 
-                      background: 'rgba(255,255,255,0.2)', 
-                      color: 'white',
-                      border: 'none',
-                      padding: '12px 20px', 
-                      borderRadius: '16px', 
-                      fontWeight: 'bold',
-                      backdropFilter: 'blur(10px)',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease'
+                        e.target.style.boxShadow = '0 4px 12px rgba(234, 88, 12, 0.3)';
+                      }
                     }}
+                    onMouseOut={(e) => {
+                      if (contactData.name && contactData.phone) {
+                        e.target.style.background = '#ea580c';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = 'none';
+                      }
+                    }}
+                  >
+                    💙 Request Call Back
+                  </button>
+                </div>
+
+                <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                  <div style={{ 
+                    background: '#f9fafb', 
+                    padding: '20px', 
+                    borderRadius: '12px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <p style={{
+                      fontSize: '14px',
+                      color: '#6b7280',
+                      lineHeight: '1.5',
+                      margin: '0'
+                    }}>
+                      <strong>Your privacy matters:</strong> All conversations are confidential. 
+                      Our counselors will respond within 24 hours. Free consultation with no obligations.
+                    </p>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Custom Styles */}
+        <style jsx>{`
+          @keyframes bounce {
+            0%, 80%, 100% { 
+              transform: scale(0.8); 
+              opacity: 0.5; 
+            }
+            40% { 
+              transform: scale(1.2); 
+              opacity: 1; 
+            }
+          }
+
+          /* Mobile responsiveness */
+          @media (max-width: 768px) {
+            .sinda-card {
+              margin: 10px !important;
+              padding: 20px !important;
+            }
+            
+            .grid-responsive {
+              grid-template-columns: 1fr !important;
+            }
+            
+            h1 {
+              font-size: 20px !important;
+            }
+            
+            h2 {
+              font-size: 32px !important;
+            }
+            
+            .language-card {
+              padding: 20px !important;
+            }
+          }
+
+          @media (max-width: 480px) {
+            .sinda-card {
+              border-radius: 16px !important;
+              padding: 16px !important;
+            }
+            
+            h2 {
+              font-size: 28px !important;
+            }
+            
+            .hero-section {
+              padding: 40px 20px !important;
+            }
+          }
+
+          /* Smooth scrolling for chat */
+          .chat-messages {
+            scrollbar-width: thin;
+            scrollbar-color: #ea580c #f3f4f6;
+          }
+          
+          .chat-messages::-webkit-scrollbar {
+            width: 8px;
+          }
+          
+          .chat-messages::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 4px;
+          }
+          
+          .chat-messages::-webkit-scrollbar-thumb {
+            background: #ea580c;
+            border-radius: 4px;
+          }
+          
+          .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #dc2626;
+          }
+
+          /* Animation classes */
+          .fade-in {
+            animation: fadeIn 0.6s ease-out;
+          }
+          
+          @keyframes fadeIn {
+            from { 
+              opacity: 0; 
+              transform: translateY(20px); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateY(0); 
+            }
+          }
+          
+          .scale-in {
+            animation: scaleIn 0.4s ease-out;
+          }
+          
+          @keyframes scaleIn {
+            from { 
+              opacity: 0; 
+              transform: scale(0.9); 
+            }
+            to { 
+              opacity: 1; 
+              transform: scale(1); 
+            }
+          }
+
+          /* Focus states for accessibility */
+          input:focus,
+          textarea:focus,
+          select:focus,
+          button:focus {
+            outline: 2px solid #ea580c;
+            outline-offset: 2px;
+          }
+
+          /* Print styles */
+          @media print {
+            .no-print {
+              display: none !important;
+            }
+          }
+        `}</style>
+      </div>
+    </>
+  );
+}
