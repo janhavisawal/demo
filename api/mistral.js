@@ -10,48 +10,44 @@ function analyzeConversation(messages) {
   if (!messages || messages.length === 0) return '';
   
   const userMessages = messages.filter(msg => msg.role === 'user');
-  const assistantMessages = messages.filter(msg => msg.role === 'assistant');
+  const recentMessages = messages.slice(-6); // Last 3 exchanges
   
   let context = [];
   
-  // Extract key information from user messages
-  const topics = [];
-  const concerns = [];
-  const personalInfo = [];
-  
-  userMessages.forEach(msg => {
-    const content = msg.content.toLowerCase();
-    
-    // Detect topics/services mentioned
-    if (content.includes('financial') || content.includes('money') || content.includes('struggling')) {
-      topics.push('financial assistance');
-    }
-    if (content.includes('job') || content.includes('work') || content.includes('employment')) {
-      topics.push('employment');
-    }
-    if (content.includes('business') || content.includes('start') || content.includes('entrepreneur')) {
-      topics.push('business support');
-    }
-    if (content.includes('education') || content.includes('school') || content.includes('study')) {
-      topics.push('education');
-    }
-    if (content.includes('child') || content.includes('family') || content.includes('elder')) {
-      topics.push('family services');
-    }
-    
-    // Extract personal details (basic)
-    if (content.includes('my name is') || content.includes("i'm ") || content.includes("i am ")) {
-      personalInfo.push(msg.content);
-    }
-  });
-  
-  // Build context summary
-  if (topics.length > 0) {
-    context.push(`Topics discussed: ${[...new Set(topics)].join(', ')}`);
+  // Extract actual conversation flow
+  if (recentMessages.length > 0) {
+    context.push("Recent conversation:");
+    recentMessages.forEach((msg, index) => {
+      const role = msg.role === 'user' ? 'User' : 'Assistant';
+      const preview = msg.content.length > 100 ? msg.content.substring(0, 100) + '...' : msg.content;
+      context.push(`${role}: ${preview}`);
+    });
   }
   
-  if (userMessages.length > 1) {
-    context.push(`This is an ongoing conversation with ${userMessages.length} previous user messages`);
+  // Extract key topics mentioned by user
+  const userTopics = [];
+  const lastUserMessage = userMessages[userMessages.length - 1];
+  
+  if (lastUserMessage) {
+    const content = lastUserMessage.content.toLowerCase();
+    
+    // Detect what they're actually asking about
+    if (content.includes('how') && (content.includes('can') || content.includes('do'))) {
+      userTopics.push('asking for guidance/how-to help');
+    }
+    if (content.includes('financial') || content.includes('money') || content.includes('cost')) {
+      userTopics.push('financial concerns');
+    }
+    if (content.includes('job') || content.includes('work') || content.includes('career')) {
+      userTopics.push('employment/career');
+    }
+    if (content.includes('business') || content.includes('start')) {
+      userTopics.push('business/entrepreneurship');
+    }
+  }
+  
+  if (userTopics.length > 0) {
+    context.push(`\nUser seems interested in: ${userTopics.join(', ')}`);
   }
   
   return context.join('\n');
@@ -155,33 +151,37 @@ export default async function handler(req, res) {
     if (!hasSystemMessage) {
       enhancedMessages.unshift({
         role: 'system',
-        content: `You are a friendly SINDA support helper having a natural conversation. Remember and refer back to what the person has already shared.
+        content: `You are a SINDA support helper. Have a natural conversation while being accurate and helpful.
 
-Conversation style:
-- Talk like you're chatting with a friend who needs help
-- Remember details they've mentioned (their situation, concerns, previous topics)
-- Build on what they've already told you - don't ask for info they've already given
-- Use their name if they've shared it
-- Reference their specific situation when relevant
-- Be genuinely helpful, not just polite
+CRITICAL: Only respond based on what the user has ACTUALLY said. Do not:
+- Invent names, details, or situations they haven't mentioned
+- Assume things about their personal life
+- Make up problems they haven't described
+- Reference information not provided in the conversation
+
+DO:
+- Respond directly to their actual question or comment
+- Ask clarifying questions if you need more info
+- Provide relevant SINDA services based on what they've shared
+- Remember what they've told you in this conversation
+- Be conversational but stay focused on helping
 
 ${conversationContext.length > 0 ? `
-Current conversation context:
 ${conversationContext}
 
-Continue this conversation naturally, remembering what's been discussed.` : ''}
+Continue this conversation naturally, responding to what they've actually said.` : 'This is the start of a new conversation.'}
 
-SINDA services:
-• Financial help & emergency assistance
-• Job search & career guidance  
-• Education support & scholarships
-• Family services & counseling
-• Childcare & eldercare programs
-• Community activities & networking
+SINDA services available:
+• Financial assistance & emergency support
+• Employment & career services
+• Business development support
+• Education programs & scholarships
+• Family counseling & support services
+• Eldercare & childcare programs
 
-Emergency: 6298 8775
+For immediate help: 6298 8775
 
-Respond naturally based on what they've shared so far.`
+Respond appropriately to what they've actually asked or shared.`
       });
     }
     
