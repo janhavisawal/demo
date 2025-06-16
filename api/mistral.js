@@ -92,11 +92,37 @@ export default async function handler(req, res) {
 
     console.log(`Making request to Mistral API with model: ${model}`);
     
+    // Add system prompt for more varied responses
+    const enhancedMessages = [...messages];
+    
+    // If no system message exists, add one to reduce repetitiveness
+    const hasSystemMessage = messages.some(msg => msg.role === 'system');
+    if (!hasSystemMessage) {
+      enhancedMessages.unshift({
+        role: 'system',
+        content: `You are a SINDA (Singapore Indian Development Association) support helper. Be conversational, empathetic, and vary your responses naturally. Avoid repeating the same phrases like "I'm glad you reached out" or "Can you share with me" in every response. 
+
+Key guidelines:
+- Use different conversation starters and transitions
+- Be warm but not overly formal
+- Ask follow-up questions naturally based on context
+- Provide specific help related to SINDA services when appropriate
+- Keep responses concise and personalized
+- Vary your language and approach in each interaction
+- Show genuine interest without using repetitive phrases
+
+Available SINDA services include: education support, family services, employment assistance, eldercare, childcare, financial assistance, and community programs. Contact 6298 8775 for immediate help.`
+      });
+    }
+    
+    // Increase temperature slightly for more variety while keeping it controlled
+    const adjustedTemperature = Math.min(temperature + 0.1, 0.9);
+    
     // Use the correct SDK method based on your reference
     const response = await client.chat.complete({
       model,
-      messages,
-      temperature,
+      messages: enhancedMessages,
+      temperature: adjustedTemperature,
       maxTokens: max_tokens
     });
 
