@@ -1,4 +1,4 @@
-// pages/index.js - Complete Working SINDA Demo
+// pages/index.js - Complete SINDA Chatbot with Mistral SDK Integration
 import { useState, useRef, useEffect } from 'react';
 import Head from 'next/head';
 
@@ -8,7 +8,19 @@ export default function Home() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationContext, setConversationContext] = useState([]);
   const messagesEndRef = useRef(null);
+
+  // Lead Data Collection
+  const [leadData, setLeadData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    location: '',
+    interests: [],
+    serviceNeeds: [],
+    preferredLanguage: 'english'
+  });
 
   const languages = {
     english: { name: 'English', greeting: 'Vanakkam! Welcome to SINDA. I\'m here to help you learn about our community programs, educational support, and services. How can I assist you today?' },
@@ -27,30 +39,15 @@ export default function Home() {
     { id: 'financial', text: 'Financial Assistance', emoji: '💰' }
   ];
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const services = [
+    { id: 'education', name: 'Educational Support', icon: '📚', description: 'Tuition assistance and learning programs' },
+    { id: 'community', name: 'Community Welfare', icon: '🤝', description: 'Community support and social programs' },
+    { id: 'cultural', name: 'Cultural Programs', icon: '🎭', description: 'Heritage preservation and celebrations' },
+    { id: 'professional', name: 'Professional Development', icon: '💼', description: 'Skills training and career guidance' },
+    { id: 'family', name: 'Family Support', icon: '👨‍👩‍👧‍👦', description: 'Counseling and family assistance' }
+  ];
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const addMessage = (content, isUser = false) => {
-    const message = {
-      id: Date.now(),
-      content,
-      isUser,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    setMessages(prev => [...prev, message]);
-  };
-
-  const handleLanguageSelect = (langKey) => {
-    setSelectedLanguage(langKey);
-    addMessage(languages[langKey].greeting, false);
-    setCurrentStep('chat');
-  };
-
+  // Mistral AI Integration using official SDK
   const queryMistralAI = async (userMessage) => {
     try {
       const response = await fetch('/api/mistral', {
@@ -59,26 +56,38 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'mistral-7b-instruct-v0.1',
           messages: [
             {
               role: 'system',
-              content: `You are a helpful assistant for SINDA (Singapore Indian Development Association). 
+              content: `You are a helpful assistant for SINDA (Singapore Indian Development Association). You have collected the following information:
+              - Name: ${leadData.name}
+              - Email: ${leadData.email}
+              - Phone: ${leadData.phone}
+              - Interests: ${leadData.interests.join(', ')}
+              - Service Needs: ${leadData.serviceNeeds.join(', ')}
+              - Location: ${leadData.location}
               
               SINDA provides:
-              - Educational support and tuition assistance
-              - Community welfare programs  
-              - Cultural heritage programs
+              - Educational support and tuition assistance for all ages
+              - Community welfare programs and social support
+              - Cultural heritage programs and festivals
               - Professional development and skills training
               - Family counseling and support services
-              - Youth development programs
-              - Senior citizen care
-              - Financial assistance schemes
+              - Youth development programs and mentorship
+              - Senior citizen care and activities
+              - Financial assistance schemes for education and emergencies
+              - Employment assistance and job placement
+              - Health and wellness programs
               
-              Contact: 6298 8775 | 1 Beatty Road, Singapore 209943 | info@sinda.org.sg
+              Contact Information:
+              Phone: 6298 8775
+              Email: info@sinda.org.sg
+              Address: 1 Beatty Road, Singapore 209943
+              Website: www.sinda.org.sg
               
-              Provide helpful, warm, and culturally sensitive responses about SINDA's programs. Keep responses concise (2-3 sentences) and encourage contact for detailed information.`
+              Provide helpful, culturally sensitive responses about SINDA's programs and services. Keep responses warm, community-focused, and informative. Limit responses to 2-3 sentences and always encourage them to contact SINDA for detailed information when appropriate.`
             },
+            ...conversationContext.slice(-5),
             {
               role: 'user',
               content: userMessage
@@ -90,15 +99,52 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error('API request failed');
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        throw new Error(errorData.message || 'API request failed');
       }
 
       const data = await response.json();
-      return data.choices[0]?.message?.content || "I'd be happy to connect you with our community team for detailed assistance. Please call 6298 8775.";
+      const aiResponse = data.choices[0]?.message?.content || "I'd be happy to connect you with our community team for more detailed assistance. Please call us at 6298 8775.";
+      
+      // Update conversation context
+      setConversationContext(prev => [
+        ...prev.slice(-4),
+        { role: 'user', content: userMessage },
+        { role: 'assistant', content: aiResponse }
+      ]);
+
+      return aiResponse;
     } catch (error) {
       console.error('Mistral AI Error:', error);
-      return "I'm experiencing technical difficulties. Please contact our support team at 6298 8775 for immediate assistance with SINDA programs and services.";
+      return "I'm experiencing some technical difficulties. Our community team is available at 6298 8775 for immediate assistance with SINDA programs and services.";
     }
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const addMessage = (content, isUser = false, isSystem = false) => {
+    const message = {
+      id: Date.now(),
+      content,
+      isUser,
+      isSystem,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setMessages(prev => [...prev, message]);
+  };
+
+  const handleLanguageSelect = (langKey) => {
+    setSelectedLanguage(langKey);
+    setLeadData(prev => ({ ...prev, preferredLanguage: langKey }));
+    addMessage(languages[langKey].greeting, false, true);
+    setCurrentStep('chat');
   };
 
   const handleSendMessage = async () => {
@@ -117,7 +163,7 @@ export default function Home() {
       }, 1000);
     } catch (error) {
       setTimeout(() => {
-        addMessage("Our team is available at 6298 8775 for immediate assistance.", false);
+        addMessage("I apologize for the technical difficulty. Our community team is available at 6298 8775 for immediate assistance.", false);
         setIsLoading(false);
       }, 1000);
     }
@@ -142,6 +188,7 @@ export default function Home() {
         <title>SINDA Community Assistant</title>
         <meta name="description" content="Singapore Indian Development Association - AI-powered community support" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <div style={{ 
@@ -355,7 +402,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Quick Topics */}
+              {/* Services Quick Access */}
               <div style={{ 
                 background: '#fff7ed', 
                 padding: '20px',
@@ -431,6 +478,10 @@ export default function Home() {
                           background: '#ea580c',
                           color: 'white',
                           borderBottomRightRadius: '4px'
+                        } : message.isSystem ? {
+                          background: '#eff6ff',
+                          color: '#1e40af',
+                          borderBottomLeftRadius: '4px'
                         } : {
                           background: '#f3f4f6',
                           color: '#1f2937',
