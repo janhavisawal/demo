@@ -15,13 +15,16 @@ export default async function handler(req, res) {
 
   // Check if API key exists
   if (!process.env.MISTRAL_API_KEY) {
+    console.log('MISTRAL_API_KEY not found in environment variables');
     return res.status(500).json({ 
-      error: 'MISTRAL_API_KEY not configured',
+      error: 'API key not configured',
       message: 'Please contact our support team at 6298 8775 for assistance'
     });
   }
 
   try {
+    console.log('Attempting to call Mistral API...');
+    
     const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -38,12 +41,14 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
+    console.log('Mistral API Success');
     res.status(200).json(data);
+    
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('API Handler Error:', error);
     res.status(500).json({ 
       error: 'SINDA AI assistant temporarily unavailable',
-      message: 'Our community team is available at 6298 8775 for immediate assistance with SINDA programs and services.'
+      message: 'Our community team is available at 6298 8775 for immediate assistance.'
     });
   }
 }
