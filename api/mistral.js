@@ -32,9 +32,9 @@ export default async function handler(req, res) {
 
     console.log('Calling Mistral API with free tier model...');
 
-    // Use the FREE tier model instead of mistral-large-latest
+    // Use the correct FREE tier model
     const chatResponse = await client.chat.complete({
-      model: 'mistral-7b-instruct-v0.1', // FREE model
+      model: 'mistral-tiny', // FREE model (correct name)
       messages: req.body.messages,
       maxTokens: req.body.max_tokens || 100, // Reduced for free tier
       temperature: req.body.temperature || 0.7
