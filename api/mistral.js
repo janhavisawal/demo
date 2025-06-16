@@ -5,6 +5,58 @@ const client = new Mistral({
   apiKey: process.env.MISTRAL_API_KEY
 });
 
+// Function to analyze conversation for context and memory
+function analyzeConversation(messages) {
+  if (!messages || messages.length === 0) return '';
+  
+  const userMessages = messages.filter(msg => msg.role === 'user');
+  const assistantMessages = messages.filter(msg => msg.role === 'assistant');
+  
+  let context = [];
+  
+  // Extract key information from user messages
+  const topics = [];
+  const concerns = [];
+  const personalInfo = [];
+  
+  userMessages.forEach(msg => {
+    const content = msg.content.toLowerCase();
+    
+    // Detect topics/services mentioned
+    if (content.includes('financial') || content.includes('money') || content.includes('struggling')) {
+      topics.push('financial assistance');
+    }
+    if (content.includes('job') || content.includes('work') || content.includes('employment')) {
+      topics.push('employment');
+    }
+    if (content.includes('business') || content.includes('start') || content.includes('entrepreneur')) {
+      topics.push('business support');
+    }
+    if (content.includes('education') || content.includes('school') || content.includes('study')) {
+      topics.push('education');
+    }
+    if (content.includes('child') || content.includes('family') || content.includes('elder')) {
+      topics.push('family services');
+    }
+    
+    // Extract personal details (basic)
+    if (content.includes('my name is') || content.includes("i'm ") || content.includes("i am ")) {
+      personalInfo.push(msg.content);
+    }
+  });
+  
+  // Build context summary
+  if (topics.length > 0) {
+    context.push(`Topics discussed: ${[...new Set(topics)].join(', ')}`);
+  }
+  
+  if (userMessages.length > 1) {
+    context.push(`This is an ongoing conversation with ${userMessages.length} previous user messages`);
+  }
+  
+  return context.join('\n');
+}
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -92,26 +144,44 @@ export default async function handler(req, res) {
 
     console.log(`Making request to Mistral API with model: ${model}`);
     
-    // Add system prompt for more varied responses
+    // Enhanced conversation flow with memory and context
     const enhancedMessages = [...messages];
     
-    // If no system message exists, add one to reduce repetitiveness
+    // Analyze conversation context for better memory
+    const conversationContext = analyzeConversation(messages);
+    
+    // If no system message exists, add one with context awareness
     const hasSystemMessage = messages.some(msg => msg.role === 'system');
     if (!hasSystemMessage) {
       enhancedMessages.unshift({
         role: 'system',
-        content: `You are a SINDA (Singapore Indian Development Association) support helper. Be conversational, empathetic, and vary your responses naturally. Avoid repeating the same phrases like "I'm glad you reached out" or "Can you share with me" in every response. 
+        content: `You are a friendly SINDA support helper having a natural conversation. Remember and refer back to what the person has already shared.
 
-Key guidelines:
-- Use different conversation starters and transitions
-- Be warm but not overly formal
-- Ask follow-up questions naturally based on context
-- Provide specific help related to SINDA services when appropriate
-- Keep responses concise and personalized
-- Vary your language and approach in each interaction
-- Show genuine interest without using repetitive phrases
+Conversation style:
+- Talk like you're chatting with a friend who needs help
+- Remember details they've mentioned (their situation, concerns, previous topics)
+- Build on what they've already told you - don't ask for info they've already given
+- Use their name if they've shared it
+- Reference their specific situation when relevant
+- Be genuinely helpful, not just polite
 
-Available SINDA services include: education support, family services, employment assistance, eldercare, childcare, financial assistance, and community programs. Contact 6298 8775 for immediate help.`
+${conversationContext.length > 0 ? `
+Current conversation context:
+${conversationContext}
+
+Continue this conversation naturally, remembering what's been discussed.` : ''}
+
+SINDA services:
+• Financial help & emergency assistance
+• Job search & career guidance  
+• Education support & scholarships
+• Family services & counseling
+• Childcare & eldercare programs
+• Community activities & networking
+
+Emergency: 6298 8775
+
+Respond naturally based on what they've shared so far.`
       });
     }
     
