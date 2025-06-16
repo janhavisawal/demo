@@ -125,9 +125,166 @@ export default function Home() {
     { text: 'Just have questions', type: 'general', priority: 'low' }
   ];
 
-  // Enhanced Mistral AI with empathetic, help-focused responses
+  // Track conversation flow and user information
+  const [conversationStage, setConversationStage] = useState('greeting'); // greeting, understanding, gathering, helping, connecting
+  const [userInfo, setUserInfo] = useState({
+    name: '',
+    situation: '',
+    urgency: '',
+    supportType: '',
+    details: '',
+    familyInfo: '',
+    currentStep: 0
+  });
+
+  // Step-by-step conversation flow
+  const getNextQuestion = (stage, userResponse, currentInfo) => {
+    const responses = {
+      greeting: [
+        "Hi there! I'm here to listen and help. What's your name?",
+        "Thank you for reaching out to SINDA. Could you tell me your name so I can assist you better?"
+      ],
+      getName: [
+        `Nice to meet you, ${currentInfo.name}. I'm here to support you. Can you tell me a bit about what's been on your mind lately?`,
+        `Hello ${currentInfo.name}, I'm glad you're here. What would you like to talk about today?`
+      ],
+      understanding: [
+        "I can hear that this is important to you. Can you tell me a bit more about your current situation?",
+        "Thank you for sharing that with me. How long has this been a concern for you?",
+        "I understand. Are you dealing with this alone, or do you have family support?"
+      ],
+      familyContext: [
+        "That helps me understand better. Do you have children or elderly family members who might also be affected?",
+        "I see. What's your family situation like - are you the main person handling this?",
+        "How is this situation affecting your daily life and your family?"
+      ],
+      urgency: [
+        "I want to make sure I help you in the right way. Is this something you need immediate help with, or can we work on it step by step?",
+        "How urgent would you say this situation is for you and your family?",
+        "Are you in a safe situation right now? Do you need immediate assistance?"
+      ],
+      specific_help: [
+        "Based on what you've shared, I think I can help connect you with the right support. What kind of help would be most useful for you right now?",
+        "Let me see how SINDA can best support you. What would make the biggest difference in your situation?",
+        "I'm thinking about how to help you best. Would you like to know about the specific programs we have that might help?"
+      ],
+      next_steps: [
+        "I'd like to connect you with one of our counselors who can provide more detailed help. Would you like me to arrange that?",
+        "Based on everything you've shared, I think you could really benefit from speaking with our specialist team. Shall I help you set that up?",
+        "You've been very brave to reach out. Would you like me to have someone from our team call you to discuss the next steps?"
+      ]
+    };
+    
+    return responses[stage] ? responses[stage][Math.floor(Math.random() * responses[stage].length)] : "How can I help you further?";
+  };
+
+  // Enhanced conversation handler
+  const handleConversationFlow = (userMessage) => {
+    const message = userMessage.toLowerCase();
+    let nextStage = conversationStage;
+    let response = "";
+    let updatedInfo = { ...userInfo };
+
+    switch (conversationStage) {
+      case 'greeting':
+        if (message.length > 2) {
+          updatedInfo.name = userMessage.split(' ')[0]; // Extract first word as name
+          nextStage = 'getName';
+          response = getNextQuestion('getName', userMessage, updatedInfo);
+        } else {
+          response = "I'd love to know what to call you. What's your name?";
+        }
+        break;
+
+      case 'getName':
+        updatedInfo.situation = userMessage;
+        nextStage = 'understanding';
+        
+        // Immediate crisis detection
+        if (message.includes('urgent') || message.includes('emergency') || message.includes('crisis') || message.includes('help now')) {
+          response = `${updatedInfo.name}, I can hear this is urgent. Are you in immediate danger or need emergency help right now?`;
+          nextStage = 'crisis';
+        } else {
+          response = getNextQuestion('understanding', userMessage, updatedInfo);
+        }
+        break;
+
+      case 'understanding':
+        updatedInfo.details = userMessage;
+        nextStage = 'familyContext';
+        response = getNextQuestion('familyContext', userMessage, updatedInfo);
+        break;
+
+      case 'familyContext':
+        updatedInfo.familyInfo = userMessage;
+        nextStage = 'urgency';
+        response = getNextQuestion('urgency', userMessage, updatedInfo);
+        break;
+
+      case 'urgency':
+        updatedInfo.urgency = userMessage;
+        nextStage = 'specific_help';
+        
+        if (message.includes('urgent') || message.includes('immediate') || message.includes('now')) {
+          response = `I understand this is urgent, ${updatedInfo.name}. Let me help you right away. For immediate assistance, you can call our 24/7 helpline at 6298 8775. Would you also like me to have someone call you back today?`;
+        } else {
+          response = getNextQuestion('specific_help', userMessage, updatedInfo);
+        }
+        break;
+
+      case 'specific_help':
+        updatedInfo.supportType = userMessage;
+        nextStage = 'next_steps';
+        
+        // Provide specific help based on their needs
+        if (message.includes('education') || message.includes('school') || message.includes('study')) {
+          response = `${updatedInfo.name}, I can definitely help with educational support. We have tuition assistance, study programs, and academic counseling. Would you like me to connect you with our education team?`;
+        } else if (message.includes('money') || message.includes('financial') || message.includes('bill')) {
+          response = `I understand financial stress can be overwhelming, ${updatedInfo.name}. We have emergency assistance and financial counseling available. Shall I arrange for our financial counselor to speak with you?`;
+        } else if (message.includes('family') || message.includes('marriage') || message.includes('relationship')) {
+          response = `Family challenges can be really difficult, ${updatedInfo.name}. We offer free family counseling and support. Would you like me to set up a consultation for you?`;
+        } else {
+          response = getNextQuestion('next_steps', userMessage, updatedInfo);
+        }
+        break;
+
+      case 'next_steps':
+        response = `Thank you for sharing so much with me, ${updatedInfo.name}. Based on everything you've told me, I think our team can really help you. I'll arrange for one of our specialists to call you within 24 hours. In the meantime, remember you can always call 6298 8775 if you need immediate support. Is there anything else you'd like to know right now?`;
+        nextStage = 'complete';
+        break;
+
+      case 'crisis':
+        if (message.includes('yes') || message.includes('danger')) {
+          response = `${updatedInfo.name}, please call 6298 8775 right now or if it's a life-threatening emergency, call 995. Is there someone who can be with you? Don't hesitate to reach out immediately.`;
+        } else {
+          response = `I'm glad you're safe, ${updatedInfo.name}. Let's work together to get you the help you need. Can you tell me what specific support would help you most right now?`;
+          nextStage = 'specific_help';
+        }
+        break;
+
+      case 'complete':
+        response = `I'm here if you need to talk more, ${updatedInfo.name}. You've taken a brave step by reaching out. Our team will be in touch soon. Is there anything else on your mind?`;
+        break;
+
+      default:
+        response = getNextQuestion('understanding', userMessage, updatedInfo);
+    }
+
+    setUserInfo(updatedInfo);
+    setConversationStage(nextStage);
+    return response;
+  };
+
+  // Simplified AI query that focuses on step-by-step conversation
   const queryMistralAI = async (userMessage) => {
     try {
+      // Use conversation flow logic first
+      const flowResponse = handleConversationFlow(userMessage);
+      if (flowResponse) {
+        return flowResponse;
+      }
+
+      // Fallback to AI for complex responses
       const response = await fetch('/api/mistral', {
         method: 'POST',
         headers: {
@@ -137,128 +294,50 @@ export default function Home() {
           messages: [
             {
               role: 'system',
-              content: `You are a caring, empathetic counselor for SINDA (Singapore Indian Development Association), a community support organization. Your role is to:
+              content: `You are a caring SINDA counselor having a gentle conversation. 
 
-              1. LISTEN with empathy and understanding
-              2. ASSESS the person's needs without being intrusive
-              3. PROVIDE relevant information about SINDA's services
-              4. CONNECT them to appropriate support resources
-              5. OFFER emotional support and encouragement
+              Current conversation stage: ${conversationStage}
+              User's name: ${userInfo.name}
+              What they've shared: ${userInfo.situation}
 
-              CONVERSATION CONTEXT:
-              - User's expressed needs: ${userNeeds.join(', ') || 'Not yet identified'}
-              - Support areas discussed: ${memberData.helpRequested.join(', ') || 'None yet'}
-              - Language preference: ${selectedLanguage}
+              RESPOND LIKE A HUMAN COUNSELOR:
+              1. Be warm and empathetic
+              2. Ask ONE simple question at a time
+              3. Keep responses short (1-2 sentences max)
+              4. Focus on understanding their feelings
+              5. Don't give long lists or detailed information yet
+              6. Gradually learn about their situation
 
-              SINDA SERVICES (present as available help, not promotional):
-              
-              📚 EDUCATIONAL SUPPORT:
-              - Subsidized tuition classes (Primary to JC level)
-              - Study materials and resources
-              - Academic counseling and guidance
-              - University application support
-              - Special needs education support
+              CONVERSATION STYLE:
+              - "I can hear that's been difficult for you..."
+              - "Tell me more about..."
+              - "How has this been affecting you?"
+              - "That sounds really challenging..."
+              - "I'm here to listen..."
 
-              💰 FINANCIAL ASSISTANCE:
-              - Emergency financial aid for urgent needs
-              - Educational grants and bursaries
-              - Medical expense assistance
-              - Utility bill support for low-income families
-              - Micro-loans for small businesses
-
-              👨‍👩‍👧‍👦 FAMILY SUPPORT:
-              - Professional family counseling (free)
-              - Marriage and relationship guidance
-              - Parenting workshops and support groups
-              - Child development programs
-              - Family crisis intervention
-
-              💼 EMPLOYMENT SERVICES:
-              - Job placement assistance
-              - Skills training and certification programs
-              - Career guidance and counseling
-              - Resume writing and interview preparation
-              - Entrepreneurship support
-
-              👴👵 ELDERLY CARE:
-              - Health screenings and medical support
-              - Social activities and befriending services
-              - Caregiver support and training
-              - Senior citizen welfare schemes
-              - Transportation assistance for medical appointments
-
-              🌟 YOUTH DEVELOPMENT:
-              - Mentorship programs
-              - Leadership development
-              - Scholarship opportunities
-              - After-school programs
-              - Life skills training
-
-              🚨 CRISIS SUPPORT:
-              - 24/7 crisis hotline: 6298 8775
-              - Emergency financial assistance
-              - Immediate counseling support
-              - Temporary accommodation assistance
-              - Referral to specialized services
-
-              ⚖️ LEGAL GUIDANCE:
-              - Legal advice clinics
-              - Documentation assistance
-              - Rights awareness programs
-              - Referral to legal aid services
-
-              COMMUNICATION STYLE:
-              - Be warm, caring, and non-judgmental
-              - Ask gentle, open-ended questions to understand their situation
-              - Validate their feelings and concerns
-              - Provide specific, actionable information
-              - Always offer multiple ways to get help
-              - End with reassurance and next steps
-
-              IMPORTANT:
-              - Never make assumptions about their financial status
-              - Focus on available help, not eligibility requirements initially
-              - If they mention crisis/urgent situations, prioritize immediate support resources
-              - Always provide the contact number 6298 8775 for direct assistance
-              - Be culturally sensitive and respectful
-
-              Keep responses empathetic, helpful, and focused on their needs. Limit to 2-3 sentences unless they ask for detailed information.`
+              Give ONE short, caring response that moves the conversation forward naturally.`
             },
-            ...conversationContext.slice(-4),
             {
               role: 'user',
               content: userMessage
             }
           ],
-          max_tokens: 150,
-          temperature: 0.7
+          max_tokens: 50,
+          temperature: 0.8
         })
       });
 
       if (!response.ok) {
-        throw new Error('API request failed');
+        return handleConversationFlow(userMessage);
       }
 
       const data = await response.json();
-      const aiResponse = data.choices[0]?.message?.content || "I understand you're looking for support. Please don't hesitate to call our helpline at 6298 8775 - our counselors are here to help you through whatever you're facing.";
+      const aiResponse = data.choices[0]?.message?.content || handleConversationFlow(userMessage);
       
-      // Update conversation context
-      setConversationContext(prev => [
-        ...prev.slice(-3),
-        { role: 'user', content: userMessage },
-        { role: 'assistant', content: aiResponse }
-      ]);
-
-      // Track conversation topics for better support
-      setMemberData(prev => {
-        const summary = prev.conversationSummary + ` User mentioned: ${userMessage}. `;
-        return { ...prev, conversationSummary: summary };
-      });
-
       return aiResponse;
     } catch (error) {
       console.error('Mistral AI Error:', error);
-      return "I want to make sure I can help you properly. Could you please call our support line at 6298 8775? Our trained counselors are available to provide immediate assistance and guidance for whatever situation you're facing.";
+      return handleConversationFlow(userMessage);
     }
   };
 
@@ -288,10 +367,10 @@ export default function Home() {
   const handleLanguageSelect = (langKey) => {
     setSelectedLanguage(langKey);
     setMemberData(prev => ({ ...prev, preferredLanguage: langKey }));
-    addMessage(languages[langKey].greeting, false, true);
-    setTimeout(() => {
-      addMessage(languages[langKey].assistance, false, true);
-    }, 1000);
+    
+    // Start with a simple, personal greeting
+    addMessage("Hello! I'm here to listen and help you with whatever you're going through. What's your name?", false, true);
+    setConversationStage('greeting');
     setCurrentStep('chat');
   };
 
