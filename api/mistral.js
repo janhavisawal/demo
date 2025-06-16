@@ -1,4 +1,4 @@
-// api/mistral.js - Fixed for Mistral Free Tier
+// pages/api/mistral.js - Optimized for Mistral Free Tier (mistral-small)
 import { Mistral } from '@mistralai/mistralai';
 
 export default async function handler(req, res) {
@@ -7,15 +7,17 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
+  // Pre-flight request
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
+  // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Check if API key exists
+  // Validate API key
   if (!process.env.MISTRAL_API_KEY) {
     console.log('MISTRAL_API_KEY not found in environment variables');
     return res.status(500).json({ 
@@ -26,23 +28,28 @@ export default async function handler(req, res) {
 
   try {
     // Initialize Mistral client
-    const client = new Mistral({
-      apiKey: process.env.MISTRAL_API_KEY
-    });
+    const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
 
-    console.log('Calling Mistral API with free tier model...');
+    // Use default values or passed-in values
+    const {
+      model = 'mistral-small',
+      messages = [],
+      max_tokens = 100,
+      temperature = 0.7
+    } = req.body;
 
-    // Use the correct FREE tier model
+    console.log('Calling Mistral API with:', model);
+
     const chatResponse = await client.chat({
-      model: 'mistral-small', // FREE model (correct name)
-      messages: req.body.messages,
-      maxTokens: req.body.max_tokens || 100, // Reduced for free tier
-      temperature: req.body.temperature || 0.7
+      model,
+      messages: messages.slice(-6), // Keep last 6 messages to avoid overload
+      maxTokens: max_tokens,
+      temperature
     });
 
     console.log('Mistral API Success');
 
-    // Return the response in the expected format
+    // Format response for frontend
     res.status(200).json({
       choices: [{
         message: {
@@ -53,9 +60,9 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Mistral API Error:', error);
-    
-    // Handle specific rate limit error
+
     if (error.statusCode === 429) {
+      // Rate limit fallback
       return res.status(200).json({
         choices: [{
           message: {
@@ -64,7 +71,8 @@ export default async function handler(req, res) {
         }]
       });
     }
-    
+
+    // Generic error
     res.status(500).json({ 
       error: 'SINDA AI assistant temporarily unavailable',
       message: 'Our community team is available at 6298 8775 for immediate assistance.'
