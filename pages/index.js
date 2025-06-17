@@ -22,12 +22,49 @@ export default function Home() {
     situation: ''
   });
 
-  // Contact form data
-  const [contactData, setContactData] = useState({
-    name: '',
+  // Application form data
+  const [applicationData, setApplicationData] = useState({
+    // Personal Information
+    fullName: '',
+    nric: '',
+    dateOfBirth: '',
+    gender: '',
+    ethnicity: 'Indian',
+    maritalStatus: '',
+    
+    // Contact Information
     phone: '',
-    preferredTime: '',
-    description: ''
+    email: '',
+    address: '',
+    postalCode: '',
+    
+    // Household Information
+    householdSize: '',
+    monthlyHouseholdIncome: '',
+    perCapitaIncome: '',
+    employmentStatus: '',
+    occupation: '',
+    
+    // Program Specific
+    programInterested: '',
+    reasonForApplication: '',
+    previousSindaPrograms: '',
+    
+    // For Education Programs
+    studentName: '',
+    studentLevel: '',
+    school: '',
+    subjectsNeeded: '',
+    currentGrades: '',
+    
+    // For Family Services
+    familyComposition: '',
+    typeOfAssistanceNeeded: '',
+    urgencyLevel: '',
+    
+    // Supporting Documents
+    documentsAvailable: [],
+    additionalInfo: ''
   });
 
   const languages = {
@@ -144,6 +181,16 @@ export default function Home() {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
+  // Detect application intent and show form
+  const detectApplicationIntent = useCallback((message) => {
+    const applyKeywords = [
+      'apply', 'application', 'want to apply', 'how to apply', 'interested in applying',
+      'sign up', 'register', 'enroll', 'join', 'start application'
+    ];
+    
+    return applyKeywords.some(keyword => message.toLowerCase().includes(keyword));
+  }, []);
+
   const handleSendMessage = useCallback(async () => {
     if (!inputMessage.trim() || isTyping) return;
 
@@ -151,6 +198,16 @@ export default function Home() {
     addMessage(userMessage, true);
     setInputMessage('');
     setIsTyping(true);
+
+    // Check if user wants to apply
+    if (detectApplicationIntent(userMessage)) {
+      setTimeout(() => {
+        addMessage("I'd be happy to help you with your application! Let me open the application form for you.", false);
+        setShowApplicationForm(true);
+        setIsTyping(false);
+      }, 1000);
+      return;
+    }
 
     try {
       // For most messages, use OpenAI for intelligent responses
@@ -206,12 +263,22 @@ export default function Home() {
     }, 500);
   };
 
-  const handleContactSubmit = (e) => {
+  const handleApplicationSubmit = (e) => {
     e.preventDefault();
-    console.log('Contact form submitted:', contactData, userInfo);
-    setShowContactForm(false);
-    addMessage(`Thank you, ${contactData.name}! We've received your application interest. A SINDA program officer will contact you within 24 hours to discuss your eligibility and next steps. You can also visit www.sinda.org.sg to start your online application immediately.`, false);
-    setContactData({ name: '', phone: '', preferredTime: '', description: '' });
+    console.log('Application submitted:', applicationData);
+    setShowApplicationForm(false);
+    addMessage(`Thank you for your application, ${applicationData.fullName}! We've received your application for ${applicationData.programInterested}. A SINDA program officer will review your application and contact you within 3-5 working days. You can also call 1800 295 3333 to check on your application status.`, false);
+    
+    // Reset form
+    setApplicationData({
+      fullName: '', nric: '', dateOfBirth: '', gender: '', ethnicity: 'Indian', maritalStatus: '',
+      phone: '', email: '', address: '', postalCode: '', householdSize: '', monthlyHouseholdIncome: '',
+      perCapitaIncome: '', employmentStatus: '', occupation: '', programInterested: '',
+      reasonForApplication: '', previousSindaPrograms: '', studentName: '', studentLevel: '',
+      school: '', subjectsNeeded: '', currentGrades: '', familyComposition: '',
+      typeOfAssistanceNeeded: '', urgencyLevel: '', documentsAvailable: [], additionalInfo: ''
+    });
+    setApplicationStep(1);
   };
 
   return (
@@ -744,7 +811,7 @@ export default function Home() {
                       🌐 SINDA.org.sg
                     </a>
                     <button
-                      onClick={() => setShowContactForm(true)}
+                      onClick={() => setShowApplicationForm(true)}
                       style={{ 
                         background: 'rgba(255,255,255,0.2)', 
                         color: 'white',
@@ -756,7 +823,7 @@ export default function Home() {
                         cursor: 'pointer'
                       }}
                     >
-                      📞 Apply Now
+                      📝 Apply Now
                     </button>
                   </div>
                 </div>
