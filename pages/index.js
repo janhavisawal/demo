@@ -175,7 +175,53 @@ export default function Home() {
         <meta name="description" content="SINDA provides compassionate community support for Indian families in Singapore." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      {/* UI Continues... */}
+
+      <main style={{ padding: '40px', fontFamily: 'Arial, sans-serif', maxWidth: '600px', margin: '0 auto' }}>
+        {currentStep === 'welcome' && (
+          <div style={{ textAlign: 'center' }}>
+            <h1>Welcome to SINDA Support</h1>
+            <p>We’re here to help you find the right programs and guidance.</p>
+            <button onClick={handleWelcomeStart} style={{ padding: '10px 20px', background: '#ea580c', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}>Start</button>
+          </div>
+        )}
+
+        {currentStep === 'language' && (
+          <div style={{ textAlign: 'center' }}>
+            <h2>Select Your Language</h2>
+            {Object.entries(languages).map(([key, lang]) => (
+              <button key={key} onClick={() => handleLanguageSelect(key)} style={{ margin: '10px', padding: '10px 20px' }}>{lang.name}</button>
+            ))}
+          </div>
+        )}
+
+        {currentStep === 'chat' && (
+          <div>
+            <div style={{ border: '1px solid #ccc', padding: '20px', minHeight: '300px', background: '#f9f9f9' }}>
+              {messages.map((msg) => (
+                <div key={msg.id} style={{ textAlign: msg.isUser ? 'right' : 'left', marginBottom: '10px' }}>
+                  <div style={{ display: 'inline-block', background: msg.isUser ? '#3b82f6' : '#e5e7eb', color: msg.isUser ? 'white' : 'black', padding: '10px', borderRadius: '10px' }}>{msg.content}</div>
+                </div>
+              ))}
+              {isTyping && <div>Typing...</div>}
+              <div ref={messagesEndRef} />
+            </div>
+            <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} style={{ marginTop: '10px' }}>
+              <input value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyDown={handleKeyPress} style={{ width: '80%', padding: '10px' }} />
+              <button type="submit" style={{ padding: '10px 20px', background: '#ea580c', color: 'white', border: 'none' }}>Send</button>
+            </form>
+          </div>
+        )}
+
+        {showContactForm && (
+          <form onSubmit={handleContactSubmit} style={{ marginTop: '20px', border: '1px solid #ccc', padding: '20px', background: '#fff7ed' }}>
+            <h3>Apply for SINDA Program</h3>
+            <input placeholder="Name" value={contactData.name} onChange={(e) => setContactData(prev => ({ ...prev, name: e.target.value }))} required style={{ width: '100%', marginBottom: '10px', padding: '8px' }} />
+            <input placeholder="Phone" value={contactData.phone} onChange={(e) => setContactData(prev => ({ ...prev, phone: e.target.value }))} required style={{ width: '100%', marginBottom: '10px', padding: '8px' }} />
+            <textarea placeholder="Tell us about your situation..." value={contactData.description} onChange={(e) => setContactData(prev => ({ ...prev, description: e.target.value }))} rows={3} style={{ width: '100%', padding: '8px' }} />
+            <button type="submit" style={{ marginTop: '10px', padding: '10px 20px', background: '#ea580c', color: 'white', border: 'none' }}>Submit</button>
+          </form>
+        )}
+      </main>
     </>
   );
 }
