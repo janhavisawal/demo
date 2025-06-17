@@ -1,6 +1,6 @@
 // components/ChatComponent.js
 import { useState } from 'react';
-
+ 
 export default function ChatComponent() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
