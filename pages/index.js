@@ -142,6 +142,29 @@ export default function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  // Helper function to render markdown-like formatting
+  const renderMessageContent = (content) => {
+    // Simple markdown rendering for chat messages
+    let rendered = content;
+    
+    // Bold text: **text** -> <strong>text</strong>
+    rendered = rendered.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Convert bullet points: - text -> proper list items
+    rendered = rendered.replace(/^- (.+)$/gm, '• $1');
+    
+    // Convert numbered lists: 1. text -> proper numbered items
+    rendered = rendered.replace(/^(\d+)\. (.+)$/gm, '$1. $2');
+    
+    // Convert blockquotes: > text -> styled blockquotes
+    rendered = rendered.replace(/^> (.+)$/gm, '<div style="background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 8px 12px; margin: 8px 0; border-radius: 4px; font-style: italic;">$1</div>');
+    
+    // Convert line breaks
+    rendered = rendered.replace(/\n/g, '<br>');
+    
+    return rendered;
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
@@ -169,7 +192,7 @@ export default function Home() {
             userMessage.toLowerCase().includes('crisis') ||
             userMessage.toLowerCase().includes('emergency')) {
           setTimeout(() => {
-            addMessage("🚨 If this is an emergency, please call our 24/7 helpline at 6298 8775 immediately.", false);
+            addMessage("🚨 If this is an emergency, please call SINDA at 1800 295 3333 immediately for assistance.", false);
           }, 1500);
         }
       }, Math.random() * 800 + 1200);
@@ -243,7 +266,7 @@ export default function Home() {
               </div>
               
               <a 
-                href="tel:62988775"
+                href="tel:1800295333"
                 style={{ 
                   background: '#dc2626',
                   color: 'white',
@@ -254,7 +277,7 @@ export default function Home() {
                   fontSize: '14px'
                 }}
               >
-                🚨 Crisis Helpline: 6298 8775
+                📞 SINDA: 1800 295 3333
               </a>
             </div>
           </div>
@@ -650,7 +673,7 @@ export default function Home() {
                     fontSize: '12px',
                     border: '1px solid #fecaca'
                   }}>
-                    🚨 Emergency? Call 6298 8775 immediately
+                    📞 Need Help? Call SINDA: 1800 295 3333
                   </span>
                 </div>
               </div>
