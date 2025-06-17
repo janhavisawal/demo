@@ -1,6 +1,6 @@
 // pages/index.js - Clean SINDA Chatbot with OpenAI Integration
 import { useState, useRef, useEffect, useCallback } from 'react';
-import Head from 'next.js';
+import Head from 'next/head';
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState('welcome');
