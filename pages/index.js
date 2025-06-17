@@ -1,4 +1,4 @@
-// pages/index.js - SINDA Chatbot with Dummy Contact Form Trigger
+// pages/index.js - SINDA Chatbot UI with Tailwind Styling
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 
@@ -31,12 +31,12 @@ export default function Home() {
   };
 
   const quickHelp = [
-    { text: '📚 Education Programs', type: 'education', description: 'Tuition schemes, bursaries, pre-school subsidies' },
-    { text: '👨‍👩‍👧‍👦 Family Services', type: 'family', description: 'Counselling, financial assistance, family support' },
-    { text: '💼 Employment Support', type: 'employment', description: 'Skills training, job placement services' },
-    { text: '👴 Eldercare Services', type: 'eldercare', description: 'Senior centres, social activities' },
-    { text: '💰 Financial Assistance', type: 'financial', description: 'Emergency aid, bill payment help' },
-    { text: '🚨 Urgent Help', type: 'crisis', description: 'Immediate crisis support' }
+    { text: '📚 Education Programs', type: 'education' },
+    { text: '👨‍👩‍👧‍👦 Family Services', type: 'family' },
+    { text: '💼 Employment Support', type: 'employment' },
+    { text: '👴 Eldercare Services', type: 'eldercare' },
+    { text: '💰 Financial Assistance', type: 'financial' },
+    { text: '🚨 Urgent Help', type: 'crisis' }
   ];
 
   const getBasicResponse = useCallback((userMessage) => {
@@ -171,57 +171,64 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>SINDA Community Support | Here to Help You</title>
-        <meta name="description" content="SINDA provides compassionate community support for Indian families in Singapore." />
+        <title>SINDA Community Support</title>
+        <meta name="description" content="SINDA chatbot" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <main style={{ padding: '40px', fontFamily: 'Arial, sans-serif', maxWidth: '600px', margin: '0 auto' }}>
+      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-start p-4">
         {currentStep === 'welcome' && (
-          <div style={{ textAlign: 'center' }}>
-            <h1>Welcome to SINDA Support</h1>
-            <p>We’re here to help you find the right programs and guidance.</p>
-            <button onClick={handleWelcomeStart} style={{ padding: '10px 20px', background: '#ea580c', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}>Start</button>
+          <div className="text-center mt-24">
+            <h1 className="text-4xl font-bold mb-4">Welcome to SINDA Support</h1>
+            <p className="text-lg text-gray-600 mb-6">We’re here to help you find the right programs and guidance.</p>
+            <button onClick={handleWelcomeStart} className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg shadow">Start</button>
           </div>
         )}
 
         {currentStep === 'language' && (
-          <div style={{ textAlign: 'center' }}>
-            <h2>Select Your Language</h2>
-            {Object.entries(languages).map(([key, lang]) => (
-              <button key={key} onClick={() => handleLanguageSelect(key)} style={{ margin: '10px', padding: '10px 20px' }}>{lang.name}</button>
-            ))}
+          <div className="text-center mt-16">
+            <h2 className="text-2xl font-semibold mb-4">Select Your Language</h2>
+            <div className="flex justify-center gap-4">
+              {Object.entries(languages).map(([key, lang]) => (
+                <button key={key} onClick={() => handleLanguageSelect(key)} className="px-4 py-2 border border-orange-400 rounded text-orange-700 hover:bg-orange-100">{lang.name}</button>
+              ))}
+            </div>
           </div>
         )}
 
         {currentStep === 'chat' && (
-          <div>
-            <div style={{ border: '1px solid #ccc', padding: '20px', minHeight: '300px', background: '#f9f9f9' }}>
+          <div className="w-full max-w-2xl flex flex-col bg-white rounded-lg shadow p-4">
+            <div className="flex flex-col space-y-2 h-[400px] overflow-y-auto">
               {messages.map((msg) => (
-                <div key={msg.id} style={{ textAlign: msg.isUser ? 'right' : 'left', marginBottom: '10px' }}>
-                  <div style={{ display: 'inline-block', background: msg.isUser ? '#3b82f6' : '#e5e7eb', color: msg.isUser ? 'white' : 'black', padding: '10px', borderRadius: '10px' }}>{msg.content}</div>
+                <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`px-4 py-2 rounded-lg text-sm max-w-xs ${msg.isUser ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>{msg.content}</div>
                 </div>
               ))}
-              {isTyping && <div>Typing...</div>}
+              {isTyping && <div className="text-sm text-gray-500">Typing...</div>}
               <div ref={messagesEndRef} />
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} style={{ marginTop: '10px' }}>
-              <input value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyDown={handleKeyPress} style={{ width: '80%', padding: '10px' }} />
-              <button type="submit" style={{ padding: '10px 20px', background: '#ea580c', color: 'white', border: 'none' }}>Send</button>
+            <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="flex gap-2 mt-4">
+              <input value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyDown={handleKeyPress} className="flex-1 px-4 py-2 border rounded focus:outline-none" placeholder="Type your message..." />
+              <button type="submit" className="bg-orange-500 text-white px-4 py-2 rounded">Send</button>
             </form>
           </div>
         )}
 
         {showContactForm && (
-          <form onSubmit={handleContactSubmit} style={{ marginTop: '20px', border: '1px solid #ccc', padding: '20px', background: '#fff7ed' }}>
-            <h3>Apply for SINDA Program</h3>
-            <input placeholder="Name" value={contactData.name} onChange={(e) => setContactData(prev => ({ ...prev, name: e.target.value }))} required style={{ width: '100%', marginBottom: '10px', padding: '8px' }} />
-            <input placeholder="Phone" value={contactData.phone} onChange={(e) => setContactData(prev => ({ ...prev, phone: e.target.value }))} required style={{ width: '100%', marginBottom: '10px', padding: '8px' }} />
-            <textarea placeholder="Tell us about your situation..." value={contactData.description} onChange={(e) => setContactData(prev => ({ ...prev, description: e.target.value }))} rows={3} style={{ width: '100%', padding: '8px' }} />
-            <button type="submit" style={{ marginTop: '10px', padding: '10px 20px', background: '#ea580c', color: 'white', border: 'none' }}>Submit</button>
-          </form>
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <form onSubmit={handleContactSubmit} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4">
+              <h3 className="text-xl font-semibold text-gray-800">Apply for SINDA Program</h3>
+              <input placeholder="Name" value={contactData.name} onChange={(e) => setContactData(prev => ({ ...prev, name: e.target.value }))} required className="w-full px-3 py-2 border rounded" />
+              <input placeholder="Phone" value={contactData.phone} onChange={(e) => setContactData(prev => ({ ...prev, phone: e.target.value }))} required className="w-full px-3 py-2 border rounded" />
+              <textarea placeholder="Tell us about your situation..." value={contactData.description} onChange={(e) => setContactData(prev => ({ ...prev, description: e.target.value }))} rows={3} className="w-full px-3 py-2 border rounded" />
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setShowContactForm(false)} className="px-4 py-2 border rounded text-gray-600">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-orange-500 text-white rounded">Submit</button>
+              </div>
+            </form>
+          </div>
         )}
-      </main>
+      </div>
     </>
   );
 }
