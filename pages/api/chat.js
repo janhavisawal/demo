@@ -5,89 +5,217 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// SINDA Programs Database
+// Comprehensive SINDA Programs Database (Based on Official Sources and Research)
 const SINDA_PROGRAMS = {
   education: {
-    name: "Education Support",
+    name: "Education Programs",
+    description: "Supporting academic excellence from pre-school to tertiary education",
     programs: [
       {
-        name: "SINDA Tuition Scheme",
-        description: "Subsidised tuition for primary and secondary students",
-        eligibility: "Monthly household income ≤ $4,500",
-        applicationProcess: "Submit online application with income documents",
-        documents: ["IC copies", "Income statements", "School reports"],
-        website: "https://www.sinda.org.sg/education/tuition-scheme"
+        name: "SINDA Tutorials for Enhanced Performance (STEP)",
+        description: "Flagship nation-wide tuition program for Primary and Secondary students",
+        subjects: "English, Mathematics, Science, Mother Tongue languages",
+        levels: "Primary 1-6, Secondary 1-5",
+        eligibility: "Per capita income ≤ $1,600, Singapore citizens/PRs of Indian descent",
+        fees: "Heavily subsidised - $10/hour if household income below $2,500, $15/hour if $2,501-$4,000",
+        centres: "Multiple locations: Ang Mo Kio, Bedok, Jurong, Tampines, Woodlands, and more",
+        features: "Small class sizes, qualified teachers, MOE-aligned materials",
+        contact: "1800 295 3333"
       },
       {
-        name: "Pre-School Subsidies",
-        description: "Financial assistance for kindergarten and childcare",
-        eligibility: "Monthly household income ≤ $6,000",
-        applicationProcess: "Apply through participating centres",
-        documents: ["IC copies", "Income proof", "Birth certificate"],
-        website: "https://www.sinda.org.sg/education/preschool"
+        name: "STEP Plus",
+        description: "Holistic development program focusing on non-academic skills",
+        features: "Time management, cyber-wellness, goal-setting, healthy lifestyle workshops",
+        eligibility: "Students in STEP program",
+        parental_involvement: "Greater parental engagement encouraged",
+        contact: "1800 295 3333"
       },
       {
-        name: "Higher Education Bursaries",
-        description: "Financial aid for polytechnic and university students",
-        eligibility: "Monthly per capita income ≤ $1,125",
-        applicationProcess: "Apply online with academic transcripts",
-        documents: ["Academic records", "Income proof", "Bank statements"],
-        website: "https://www.sinda.org.sg/education/higher-education"
+        name: "A-Level Tuition @ STEP",
+        description: "Specialized tuition for Junior College students",
+        levels: "JC1-JC2",
+        eligibility: "Per capita income ≤ $1,600, JC students of Indian descent",
+        contact: "1800 295 3333"
+      },
+      {
+        name: "GUIDE Programme",
+        description: "Mentoring and guidance program for students",
+        features: "Academic guidance, personal development, career counselling",
+        contact: "1800 295 3333"
+      },
+      {
+        name: "TEACH Programme",
+        description: "Intensive support for academically weak students",
+        target: "Students who need additional academic intervention",
+        approach: "Personalized attention and remedial support",
+        contact: "1800 295 3333"
+      },
+      {
+        name: "ITE Programs",
+        description: "Support for Institute of Technical Education students",
+        programs: [
+          "ITE Aspire - Academic performance enhancement and life skills",
+          "ITE Leadership Programme (ITELP) - Leadership development for ITE students"
+        ],
+        eligibility: "ITE students of Indian descent",
+        launched: "ITE Aspire (2017), ITELP (2015)",
+        contact: "1800 295 3333"
+      },
+      {
+        name: "SINDA Bursary",
+        description: "Financial assistance for tertiary education",
+        levels: "Polytechnic, University, Professional courses",
+        eligibility: "Per capita income criteria, academic merit",
+        contact: "1800 295 3333"
+      },
+      {
+        name: "SINDA Excellence Awards (SEA)",
+        description: "Highest honors for students achieving excellence in academics, arts, or sports",
+        recognition: "Outstanding achievements in various fields",
+        annual_event: "Annual awards ceremony",
+        contact: "1800 295 3333"
       }
     ]
   },
   family: {
-    name: "Family Services",
+    name: "Family & Social Services",
+    description: "Comprehensive family support and social assistance",
     programs: [
       {
-        name: "Family Service Centre",
-        description: "Counselling and family support services",
-        eligibility: "Open to all families needing support",
-        applicationProcess: "Walk-in or call for appointment",
-        documents: ["IC copies"],
-        website: "https://www.sinda.org.sg/family-services/fsc"
+        name: "SINDA Family Service Centre",
+        description: "Only self-help group with dedicated family service centre",
+        services: [
+          "Individual and family counselling",
+          "Case management and support",
+          "Referral services",
+          "Crisis intervention",
+          "Family life programs"
+        ],
+        eligibility: "Open to all families, priority for Indian community",
+        address: "1 Beatty Road, Singapore 209943",
+        contact: "1800 295 3333"
       },
       {
-        name: "Financial Assistance",
-        description: "Emergency financial aid for families in crisis",
-        eligibility: "Monthly household income ≤ $3,000",
-        applicationProcess: "Assessment by social worker required",
-        documents: ["Income proof", "Bills", "Bank statements"],
-        website: "https://www.sinda.org.sg/family-services/financial-aid"
+        name: "Financial Assistance Schemes",
+        description: "Emergency financial aid and ongoing support",
+        types: [
+          "One-time emergency cash assistance",
+          "Monthly financial support for ongoing needs",
+          "Bill payment assistance",
+          "Rental support",
+          "Medical expenses support"
+        ],
+        eligibility: "Per capita income ≤ $1,600, families in crisis",
+        assessment: "Social worker evaluation required",
+        contact: "1800 295 3333"
+      },
+      {
+        name: "Project Athena",
+        description: "Empowerment program for single Indian mothers",
+        goal: "Help single mothers become confident and independent",
+        services: "Skills training, emotional support, networking",
+        contact: "1800 295 3333"
+      },
+      {
+        name: "Prisons Outreach Programme",
+        description: "Support for families of incarcerated individuals",
+        services: "Family assistance during incarceration period",
+        launched: "2016",
+        contact: "1800 295 3333"
       }
     ]
   },
-  employment: {
-    name: "Employment Support",
+  youth: {
+    name: "Youth Development",
+    description: "Nurturing young leaders and providing youth support",
     programs: [
       {
-        name: "Skills Training Programs",
-        description: "Vocational training and certification courses",
-        eligibility: "Singapore citizens and PRs",
-        applicationProcess: "Register online or at SINDA centres",
-        documents: ["IC copy", "Educational certificates"],
-        website: "https://www.sinda.org.sg/employment/skills-training"
+        name: "SINDA Youth Club (SYC)",
+        description: "Leadership development for young adults",
+        age_group: "18-35 years old",
+        established: "2010",
+        focus: "Community building, social leadership, networking",
+        activities: "Leadership seminars, community projects, networking events",
+        contact: "1800 295 3333"
       },
       {
-        name: "Job Placement Services",
-        description: "Career guidance and job matching services",
-        eligibility: "Open to all job seekers",
-        applicationProcess: "Register with employment team",
-        documents: ["Resume", "IC copy"],
-        website: "https://www.sinda.org.sg/employment/job-placement"
+        name: "SINDA Youth Leaders' Seminar",
+        description: "Intensive leadership development program",
+        format: "Immersive camps and workshops",
+        skills: "Leadership values, communication, project management",
+        contact: "1800 295 3333"
+      },
+      {
+        name: "SINDA-IBR Corporate Mentoring",
+        description: "Professional mentorship program",
+        benefits: "Real-world experience, career insights, industry connections",
+        partners: "Corporate professionals and industry experts",
+        contact: "1800 295 3333"
+      },
+      {
+        name: "SINDA Youth Awards",
+        description: "Annual recognition of outstanding youth achievements",
+        categories: "Academic excellence, community service, leadership",
+        annual_recipients: "Approximately 150 award recipients",
+        ceremony: "Annual awards ceremony with government officials",
+        contact: "1800 295 3333"
       }
     ]
   },
-  eldercare: {
-    name: "Eldercare Services",
+  community: {
+    name: "Community Outreach",
+    description: "Extending SINDA's reach into the community",
     programs: [
       {
-        name: "Senior Activity Centres",
-        description: "Day care and social activities for seniors",
-        eligibility: "Seniors aged 60 and above",
-        applicationProcess: "Register at nearest centre",
-        documents: ["IC copy", "Medical reports if applicable"],
-        website: "https://www.sinda.org.sg/eldercare/senior-centres"
+        name: "Door Knocking Exercise",
+        description: "Direct outreach to low-income Indian families",
+        target: "Heartland areas with high concentration of Indian families",
+        purpose: "Connect with families, understand ground issues, provide assistance",
+        launched: "2016 (pilot), 2017 (full program)",
+        approach: "Face-to-face engagement in neighborhoods",
+        contact: "1800 295 3333"
+      },
+      {
+        name: "SINDA Bus",
+        description: "Mobile satellite centre bringing services to heartlands",
+        launched: "2018",
+        purpose: "Extend SINDA's reach to underserved areas",
+        services: "Mobile registration, information, preliminary assistance",
+        contact: "1800 295 3333"
+      },
+      {
+        name: "Back To School Festival",
+        description: "Annual support for new school year",
+        benefits: "Stationery vouchers, shoe vouchers, school supplies",
+        timing: "Before new academic year",
+        target: "Students from low-income families",
+        contact: "1800 295 3333"
+      },
+      {
+        name: "Project Give",
+        description: "Community giving and volunteer engagement",
+        purpose: "Encourage community members to give back",
+        contact: "1800 295 3333"
+      }
+    ]
+  },
+  research: {
+    name: "Research & Development",
+    description: "Understanding and addressing community needs",
+    programs: [
+      {
+        name: "SINDA Research Fund (SRF)",
+        description: "Supporting research on Singapore Indian community",
+        focus_areas: [
+          "Family, youth, elderly and community studies",
+          "Inequality, low-income households, financial assistance",
+          "Mental health, stress management, psychological support",
+          "Education and social mobility",
+          "Community empowerment and development"
+        ],
+        eligibility: "Students, researchers, academics, community practitioners",
+        purpose: "Provide insights on community needs and aspirations",
+        contact: "Research applications through SINDA Grants website"
       }
     ]
   }
@@ -101,36 +229,72 @@ export default async function handler(req, res) {
   try {
     const { message, messages = [], userInfo = {}, conversationStage = 'general' } = req.body;
 
-    // Enhanced system prompt for SINDA program guidance
-    const systemPrompt = `You are a friendly SINDA program assistant helping people find the right support programs. Keep responses conversational, helpful, and concise.
+    // Enhanced system prompt for SINDA program navigation
+    const systemPrompt = `You are a friendly SINDA program guide helping people navigate through SINDA's comprehensive programs. When users ask about programs, guide them through the options step by step.
 
 Your role:
-- Help users discover SINDA programs that match their needs
-- Explain programs in simple terms
-- Guide them to apply when ready
-- Be warm and approachable, not formal
+- Help users find the right SINDA programs for their specific needs
+- Provide detailed program information when asked
+- Guide them through eligibility requirements 
+- Direct them to apply when ready
+- Be conversational and helpful, not overwhelming
 
-SINDA Programs (mention only when relevant):
-**Education**: Tuition subsidies, pre-school help, university bursaries
-**Family**: Counselling, emergency financial aid, family support  
-**Employment**: Job training, career help, skills courses
-**Eldercare**: Senior activity centres, social programs
+SINDA Program Categories:
+**Education Programs** (Most Popular):
+- STEP (main tuition program) - Primary/Secondary students
+- STEP Plus (holistic development) 
+- A-Level Tuition - JC students
+- GUIDE Programme (mentoring)
+- TEACH Programme (weak students)
+- ITE Programs (ITE Aspire, ITELP)
+- SINDA Bursary (tertiary education)
+- SINDA Excellence Awards
 
-Key eligibility (mention if asked):
-- Most programs for household income under $4,500-$6,000
-- Must be Singapore citizen/PR
-- Emergency help available for urgent cases
+**Family & Social Services**:
+- Family Service Centre (counselling, crisis support)
+- Financial Assistance (emergency aid, bills, rent)
+- Project Athena (single mothers)
+- Prisons Outreach
 
-Guidelines:
-- Use natural, friendly language like you're talking to a friend
-- Don't start every response with "Hi" or the person's name
-- Keep responses 2-3 sentences unless they ask for details
-- Ask simple follow-up questions to understand their needs
-- Only mention specific programs when relevant to their situation
-- If they want to apply, direct them to call SINDA or visit the website
-- For emergencies, immediately mention calling 6298 8775
+**Youth Development** (Ages 18-35):
+- SINDA Youth Club (SYC)
+- Youth Leaders' Seminar
+- Corporate Mentoring
+- Youth Awards
 
-Be helpful but not overwhelming. Focus on having a natural conversation.`;
+**Community Outreach**:
+- Door Knocking Exercise
+- SINDA Bus (mobile services)
+- Back To School Festival
+- Project Give
+
+**Research**: SINDA Research Fund
+
+Key Info (Updated 2024):
+- Eligibility: Per capita income ≤ $1,600 (household income ÷ family members)
+- For Singapore citizens/PRs of Indian descent
+- Contact: 1800 295 3333 or queries@sinda.org.sg
+- Address: 1 Beatty Road, Singapore 209943
+
+Navigation Guidelines:
+- When users ask about "programs" generally, show them the main categories first
+- If they ask about specific needs (tuition, financial help, etc.), recommend relevant programs
+- Provide program details only when they express interest in specific programs
+- Always ask clarifying questions to understand their exact needs
+- Keep responses conversational and not overwhelming
+- Guide them step by step through their journey
+
+Example Navigation:
+User: "What programs do you have?"
+You: "SINDA offers programs in several areas! Are you looking for:
+📚 Education support (like tuition and academic help)
+👨‍👩‍👧‍👦 Family services (counselling, financial assistance)  
+🎯 Youth development (for ages 18-35)
+🤝 Community programs
+
+What area interests you most?"
+
+Be helpful and guide them naturally through their program discovery journey.`;
 
     // Build conversation context
     const conversationMessages = [
@@ -182,7 +346,7 @@ Be helpful but not overwhelming. Focus on having a natural conversation.`;
     // Check for crisis situations
     const crisisKeywords = [
       'emergency', 'urgent', 'crisis', 'immediate help', 'desperate', 
-      'eviction', 'no money', 'can\'t afford', 'homeless'
+      'eviction', 'no money', 'can\'t afford', 'homeless', 'suicide', 'hurt myself'
     ];
     
     const isCrisis = crisisKeywords.some(keyword => 
@@ -193,12 +357,12 @@ Be helpful but not overwhelming. Focus on having a natural conversation.`;
     let enhancedResponse = aiMessage;
     
     if (isCrisis) {
-      enhancedResponse += "\n\n🚨 For immediate help, please call SINDA at 6298 8775 right away.";
+      enhancedResponse += "\n\n🚨 For immediate help, please call SINDA at 1800 295 3333 right away. They have emergency assistance available.";
     }
 
     // Add simple call-to-action for applications
     if (lowerMessage.includes('apply') || lowerMessage.includes('how to') || lowerMessage.includes('start')) {
-      enhancedResponse += "\n\nReady to apply? Call SINDA at 6298 8775 or visit www.sinda.org.sg to get started!";
+      enhancedResponse += "\n\nReady to apply? Call SINDA at 1800 295 3333 or visit their office at 1 Beatty Road.";
     }
 
     res.status(200).json({ 
@@ -215,9 +379,9 @@ Be helpful but not overwhelming. Focus on having a natural conversation.`;
     // Fallback with SINDA-specific guidance
     const fallbackMessage = `I'm having some technical issues, but I'm still here to help you find SINDA programs! 
 
-What are you looking for today? Education support, family help, job training, or something else? Just tell me a bit about your situation and I'll point you in the right direction.
+What are you looking for today? Education support (like STEP tuition), family help, or something else? Just tell me a bit about your situation and I'll point you in the right direction.
 
-You can also call 6298 8775 or visit www.sinda.org.sg anytime.`;
+You can also call 1800 295 3333 anytime for direct help.`;
     
     res.status(200).json({ 
       message: fallbackMessage,
