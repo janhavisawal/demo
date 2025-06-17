@@ -1,90 +1,120 @@
-// components/ChatComponent.js
-import { useState } from 'react';
- 
-export default function ChatComponent() {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+// pages/api/chat.js
+import OpenAI from "openai";
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-    const userMessage = { role: 'user', content: input };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
-    setInput('');
-    setLoading(true);
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: input,
-          messages: messages
-        }),
+  try {
+    const { message, messages = [], isFirstMessage = false } = req.body;
+
+    // Enhanced system prompt for mental health support
+    const systemPrompt = `You are SINDA Support Helper, an empathetic and professional mental health support assistant. Your role is to:
+
+1. **Listen actively** - Show genuine understanding and validation
+2. **Ask thoughtful follow-up questions** to better understand the user's situation
+3. **Provide practical coping strategies** and resources when appropriate
+4. **Recognize crisis situations** and guide users to immediate help
+5. **Be proactive** - Don't just wait for users to share, gently encourage them to open up
+6. **Use a warm, conversational tone** - You're a supportive friend, not a clinical professional
+
+Guidelines:
+- Always validate their feelings first before offering advice
+- Ask open-ended questions to encourage deeper sharing
+- Suggest specific coping techniques (breathing exercises, grounding techniques, etc.)
+- Be aware of signs of crisis (suicidal thoughts, self-harm, severe depression)
+- If crisis detected, immediately direct to emergency services: "6298 8775"
+- Keep responses concise but meaningful (2-4 sentences usually)
+- Use empathetic language: "I hear you", "That sounds difficult", "You're not alone"
+- Occasionally check in: "How are you feeling right now?" or "What's on your mind today?"
+
+Remember: You're here to provide emotional support, not diagnose or replace professional therapy.`;
+
+    // Build conversation context
+    const conversationMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      })),
+      { role: "user", content: message }
+    ];
+
+    // Add proactive elements for new conversations
+    if (isFirstMessage) {
+      conversationMessages.push({
+        role: "system", 
+        content: "This is the user's first message. Be extra welcoming and gently encourage them to share what's on their mind."
       });
-
-      const data = await response.json();
-      
-      if (response.ok) {
-        const aiMessage = { role: 'assistant', content: data.message };
-        setMessages([...newMessages, aiMessage]);
-      } else {
-        console.error('API Error:', data.error);
-      }
-    } catch (error) {
-      console.error('Request failed:', error);
-    } finally {
-      setLoading(false);
     }
-  };
 
-  return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">OpenAI Chat</h1>
-      
-      <div className="bg-gray-100 rounded-lg p-4 h-96 overflow-y-auto mb-4">
-        {messages.map((msg, index) => (
-          <div key={index} className={`mb-2 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-            <div className={`inline-block p-2 rounded-lg ${
-              msg.role === 'user' 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-white text-gray-800'
-            }`}>
-              {msg.content}
-            </div>
-          </div>
-        ))}
-        {loading && (
-          <div className="text-left">
-            <div className="inline-block p-2 rounded-lg bg-gray-300 text-gray-600">
-              Thinking...
-            </div>
-          </div>
-        )}
-      </div>
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini-2024-07-18",
+      messages: conversationMessages,
+      temperature: 0.7, // Slightly creative but consistent
+      max_tokens: 1000,
+      top_p: 0.9,
+      frequency_penalty: 0.3, // Reduce repetition
+      presence_penalty: 0.6, // Encourage varied responses
+    });
 
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && !loading && sendMessage()}
-          placeholder="Type your message..."
-          className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          disabled={loading}
-        />
-        <button
-          onClick={sendMessage}
-          disabled={loading || !input.trim()}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Send
-        </button>
-      </div>
-    </div>
-  );
+    const aiMessage = response.choices[0].message.content;
+
+    // Check for crisis keywords in user message
+    const crisisKeywords = [
+      'suicide', 'kill myself', 'end it all', 'want to die', 'hurt myself', 
+      'self harm', 'cutting', 'overdose', 'jump', 'hanging', 'worthless',
+      'hopeless', 'can\'t go on', 'better off dead'
+    ];
+    
+    const isCrisis = crisisKeywords.some(keyword => 
+      message.toLowerCase().includes(keyword)
+    );
+
+    // Enhanced response with crisis detection
+    let enhancedResponse = aiMessage;
+    if (isCrisis) {
+      enhancedResponse += "\n\n🚨 **IMMEDIATE HELP AVAILABLE**: If you're having thoughts of self-harm, please call 6298 8775 right now. You don't have to go through this alone.";
+    }
+
+    // Suggest follow-up questions periodically
+    const shouldSuggestFollowUp = Math.random() > 0.7 && !isCrisis;
+    if (shouldSuggestFollowUp) {
+      const followUpSuggestions = [
+        "\n\nWould you like to talk more about what's been weighing on your mind?",
+        "\n\nHow has your day been treating you so far?",
+        "\n\nIs there anything specific that's been causing you stress lately?",
+        "\n\nWould it help to share what brought you here today?"
+      ];
+      enhancedResponse += followUpSuggestions[Math.floor(Math.random() * followUpSuggestions.length)];
+    }
+
+    res.status(200).json({ 
+      message: enhancedResponse,
+      isCrisis,
+      usage: response.usage,
+      supportResources: isCrisis ? {
+        emergency: "6298 8775",
+        text: "Text HOME to 741741",
+        online: "Available 24/7 chat support"
+      } : null
+    });
+
+  } catch (error) {
+    console.error('OpenAI API error:', error);
+    
+    // Fallback supportive response
+    const fallbackMessage = "I'm here to listen and support you, though I'm experiencing some technical difficulties right now. Your feelings and experiences are valid, and you're not alone. If this is urgent, please don't hesitate to call 6298 8775 for immediate support.";
+    
+    res.status(200).json({ 
+      message: fallbackMessage,
+      error: true,
+      isCrisis: false
+    });
+  }
 }
