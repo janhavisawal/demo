@@ -1,3 +1,11 @@
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { 
+  Send, MessageCircle, Users, Globe, AlertTriangle, 
+  BarChart3, Shield, Settings, Download, TrendingUp,
+  Clock, MapPin, DollarSign, Calendar, Activity,
+  Eye, Target, Zap, Lock, CheckCircle, XCircle
+} from 'lucide-react';
+
 // Reports Dashboard Component
   const ReportsDashboard = () => (
     <div className="space-y-6">
