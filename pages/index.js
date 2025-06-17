@@ -169,7 +169,7 @@ export default function Home() {
             userMessage.toLowerCase().includes('crisis') ||
             userMessage.toLowerCase().includes('emergency')) {
           setTimeout(() => {
-            addMessage("🚨 If this is an emergency, please call our 24/7 helpline at 6298 8775 immediately.", false);
+            addMessage("🚨 If this is an emergency, please call SINDA at 1800 295 3333 immediately for assistance.", false);
           }, 1500);
         }
       }, Math.random() * 800 + 1200);
@@ -243,7 +243,7 @@ export default function Home() {
               </div>
               
               <a 
-                href="tel:62988775"
+                href="tel:1800295333"
                 style={{ 
                   background: '#dc2626',
                   color: 'white',
@@ -254,7 +254,7 @@ export default function Home() {
                   fontSize: '14px'
                 }}
               >
-                🚨 Crisis Helpline: 6298 8775
+                📞 SINDA: 1800 295 3333
               </a>
             </div>
           </div>
@@ -650,7 +650,7 @@ export default function Home() {
                     fontSize: '12px',
                     border: '1px solid #fecaca'
                   }}>
-                    🚨 Emergency? Call 6298 8775 immediately
+                    📞 Need Help? Call SINDA: 1800 295 3333
                   </span>
                 </div>
               </div>
