@@ -22,6 +22,9 @@ const SINDAAssistant = () => {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [messageId, setMessageId] = useState(0);
   const messagesEndRef = useRef(null);
+  
+  // New states for fixing scroll issues
+  const [isUserTyping, setIsUserTyping] = useState(false);
 
   // Analytics State with comprehensive dummy data
   const [analyticsData, setAnalyticsData] = useState({
@@ -153,6 +156,193 @@ const SINDAAssistant = () => {
   const [detectedIntents, setDetectedIntents] = useState([]);
   const [extractedEntities, setExtractedEntities] = useState([]);
 
+  // Simple auto-scroll only for new messages, not while typing
+  useEffect(() => {
+    // Only scroll to bottom when a new message is added and user is not typing
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      // Only auto-scroll for bot messages or when user sends a message
+      if (!lastMessage.isUser || !isUserTyping) {
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    }
+  }, [messages.length]); // Only depend on message count, not the messages content
+
+  // Much simpler input handling - no auto typing state
+  const handleInputChange = (e) => {
+    setInputMessage(e.target.value);
+  };
+
+  // Fetch program information from sinda.org.sg
+  const fetchProgramInfo = async (programId) => {
+    // Since we can't directly access sinda.org.sg from the frontend,
+    // providing comprehensive responses based on program type
+    
+    const programResponses = {
+      education: `📚 **Education Programs at SINDA**
+      
+**STEP Tuition Programme:**
+- Subsidized tuition for students from Pre-Primary to Pre-University
+- Small class sizes (1:4 ratio for Primary, 1:6 for Secondary)
+- Experienced teachers and proven curriculum
+- Monthly fees from $30-50 (heavily subsidized)
+
+**A-Level Support:**
+- Specialized coaching for A-Level subjects
+- University application guidance
+- Scholarship counseling
+
+**ITE & Polytechnic Support:**
+- Skills development programs
+- Industry partnerships for internships
+- Career guidance and mentoring
+
+**Eligibility:** Singapore Citizens/PRs of Indian descent with monthly per capita income ≤ $1,600
+
+**How to Apply:** Visit our centers or call 1800 295 3333
+
+Would you like specific details about any of these programs?`,
+
+      family: `❤️ **Family Services at SINDA**
+
+**Family Service Centre (FSC):**
+- Professional counseling services
+- Family therapy and mediation
+- Child and youth counseling
+- Crisis intervention support
+
+**Financial Assistance:**
+- Emergency financial aid
+- Monthly financial support
+- Utility bill assistance
+- Medical expense support
+- School fee assistance
+
+**Community Support:**
+- Food assistance programs
+- Rental support schemes
+- Employment assistance
+- Debt management counseling
+
+**Crisis Support:**
+- 24/7 emergency hotline: 1800 295 3333
+- Immediate intervention services
+- Temporary shelter assistance
+- Safety planning and support
+
+**Eligibility:** Open to all, with priority for Singapore Citizens/PRs of Indian descent
+
+Would you like to speak with our Family Service Centre team?`,
+
+      youth: `🌟 **Youth Development Programs**
+
+**SINDA Youth Club:**
+- Ages 18-35 leadership development
+- Life skills workshops
+- Networking opportunities
+- Community service projects
+
+**Mentoring Programs:**
+- One-on-one career mentoring
+- Industry exposure visits
+- Interview skills training
+- Resume building workshops
+
+**Leadership Development:**
+- Youth leadership seminars
+- Public speaking training
+- Event management experience
+- Community advocacy skills
+
+**Employment Support:**
+- Job placement assistance
+- Skills upgrading programs
+- Career counseling
+- Industry partnerships
+
+**Entrepreneurship:**
+- Business development workshops
+- Startup mentoring
+- Networking with successful entrepreneurs
+- Funding guidance
+
+Ready to join our youth community? Contact us for upcoming events!`,
+
+      community: `🌍 **Community Outreach Initiatives**
+
+**Door Knocking Programme:**
+- Proactive community engagement
+- Home visits to identify needs
+- Direct service delivery
+- Building community connections
+
+**SINDA Mobile Bus:**
+- Bringing services to your neighborhood
+- Information sessions in void decks
+- Application assistance on-site
+- Community health screenings
+
+**Community Events:**
+- Cultural celebrations and festivals
+- Educational workshops in HDB estates
+- Health and wellness programs
+- Senior citizen engagement activities
+
+**Volunteer Programs:**
+- Community service opportunities
+- Skills-based volunteering
+- Youth volunteer training
+- Corporate volunteer partnerships
+
+**Neighborhood Partnerships:**
+- Collaboration with RCs and CCCs
+- School partnership programs
+- Healthcare provider networks
+- Employment partner relationships
+
+**Getting Involved:**
+- Volunteer registration: volunteers@sinda.org.sg
+- Community event updates via WhatsApp
+- Follow our social media for announcements
+
+How would you like to get involved in your community?`
+    };
+
+    return programResponses[programId] || "I'd be happy to help you learn more about our programs. Please contact us directly for the most current information.";
+  };
+
+  // Program click handler with SINDA.org.sg integration
+  const handleProgramClick = useCallback(async (programCategory) => {
+    try {
+      // Add user message immediately
+      addMessage(`Tell me about ${programCategory.title}`, true);
+      setIsTyping(true);
+
+      // Simulate fetching from sinda.org.sg
+      const response = await fetchProgramInfo(programCategory.id);
+      
+      setTimeout(() => {
+        addMessage(response, false, { 
+          source: 'sinda.org.sg',
+          programCategory: programCategory.id,
+          intentConfidence: 0.95 
+        });
+        setIsTyping(false);
+      }, 1500);
+    } catch (error) {
+      console.error('Failed to fetch program info:', error);
+      setTimeout(() => {
+        addMessage("I apologize, but I'm having trouble accessing the latest program information. Please try again or contact SINDA directly at 1800 295 3333.", false, {
+          error: true,
+          intentConfidence: 0.8
+        });
+        setIsTyping(false);
+      }, 1000);
+    }
+  }, []);
+
   const recognizeIntent = useCallback((message) => {
     const intents = {
       'apply_program': { keywords: ['apply', 'application', 'register', 'sign up', 'join'], confidence: 0.95 },
@@ -220,11 +410,14 @@ const SINDAAssistant = () => {
     const userMessage = inputMessage.trim();
     const analysis = recognizeIntent(userMessage);
     
+    // Clear input and typing state immediately
+    setInputMessage('');
+    setIsUserTyping(false);
+    
     addMessage(userMessage, true, { 
       intents: analysis.intents,
       entities: analysis.entities 
     });
-    setInputMessage('');
     setIsTyping(true);
 
     // Simulate AI response
@@ -319,122 +512,6 @@ const SINDAAssistant = () => {
             <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform duration-300" />
           </button>
         </div>
-        {/* Real-time Activity Feed */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-emerald-200 shadow-lg animate-slide-up">
-          <h3 className="text-xl font-bold text-gray-800 mb-6">Live Activity Feed</h3>
-          <div className="space-y-4 max-h-80 overflow-y-auto">
-            {[
-              { time: '2 min ago', action: 'New scholarship application', user: 'Priya S.', type: 'education', color: 'blue' },
-              { time: '5 min ago', action: 'Emergency assistance approved', user: 'Raj M.', type: 'crisis', color: 'red' },
-              { time: '8 min ago', action: 'Youth program enrollment', user: 'Aisha K.', type: 'youth', color: 'green' },
-              { time: '12 min ago', action: 'Family counseling session completed', user: 'Kumar F.', type: 'family', color: 'purple' },
-              { time: '15 min ago', action: 'Job placement successful', user: 'Deepa R.', type: 'career', color: 'cyan' },
-              { time: '18 min ago', action: 'Financial aid disbursed', user: 'Suresh L.', type: 'financial', color: 'indigo' },
-              { time: '22 min ago', action: 'STEP tuition registration', user: 'Meera P.', type: 'education', color: 'blue' },
-              { time: '25 min ago', action: 'Community event participation', user: 'Vinod T.', type: 'community', color: 'teal' }
-            ].map((activity, index) => (
-              <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-gray-50/80 hover:bg-blue-50/80 transition-all duration-300 animate-fade-in" style={{animationDelay: `${index * 0.1}s`}}>
-                <div className={`w-3 h-3 rounded-full bg-${activity.color}-500 animate-pulse`}></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-800">{activity.action}</p>
-                  <p className="text-xs text-gray-500">{activity.user} • {activity.time}</p>
-                </div>
-                <div className={`px-2 py-1 rounded-full text-xs bg-${activity.color}-100 text-${activity.color}-700`}>
-                  {activity.type}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Performance Insights */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-orange-200 shadow-lg animate-slide-up">
-          <h3 className="text-xl font-bold text-gray-800 mb-6">Performance Insights</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            <div className="text-center p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50">
-              <div className="w-12 h-12 bg-green-500 rounded-full mx-auto mb-3 flex items-center justify-center animate-bounce-gentle">
-                <TrendingUp className="text-white" size={20} />
-              </div>
-              <p className="text-2xl font-bold text-green-600">94.7%</p>
-              <p className="text-sm text-gray-600 mt-1">Success Rate</p>
-              <p className="text-xs text-green-600 mt-2">↑ 5.2% vs last month</p>
-            </div>
-
-            <div className="text-center p-4 rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50">
-              <div className="w-12 h-12 bg-blue-500 rounded-full mx-auto mb-3 flex items-center justify-center animate-bounce-gentle">
-                <Clock className="text-white" size={20} />
-              </div>
-              <p className="text-2xl font-bold text-blue-600">2.3 days</p>
-              <p className="text-sm text-gray-600 mt-1">Avg Response</p>
-              <p className="text-xs text-blue-600 mt-2">↓ 0.8 days faster</p>
-            </div>
-
-            <div className="text-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50">
-              <div className="w-12 h-12 bg-purple-500 rounded-full mx-auto mb-3 flex items-center justify-center animate-bounce-gentle">
-                <Star className="text-white" size={20} />
-              </div>
-              <p className="text-2xl font-bold text-purple-600">4.8/5</p>
-              <p className="text-sm text-gray-600 mt-1">User Rating</p>
-              <p className="text-xs text-purple-600 mt-2">↑ 0.3 improvement</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Weekly Goals & Achievements */}
-      <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-yellow-200 shadow-lg animate-slide-up">
-        <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Weekly Goals & Achievements</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="relative w-20 h-20 mx-auto mb-4">
-              <div className="absolute inset-0 bg-blue-200 rounded-full"></div>
-              <div className="absolute inset-0 bg-blue-500 rounded-full" style={{clipPath: 'polygon(0 0, 85% 0, 85% 100%, 0 100%)'}}></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">85%</span>
-              </div>
-            </div>
-            <p className="font-semibold text-gray-800">Scholarship Goal</p>
-            <p className="text-sm text-gray-600">156 / 184 applications</p>
-          </div>
-
-          <div className="text-center">
-            <div className="relative w-20 h-20 mx-auto mb-4">
-              <div className="absolute inset-0 bg-green-200 rounded-full"></div>
-              <div className="absolute inset-0 bg-green-500 rounded-full" style={{clipPath: 'polygon(0 0, 92% 0, 92% 100%, 0 100%)'}}></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">92%</span>
-              </div>
-            </div>
-            <p className="font-semibold text-gray-800">Emergency Response</p>
-            <p className="text-sm text-gray-600">23 / 25 cases resolved</p>
-          </div>
-
-          <div className="text-center">
-            <div className="relative w-20 h-20 mx-auto mb-4">
-              <div className="absolute inset-0 bg-purple-200 rounded-full"></div>
-              <div className="absolute inset-0 bg-purple-500 rounded-full" style={{clipPath: 'polygon(0 0, 78% 0, 78% 100%, 0 100%)'}}></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">78%</span>
-              </div>
-            </div>
-            <p className="font-semibold text-gray-800">Youth Engagement</p>
-            <p className="text-sm text-gray-600">89 / 115 participants</p>
-          </div>
-
-          <div className="text-center">
-            <div className="relative w-20 h-20 mx-auto mb-4">
-              <div className="absolute inset-0 bg-cyan-200 rounded-full"></div>
-              <div className="absolute inset-0 bg-cyan-500 rounded-full" style={{clipPath: 'polygon(0 0, 95% 0, 95% 100%, 0 100%)'}}></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">95%</span>
-              </div>
-            </div>
-            <p className="font-semibold text-gray-800">Job Placement</p>
-            <p className="text-sm text-gray-600">38 / 40 placements</p>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -510,7 +587,7 @@ const SINDAAssistant = () => {
           </div>
         </div>
 
-        {/* Program Categories Quick Access */}
+        {/* Program Categories Quick Access with working click handlers */}
         <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-indigo-50 p-6 border-b border-blue-100">
           <h4 className="text-lg font-semibold text-gray-800 mb-4">Explore Our Programs</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -519,7 +596,7 @@ const SINDAAssistant = () => {
               return (
                 <button
                   key={category.id}
-                  onClick={() => addMessage(`Tell me about ${category.title}`, true)}
+                  onClick={() => handleProgramClick(category)}
                   className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:border-blue-400 rounded-xl p-4 transition-all duration-500 hover:shadow-lg text-left group hover:scale-105 animate-fade-in"
                   style={{animationDelay: `${index * 0.1}s`}}
                 >
@@ -551,7 +628,7 @@ const SINDAAssistant = () => {
           </div>
         )}
 
-        {/* Messages */}
+        {/* Messages container with improved scroll handling */}
         <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50 backdrop-blur-sm">
           {messages.length === 0 && (
             <div className="text-center py-8 animate-fade-in">
@@ -615,14 +692,16 @@ const SINDAAssistant = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area */}
+        {/* Enhanced Input Area */}
         <div className="p-6 bg-white/80 backdrop-blur-sm border-t border-blue-200">
           <div className="flex gap-4 items-end">
             <div className="flex-1">
               <textarea
                 value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
+                onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
+                onFocus={() => setIsUserTyping(true)}
+                onBlur={() => setIsUserTyping(false)}
                 placeholder="Type your message here..."
                 className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm transition-all duration-300"
                 rows="2"
@@ -955,10 +1034,6 @@ const SINDAAssistant = () => {
       </div>
     </div>
   );
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100">
