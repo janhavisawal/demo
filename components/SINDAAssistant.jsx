@@ -41,33 +41,27 @@ const SINDAAssistant = () => {
   };
 
   const queryOpenAI = async (userMessage) => {
-    console.log('🔍 Calling OpenAI API with message:', userMessage);
-    
     try {
-      const requestBody = {
-        message: userMessage,
-        messages: conversationContext,
-        isFirstMessage: isFirstMessage
-      };
-      
-      console.log('📤 Sending request to /api/chat:', requestBody);
-      
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          messages: conversationContext,
+          isFirstMessage: isFirstMessage
+        })
       });
 
-      console.log('📥 Response status:', response.status);
-      
       if (!response.ok) {
+        console.error('API Error - Status:', response.status);
         const errorText = await response.text();
-        console.error('❌ API Error Response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+        console.error('API Error - Response:', errorText);
+        throw new Error(`API request failed: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('✅ API Response data:', data);
       
       // Handle crisis detection
       if (data.isCrisis) {
@@ -75,9 +69,9 @@ const SINDAAssistant = () => {
         setTimeout(() => setShowCrisisAlert(false), 10000);
       }
 
-      // Update conversation context
+      // Update conversation context for next message
       setConversationContext(prev => [
-        ...prev.slice(-8), // Keep last 8 messages for context
+        ...prev.slice(-6), // Keep last 6 messages for context
         { role: 'user', content: userMessage },
         { role: 'assistant', content: data.message }
       ]);
@@ -88,9 +82,9 @@ const SINDAAssistant = () => {
       };
 
     } catch (error) {
-      console.error('❌ OpenAI API Error:', error);
+      console.error('OpenAI API Error:', error);
       return {
-        message: "I'm experiencing some technical difficulties right now. Your feelings and experiences are valid, and you're not alone. If this is urgent, please don't hesitate to call 6298 8775 for immediate support.",
+        message: "I'm here to listen and support you, though I'm experiencing some technical difficulties right now. Your feelings and experiences are valid, and you're not alone. If this is urgent, please don't hesitate to call 6298 8775 for immediate support.",
         isCrisis: false
       };
     }
