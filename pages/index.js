@@ -399,6 +399,319 @@ export default function Home() {
             </div>
           )}
 
+          {/* SINDA Programs Display - Above Chat */}
+          {currentStep === 'chat' && (
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ 
+                background: 'white',
+                borderRadius: '20px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                padding: '30px',
+                marginBottom: '20px'
+              }}>
+                <h2 style={{ 
+                  textAlign: 'center', 
+                  color: '#111827', 
+                  fontSize: '28px', 
+                  fontWeight: 'bold', 
+                  marginBottom: '8px' 
+                }}>
+                  SINDA Programs & Services
+                </h2>
+                <p style={{ 
+                  textAlign: 'center', 
+                  color: '#6b7280', 
+                  fontSize: '16px', 
+                  marginBottom: '30px' 
+                }}>
+                  Click on any program below to learn more and get personalized guidance
+                </p>
+
+                {/* Education Programs */}
+                <div style={{ marginBottom: '25px' }}>
+                  <h3 style={{ 
+                    color: '#ea580c', 
+                    fontSize: '20px', 
+                    fontWeight: 'bold', 
+                    marginBottom: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    📚 Education Programs
+                  </h3>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+                    gap: '15px' 
+                  }}>
+                    {[
+                      { name: 'STEP Tuition', desc: 'Nation-wide tuition for Primary & Secondary students', icon: '📝' },
+                      { name: 'A-Level Tuition', desc: 'Specialized support for JC students', icon: '🎓' },
+                      { name: 'GUIDE Programme', desc: 'Mentoring and academic guidance', icon: '🧭' },
+                      { name: 'SINDA Bursary', desc: 'Financial aid for tertiary education', icon: '💰' },
+                      { name: 'ITE Programs', desc: 'Support for ITE students (Aspire & Leadership)', icon: '🔧' },
+                      { name: 'Excellence Awards', desc: 'Recognition for outstanding achievements', icon: '🏆' }
+                    ].map((program, index) => (
+                      <div
+                        key={index}
+                        onClick={() => {
+                          setInputMessage(`Tell me about ${program.name}`);
+                          setTimeout(() => handleSendMessage(), 100);
+                        }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
+                          border: '2px solid #fed7aa',
+                          borderRadius: '12px',
+                          padding: '16px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          ':hover': {
+                            borderColor: '#ea580c',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 12px rgba(234, 88, 12, 0.2)'
+                          }
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.borderColor = '#ea580c';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(234, 88, 12, 0.2)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.borderColor = '#fed7aa';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      >
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>{program.icon}</div>
+                        <h4 style={{ 
+                          color: '#ea580c', 
+                          fontSize: '16px', 
+                          fontWeight: 'bold', 
+                          margin: '0 0 6px 0' 
+                        }}>
+                          {program.name}
+                        </h4>
+                        <p style={{ 
+                          color: '#6b7280', 
+                          fontSize: '13px', 
+                          margin: '0',
+                          lineHeight: '1.4'
+                        }}>
+                          {program.desc}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Family & Social Services */}
+                <div style={{ marginBottom: '25px' }}>
+                  <h3 style={{ 
+                    color: '#dc2626', 
+                    fontSize: '20px', 
+                    fontWeight: 'bold', 
+                    marginBottom: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    👨‍👩‍👧‍👦 Family & Social Services
+                  </h3>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+                    gap: '15px' 
+                  }}>
+                    {[
+                      { name: 'Family Service Centre', desc: 'Counselling and family support services', icon: '💙' },
+                      { name: 'Financial Assistance', desc: 'Emergency aid for bills, rent and basic needs', icon: '🆘' },
+                      { name: 'Project Athena', desc: 'Empowerment program for single mothers', icon: '👩‍👧‍👦' },
+                      { name: 'Crisis Support', desc: 'Immediate help for families in emergency', icon: '🚨' }
+                    ].map((program, index) => (
+                      <div
+                        key={index}
+                        onClick={() => {
+                          setInputMessage(`Tell me about ${program.name}`);
+                          setTimeout(() => handleSendMessage(), 100);
+                        }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fef2f2 0%, #fecaca 100%)',
+                          border: '2px solid #fca5a5',
+                          borderRadius: '12px',
+                          padding: '16px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.borderColor = '#dc2626';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.2)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.borderColor = '#fca5a5';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      >
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>{program.icon}</div>
+                        <h4 style={{ 
+                          color: '#dc2626', 
+                          fontSize: '16px', 
+                          fontWeight: 'bold', 
+                          margin: '0 0 6px 0' 
+                        }}>
+                          {program.name}
+                        </h4>
+                        <p style={{ 
+                          color: '#6b7280', 
+                          fontSize: '13px', 
+                          margin: '0',
+                          lineHeight: '1.4'
+                        }}>
+                          {program.desc}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Youth & Community */}
+                <div style={{ marginBottom: '25px' }}>
+                  <h3 style={{ 
+                    color: '#7c3aed', 
+                    fontSize: '20px', 
+                    fontWeight: 'bold', 
+                    marginBottom: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    🎯 Youth & Community Programs
+                  </h3>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+                    gap: '15px' 
+                  }}>
+                    {[
+                      { name: 'SINDA Youth Club', desc: 'Leadership development for ages 18-35', icon: '👥' },
+                      { name: 'Corporate Mentoring', desc: 'Professional mentorship and career guidance', icon: '💼' },
+                      { name: 'Community Outreach', desc: 'Door-to-door support and SINDA Bus services', icon: '🤝' },
+                      { name: 'Back to School Festival', desc: 'Annual school supplies and support', icon: '🎒' }
+                    ].map((program, index) => (
+                      <div
+                        key={index}
+                        onClick={() => {
+                          setInputMessage(`Tell me about ${program.name}`);
+                          setTimeout(() => handleSendMessage(), 100);
+                        }}
+                        style={{
+                          background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+                          border: '2px solid #d1d5db',
+                          borderRadius: '12px',
+                          padding: '16px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.borderColor = '#7c3aed';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(124, 58, 237, 0.2)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.borderColor = '#d1d5db';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      >
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>{program.icon}</div>
+                        <h4 style={{ 
+                          color: '#7c3aed', 
+                          fontSize: '16px', 
+                          fontWeight: 'bold', 
+                          margin: '0 0 6px 0' 
+                        }}>
+                          {program.name}
+                        </h4>
+                        <p style={{ 
+                          color: '#6b7280', 
+                          fontSize: '13px', 
+                          margin: '0',
+                          lineHeight: '1.4'
+                        }}>
+                          {program.desc}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div style={{
+                  background: '#f8fafc',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  textAlign: 'center',
+                  border: '1px solid #e2e8f0'
+                }}>
+                  <h4 style={{ 
+                    color: '#374151', 
+                    fontSize: '16px', 
+                    fontWeight: 'bold', 
+                    margin: '0 0 12px 0' 
+                  }}>
+                    💡 Not sure which program is right for you?
+                  </h4>
+                  <p style={{ 
+                    color: '#6b7280', 
+                    fontSize: '14px', 
+                    margin: '0 0 15px 0' 
+                  }}>
+                    Chat with our program guide below to get personalized recommendations!
+                  </p>
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    {[
+                      'Check my eligibility',
+                      'Compare programs',
+                      'Application process',
+                      'Contact SINDA'
+                    ].map((action, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          setInputMessage(action);
+                          setTimeout(() => handleSendMessage(), 100);
+                        }}
+                        style={{
+                          background: '#ea580c',
+                          color: 'white',
+                          border: 'none',
+                          padding: '8px 16px',
+                          borderRadius: '20px',
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.background = '#dc2626';
+                          e.target.style.transform = 'translateY(-1px)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.background = '#ea580c';
+                          e.target.style.transform = 'translateY(0)';
+                        }}
+                      >
+                        {action}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Chat Interface */}
           {currentStep === 'chat' && (
             <div style={{ 
@@ -474,23 +787,28 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Program Guide Buttons */}
+              {/* Program Guide Buttons - Simplified since programs are above */}
               {messages.length === 0 && (
                 <div style={{ padding: '20px', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                   <p style={{ textAlign: 'center', color: '#374151', fontWeight: '600', marginBottom: '16px' }}>
-                    Which SINDA program can help you today?
+                    👆 Browse programs above or ask me anything below!
                   </p>
                   <div style={{ 
                     display: 'grid', 
                     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
                     gap: '12px' 
                   }}>
-                    {quickHelp.map((help, index) => (
+                    {[
+                      { text: '🤔 Which program is best for me?', type: 'recommendation' },
+                      { text: '💰 Check eligibility requirements', type: 'eligibility' },
+                      { text: '📝 How to apply for programs?', type: 'application' },
+                      { text: '📞 Contact information', type: 'contact' }
+                    ].map((help, index) => (
                       <button
                         key={index}
                         onClick={() => handleQuickHelp(help)}
                         style={{ 
-                          background: help.type === 'crisis' ? '#dc2626' : '#ea580c',
+                          background: '#ea580c',
                           color: 'white',
                           border: 'none',
                           padding: '12px', 
@@ -498,41 +816,12 @@ export default function Home() {
                           fontSize: '13px',
                           fontWeight: 'bold',
                           cursor: 'pointer',
-                          textAlign: 'left',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '4px'
+                          textAlign: 'center'
                         }}
                       >
-                        <span>{help.text}</span>
-                        {help.description && (
-                          <span style={{ 
-                            fontSize: '10px', 
-                            opacity: '0.9',
-                            fontWeight: 'normal' 
-                          }}>
-                            {help.description}
-                          </span>
-                        )}
+                        {help.text}
                       </button>
                     ))}
-                  </div>
-                  
-                  <div style={{ 
-                    textAlign: 'center', 
-                    marginTop: '16px',
-                    padding: '12px',
-                    background: '#fff7ed',
-                    borderRadius: '8px',
-                    border: '1px solid #fed7aa'
-                  }}>
-                    <span style={{ 
-                      color: '#ea580c', 
-                      fontWeight: '600',
-                      fontSize: '14px'
-                    }}>
-                      💡 Not sure which program? Just describe your situation and I'll recommend the best options!
-                    </span>
                   </div>
                 </div>
               )}
