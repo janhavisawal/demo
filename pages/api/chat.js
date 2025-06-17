@@ -102,38 +102,35 @@ export default async function handler(req, res) {
     const { message, messages = [], userInfo = {}, conversationStage = 'general' } = req.body;
 
     // Enhanced system prompt for SINDA program guidance
-    const systemPrompt = `You are the SINDA Program Guide Assistant, helping users discover and apply for SINDA programs in Singapore. SINDA supports the Indian community with education, family services, employment, and eldercare programs.
+    const systemPrompt = `You are a friendly SINDA program assistant helping people find the right support programs. Keep responses conversational, helpful, and concise.
 
-Your role is to:
-1. **Understand user needs** - Ask about their situation, family income, and specific challenges
-2. **Recommend suitable programs** - Match users to appropriate SINDA services based on their needs and eligibility
-3. **Guide through applications** - Explain application processes, required documents, and deadlines
-4. **Provide accurate information** - Use the SINDA programs database to give specific details
-5. **Be proactive** - Suggest related programs they might benefit from
+Your role:
+- Help users discover SINDA programs that match their needs
+- Explain programs in simple terms
+- Guide them to apply when ready
+- Be warm and approachable, not formal
 
-SINDA Program Categories:
-- **Education**: Tuition schemes, pre-school subsidies, higher education bursaries
-- **Family Services**: Counselling, financial assistance, family support
-- **Employment**: Skills training, job placement, career guidance  
-- **Eldercare**: Senior activity centres, social programs
+SINDA Programs (mention only when relevant):
+**Education**: Tuition subsidies, pre-school help, university bursaries
+**Family**: Counselling, emergency financial aid, family support  
+**Employment**: Job training, career help, skills courses
+**Eldercare**: Senior activity centres, social programs
 
-Key Information:
-- SINDA serves the Indian community in Singapore
-- Most programs have income eligibility criteria
-- Applications typically require IC copies and income proof
-- Emergency help available at 6298 8775
-- Main website: www.sinda.org.sg
+Key eligibility (mention if asked):
+- Most programs for household income under $4,500-$6,000
+- Must be Singapore citizen/PR
+- Emergency help available for urgent cases
 
 Guidelines:
-- Ask qualifying questions to determine eligibility
-- Provide specific program names, eligibility criteria, and application steps
-- Mention required documents upfront
-- Offer to help with application process
-- Be warm and supportive - many users may be in difficult situations
-- Use simple, clear language and avoid jargon
-- Always provide website links for detailed information
+- Use natural, friendly language like you're talking to a friend
+- Don't start every response with "Hi" or the person's name
+- Keep responses 2-3 sentences unless they ask for details
+- Ask simple follow-up questions to understand their needs
+- Only mention specific programs when relevant to their situation
+- If they want to apply, direct them to call SINDA or visit the website
+- For emergencies, immediately mention calling 6298 8775
 
-Current programs database: ${JSON.stringify(SINDA_PROGRAMS)}`;
+Be helpful but not overwhelming. Focus on having a natural conversation.`;
 
     // Build conversation context
     const conversationMessages = [
@@ -156,11 +153,11 @@ Current programs database: ${JSON.stringify(SINDA_PROGRAMS)}`;
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini-2024-07-18",
       messages: conversationMessages,
-      temperature: 0.3, // More focused responses for program guidance
-      max_tokens: 1200,
+      temperature: 0.7, // More natural conversation
+      max_tokens: 300, // Shorter responses
       top_p: 0.9,
-      frequency_penalty: 0.3,
-      presence_penalty: 0.4,
+      frequency_penalty: 0.5, // Reduce repetition
+      presence_penalty: 0.6, // Encourage variety
     });
 
     const aiMessage = response.choices[0].message.content;
@@ -196,12 +193,12 @@ Current programs database: ${JSON.stringify(SINDA_PROGRAMS)}`;
     let enhancedResponse = aiMessage;
     
     if (isCrisis) {
-      enhancedResponse += "\n\n🚨 **URGENT HELP**: For immediate assistance, please call SINDA at 6298 8775. Our Family Service Centre can provide emergency support.";
+      enhancedResponse += "\n\n🚨 For immediate help, please call SINDA at 6298 8775 right away.";
     }
 
-    // Add program recommendations based on context
-    if (suggestedPrograms.length > 0 && !aiMessage.includes('www.sinda.org.sg')) {
-      enhancedResponse += "\n\n💡 **Quick Links**: Visit www.sinda.org.sg for detailed information and online applications.";
+    // Add simple call-to-action for applications
+    if (lowerMessage.includes('apply') || lowerMessage.includes('how to') || lowerMessage.includes('start')) {
+      enhancedResponse += "\n\nReady to apply? Call SINDA at 6298 8775 or visit www.sinda.org.sg to get started!";
     }
 
     res.status(200).json({ 
@@ -216,15 +213,11 @@ Current programs database: ${JSON.stringify(SINDA_PROGRAMS)}`;
     console.error('OpenAI API error:', error);
     
     // Fallback with SINDA-specific guidance
-    const fallbackMessage = `I'm experiencing some technical difficulties, but I'm still here to help you find the right SINDA programs! 
+    const fallbackMessage = `I'm having some technical issues, but I'm still here to help you find SINDA programs! 
 
-Here are some quick options:
-📚 **Education Support**: Tuition schemes and bursaries
-👨‍👩‍👧‍👦 **Family Services**: Counselling and financial assistance  
-💼 **Employment**: Skills training and job placement
-👴 **Eldercare**: Senior activity centres
+What are you looking for today? Education support, family help, job training, or something else? Just tell me a bit about your situation and I'll point you in the right direction.
 
-Visit www.sinda.org.sg or call 6298 8775 for immediate help with applications.`;
+You can also call 6298 8775 or visit www.sinda.org.sg anytime.`;
     
     res.status(200).json({ 
       message: fallbackMessage,
