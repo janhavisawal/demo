@@ -96,21 +96,18 @@ const SINDAAssistant = () => {
     try {
       const response = await queryOpenAI(userMessage);
       
-      setTimeout(() => {
-        addMessage(response.message, false, response.isCrisis);
-        setIsLoading(false);
-        
-        // Mark that first message has been sent
-        if (isFirstMessage) {
-          setIsFirstMessage(false);
-        }
-      }, 1000);
+      // Add response immediately without delay
+      addMessage(response.message, false, response.isCrisis);
+      setIsLoading(false);
+      
+      // Mark that first message has been sent
+      if (isFirstMessage) {
+        setIsFirstMessage(false);
+      }
 
     } catch (error) {
-      setTimeout(() => {
-        addMessage("I'm sorry, I'm having trouble connecting right now. Please try again, or if this is urgent, call 6298 8775 immediately.", false);
-        setIsLoading(false);
-      }, 1000);
+      addMessage("I'm sorry, I'm having trouble connecting right now. Please try again, or if this is urgent, call 6298 8775 immediately.", false);
+      setIsLoading(false);
     }
   };
 
