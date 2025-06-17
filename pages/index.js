@@ -33,15 +33,15 @@ export default function Home() {
   const languages = {
     english: { 
       name: 'English', 
-      greeting: 'Hello! I\'m here to help and support you. To start, may I know your name?'
+      greeting: 'Welcome to SINDA! 👋 I can help you find the right programs and guide you through the application process. Feel free to browse the programs above or ask me any questions!'
     },
     tamil: { 
       name: 'தமிழ்', 
-      greeting: 'வணக்கம்! நான் உங்களுக்கு உதவி மற்றும் ஆதரவு வழங்க இங்கே இருக்கிறேன். தொடங்க, உங்கள் பெயரைக் கூற முடியுமா?'
+      greeting: 'SINDA வில் உங்களை வரவேற்கிறோம்! 👋 சரியான திட்டங்களைக் கண்டறியவும் விண்ணப்ப செயல்முறையில் உங்களுக்கு வழிகாட்டவும் என்னால் உதவ முடியும். மேலே உள்ள திட்டங்களைப் பார்க்கவும் அல்லது எனக்கு ஏதேனும் கேள்விகள் கேட்கவும்!'
     },
     hindi: { 
       name: 'हिंदी', 
-      greeting: 'नमस्ते! मैं आपकी मदद और सहायता के लिए यहाँ हूँ। शुरुआत के लिए, क्या मैं आपका नाम जान सकता हूँ?'
+      greeting: 'SINDA में आपका स्वागत है! 👋 मैं आपको सही कार्यक्रम खोजने और आवेदन प्रक्रिया में मार्गदर्शन करने में मदद कर सकता हूँ। ऊपर दिए गए कार्यक्रमों को देखें या मुझसे कोई भी प्रश्न पूछें!'
     }
   };
 
@@ -54,44 +54,19 @@ export default function Home() {
     { text: '🚨 Urgent Help', type: 'crisis', description: 'Immediate crisis support' }
   ];
 
-  // Basic conversation flow for initial questions
+  // Basic conversation flow for initial questions (simplified)
   const getBasicResponse = useCallback((userMessage) => {
+    // For this chatbot, we'll primarily rely on OpenAI for responses
+    // Only handle very basic greetings locally
     const message = userMessage.toLowerCase().trim();
-    let response = "";
-    let nextStage = conversationStage;
-    const updatedInfo = { ...userInfo };
-
-    switch (conversationStage) {
-      case 'name':
-        if (message.length > 1) {
-          updatedInfo.name = userMessage.trim();
-          nextStage = 'age';
-          response = `Nice to meet you, ${updatedInfo.name}! How old are you?`;
-        } else {
-          response = "I'd love to know what to call you. What's your name?";
-        }
-        break;
-
-      case 'age':
-        updatedInfo.age = userMessage.trim();
-        nextStage = 'location';
-        response = `Thank you, ${updatedInfo.name}. Which area of Singapore are you from?`;
-        break;
-
-      case 'location':
-        updatedInfo.location = userMessage.trim();
-        nextStage = 'open_chat';
-        response = `I see you're from ${updatedInfo.location}. Now ${updatedInfo.name}, I'm here to listen. What's been on your mind lately?`;
-        break;
-
-      default:
-        response = "I'm here to listen and help. What would you like to talk about?";
+    
+    if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+      return "Hello! I'm here to help you with SINDA programs. You can browse the programs above or ask me about eligibility, application process, or any specific program you're interested in. What would you like to know?";
     }
-
-    setUserInfo(updatedInfo);
-    setConversationStage(nextStage);
-    return response;
-  }, [conversationStage, userInfo]);
+    
+    // For everything else, let OpenAI handle it
+    return null;
+  }, []);
 
   // OpenAI Integration
   const queryOpenAI = useCallback(async (userMessage) => {
@@ -178,10 +153,10 @@ export default function Home() {
     setIsTyping(true);
 
     try {
-      // Use basic responses for initial info gathering, OpenAI for everything else
-      const response = conversationStage === 'name' || conversationStage === 'age' || conversationStage === 'location'
-        ? getBasicResponse(userMessage)
-        : await queryOpenAI(userMessage);
+      // For most messages, use OpenAI for intelligent responses
+      const basicResponse = getBasicResponse(userMessage);
+      
+      const response = basicResponse || await queryOpenAI(userMessage);
       
       setTimeout(() => {
         addMessage(response, false);
