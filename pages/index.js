@@ -6,12 +6,10 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Enhanced SINDA Assistant</title>
-        <meta name="description" content="AI-powered SINDA assistant with advanced analytics and security" />
+        <title>SINDA Assistant</title>
+        <meta name="description" content="AI-powered SINDA assistant with emotional wellness support and programs" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
-      
       <main>
         <EnhancedSINDAAssistant />
       </main>
