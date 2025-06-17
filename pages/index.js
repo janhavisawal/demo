@@ -46,12 +46,12 @@ export default function Home() {
   };
 
   const quickHelp = [
-    { text: '🚨 Urgent Help', type: 'crisis' },
-    { text: '💰 Financial Support', type: 'financial' },
-    { text: '👨‍👩‍👧‍👦 Family Matters', type: 'family' },
-    { text: '📚 Education Help', type: 'education' },
-    { text: '💼 Employment', type: 'employment' },
-    { text: '💬 General Support', type: 'general' }
+    { text: '📚 Education Programs', type: 'education', description: 'Tuition schemes, bursaries, pre-school subsidies' },
+    { text: '👨‍👩‍👧‍👦 Family Services', type: 'family', description: 'Counselling, financial assistance, family support' },
+    { text: '💼 Employment Support', type: 'employment', description: 'Skills training, job placement services' },
+    { text: '👴 Eldercare Services', type: 'eldercare', description: 'Senior centres, social activities' },
+    { text: '💰 Financial Assistance', type: 'financial', description: 'Emergency aid, bill payment help' },
+    { text: '🚨 Urgent Help', type: 'crisis', description: 'Immediate crisis support' }
   ];
 
   // Basic conversation flow for initial questions
@@ -212,7 +212,7 @@ export default function Home() {
     e.preventDefault();
     console.log('Contact form submitted:', contactData, userInfo);
     setShowContactForm(false);
-    addMessage(`Thank you, ${contactData.name}! A SINDA counselor will contact you within 24 hours. Remember, you can always call 6298 8775 if you need immediate support.`, false);
+    addMessage(`Thank you, ${contactData.name}! We've received your application interest. A SINDA program officer will contact you within 24 hours to discuss your eligibility and next steps. You can also visit www.sinda.org.sg to start your online application immediately.`, false);
     setContactData({ name: '', phone: '', preferredTime: '', description: '' });
   };
 
@@ -403,43 +403,63 @@ export default function Home() {
                       justifyContent: 'center',
                       fontSize: '20px'
                     }}>
-                      💙
+                      🏛️
                     </div>
                     <div>
                       <h3 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0' }}>
-                        SINDA Support Helper
+                        SINDA Program Guide
                       </h3>
                       <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', margin: '0' }}>
-                        Online • Ready to listen and help
+                        Online • Ready to help you find programs & apply
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setShowContactForm(true)}
-                    style={{ 
-                      background: 'rgba(255,255,255,0.2)', 
-                      color: 'white',
-                      border: 'none',
-                      padding: '10px 16px', 
-                      borderRadius: '12px', 
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    📞 Request Call Back
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <a 
+                      href="https://www.sinda.org.sg"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ 
+                        background: 'rgba(255,255,255,0.2)', 
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 12px', 
+                        borderRadius: '8px', 
+                        fontWeight: 'bold',
+                        fontSize: '12px',
+                        textDecoration: 'none'
+                      }}
+                    >
+                      🌐 SINDA.org.sg
+                    </a>
+                    <button
+                      onClick={() => setShowContactForm(true)}
+                      style={{ 
+                        background: 'rgba(255,255,255,0.2)', 
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 12px', 
+                        borderRadius: '8px', 
+                        fontWeight: 'bold',
+                        fontSize: '12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      📞 Apply Now
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Quick Help Buttons */}
+              {/* Program Guide Buttons */}
               {messages.length === 0 && (
                 <div style={{ padding: '20px', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                   <p style={{ textAlign: 'center', color: '#374151', fontWeight: '600', marginBottom: '16px' }}>
-                    What type of support do you need today?
+                    Which SINDA program can help you today?
                   </p>
                   <div style={{ 
                     display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
                     gap: '12px' 
                   }}>
                     {quickHelp.map((help, index) => (
@@ -452,14 +472,44 @@ export default function Home() {
                           border: 'none',
                           padding: '12px', 
                           borderRadius: '8px', 
-                          fontSize: '14px',
+                          fontSize: '13px',
                           fontWeight: 'bold',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '4px'
                         }}
                       >
-                        {help.text}
+                        <span>{help.text}</span>
+                        {help.description && (
+                          <span style={{ 
+                            fontSize: '10px', 
+                            opacity: '0.9',
+                            fontWeight: 'normal' 
+                          }}>
+                            {help.description}
+                          </span>
+                        )}
                       </button>
                     ))}
+                  </div>
+                  
+                  <div style={{ 
+                    textAlign: 'center', 
+                    marginTop: '16px',
+                    padding: '12px',
+                    background: '#fff7ed',
+                    borderRadius: '8px',
+                    border: '1px solid #fed7aa'
+                  }}>
+                    <span style={{ 
+                      color: '#ea580c', 
+                      fontWeight: '600',
+                      fontSize: '14px'
+                    }}>
+                      💡 Not sure which program? Just describe your situation and I'll recommend the best options!
+                    </span>
                   </div>
                 </div>
               )}
@@ -634,10 +684,10 @@ export default function Home() {
             }}>
               <div style={{ textAlign: 'center', marginBottom: '30px' }}>
                 <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
-                  Request Support Call
+                  Apply for SINDA Program
                 </h3>
                 <p style={{ color: '#6b7280', fontSize: '16px' }}>
-                  Our caring counselors will reach out to you personally
+                  Start your application process - we'll guide you through the requirements
                 </p>
               </div>
 
@@ -686,6 +736,57 @@ export default function Home() {
 
                 <div style={{ marginBottom: '20px' }}>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#374151', marginBottom: '6px' }}>
+                    Which program interests you?
+                  </label>
+                  <select
+                    value={contactData.preferredTime}
+                    onChange={(e) => setContactData(prev => ({ ...prev, preferredTime: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="">Select a program</option>
+                    <option value="education">📚 Education Support (Tuition, Bursaries)</option>
+                    <option value="family">👨‍👩‍👧‍👦 Family Services (Counselling, Financial Aid)</option>
+                    <option value="employment">💼 Employment Support (Skills Training, Jobs)</option>
+                    <option value="eldercare">👴 Eldercare Services (Senior Centres)</option>
+                    <option value="multiple">🔄 Multiple Programs</option>
+                    <option value="unsure">❓ Not Sure - Need Guidance</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#374151', marginBottom: '6px' }}>
+                    Monthly Household Income (for eligibility assessment)
+                  </label>
+                  <select
+                    value={contactData.description}
+                    onChange={(e) => setContactData(prev => ({ ...prev, description: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="">Select income range</option>
+                    <option value="below-3000">Below $3,000</option>
+                    <option value="3000-4500">$3,000 - $4,500</option>
+                    <option value="4500-6000">$4,500 - $6,000</option>
+                    <option value="above-6000">Above $6,000</option>
+                    <option value="prefer-not-say">Prefer not to say</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#374151', marginBottom: '6px' }}>
                     Best time to call
                   </label>
                   <select
@@ -710,13 +811,13 @@ export default function Home() {
 
                 <div style={{ marginBottom: '30px' }}>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#374151', marginBottom: '6px' }}>
-                    How can we help? (optional)
+                    Tell us about your situation (optional)
                   </label>
                   <textarea
                     value={contactData.description}
                     onChange={(e) => setContactData(prev => ({ ...prev, description: e.target.value }))}
                     rows="3"
-                    placeholder="Share anything you'd like us to know beforehand..."
+                    placeholder="e.g., Need help with school fees, looking for job training, family in crisis..."
                     style={{
                       width: '100%',
                       padding: '12px',
@@ -763,7 +864,7 @@ export default function Home() {
                       opacity: (!contactData.name || !contactData.phone) ? '0.5' : '1'
                     }}
                   >
-                    💙 Request Call Back
+                    💬 Start Application Process
                   </button>
                 </div>
               </form>
