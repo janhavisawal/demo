@@ -1,120 +1,157 @@
+// components/SINDAAssistant.jsx - Optimized for Next.js
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   Send, MessageCircle, Users, Globe, AlertTriangle, 
   BarChart3, Shield, Settings, Download, TrendingUp,
   Clock, MapPin, DollarSign, Calendar, Activity,
-  Eye, Target, Zap, Lock, CheckCircle, XCircle, Cpu,
-  Server, Database, Wifi, Monitor, Code
+  Eye, Target, Zap, Lock, CheckCircle, XCircle, 
+  BookOpen, Heart, Home, Phone, Mail, Star,
+  GraduationCap, HandHeart, Award, UserCheck,
+  ChevronRight, Info, HelpCircle, ArrowRight, Waves,
+  PieChart, LineChart, BarChart, TrendingDown, Cpu
 } from 'lucide-react';
+import { 
+  LineChart as RechartsLineChart, XAxis, YAxis, CartesianGrid, Tooltip, 
+  ResponsiveContainer, AreaChart, Area, BarChart as RechartsBarChart, 
+  Bar, PieChart as RechartsPieChart, Cell, Pie, Line 
+} from 'recharts';
 
-// Enhanced SINDA Assistant with Modern Tech UI
-const EnhancedSINDAAssistant = () => {
+// SINDA Assistant with Next.js optimization
+const SINDAAssistant = () => {
   const [currentView, setCurrentView] = useState('chat');
   const [currentStep, setCurrentStep] = useState('welcome');
   const [selectedLanguage, setSelectedLanguage] = useState('english');
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [showApplicationForm, setShowApplicationForm] = useState(false);
-  const [applicationStep, setApplicationStep] = useState(1);
-  const [messageId, setMessageId] = useState(0);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [messageId, setMessageId] = useState(0);
+  const [conversationId, setConversationId] = useState(null);
   const messagesEndRef = useRef(null);
 
-  // Analytics State
+  // Analytics State with comprehensive data
   const [analyticsData, setAnalyticsData] = useState({
     realTimeMetrics: {
-      activeUsers: 47,
-      messagesPerMinute: 12,
-      responseTime: 1.2,
-      resolutionRate: 94.3
+      activeUsers: 247,
+      messagesPerMinute: 18,
+      responseTime: 0.8,
+      resolutionRate: 96.7
     },
-    intentAccuracy: 97.8,
-    entityExtraction: 96.2,
-    userEngagement: {
-      avgSessionDuration: 8.5,
-      messagePerSession: 6.3,
-      returnUsers: 73.2
-    }
+    intentAccuracy: 98.2,
+    userSatisfaction: 97.5,
+    totalServed: 12847,
+    monthlyEngagement: [
+      { month: 'Jan', users: 820, programs: 245, assistance: 89000 },
+      { month: 'Feb', users: 950, programs: 287, assistance: 102000 },
+      { month: 'Mar', users: 1100, programs: 324, assistance: 125000 },
+      { month: 'Apr', users: 890, programs: 298, assistance: 98000 },
+      { month: 'May', users: 1250, programs: 356, assistance: 145000 },
+      { month: 'Jun', users: 1380, programs: 398, assistance: 167000 }
+    ],
+    programDistribution: [
+      { name: 'Education Support', value: 42, count: 5234, color: '#3B82F6' },
+      { name: 'Family Services', value: 28, count: 3489, color: '#06B6D4' },
+      { name: 'Youth Development', value: 18, count: 2245, color: '#6366F1' },
+      { name: 'Community Outreach', value: 12, count: 1496, color: '#14B8A6' }
+    ],
+    helpMetrics: {
+      totalFamiliesHelped: 8456,
+      emergencySupport: 234,
+      scholarshipsAwarded: 1834,
+      jobPlacements: 567,
+      counselingSessions: 3421,
+      financialAidDistributed: 2100000
+    },
+    satisfactionTrend: [
+      { week: 'W1', satisfaction: 94.2, resolved: 89 },
+      { week: 'W2', satisfaction: 95.8, resolved: 92 },
+      { week: 'W3', satisfaction: 96.1, resolved: 88 },
+      { week: 'W4', satisfaction: 97.5, resolved: 96 },
+      { week: 'W5', satisfaction: 96.8, resolved: 94 },
+      { week: 'W6', satisfaction: 98.2, resolved: 97 }
+    ]
   });
 
-  // Intent Recognition System
-  const [detectedIntents, setDetectedIntents] = useState([]);
-  const [extractedEntities, setExtractedEntities] = useState([]);
-
-  // Security Monitoring
-  const [securityStatus, setSecurityStatus] = useState({
-    encryption: 'active',
-    compliance: 'SOC2-ready',
-    uptime: 99.7,
-    lastSecurityScan: '2 hours ago'
-  });
-
+  // Language support
   const languages = {
     english: { 
       name: 'English', 
-      greeting: 'Welcome to SINDA! 👋 I can help you find the right programs and guide you through the application process.'
+      native: 'English',
+      greeting: 'Welcome to SINDA! 🙏 I\'m here to help you discover our programs and guide you through your journey with us.',
+      flag: '🇬🇧'
     },
     tamil: { 
-      name: 'தமிழ்', 
-      greeting: 'SINDA வில் உங்களை வரவேற்கிறோம்! 👋'
+      name: 'Tamil', 
+      native: 'தமிழ்',
+      greeting: 'SINDA வில் உங்களை வரவேற்கிறோம்! 🙏 நான் உங்கள் பயணத்தில் உதவ இங்கே இருக்கிறேன்.',
+      flag: '🇮🇳'
     },
     hindi: { 
-      name: 'हिंदी', 
-      greeting: 'SINDA में आपका स्वागत है! 👋'
+      name: 'Hindi', 
+      native: 'हिंदी',
+      greeting: 'SINDA में आपका स्वागत है! 🙏 मैं आपकी यात्रा में सहायता के लिए यहाँ हूँ।',
+      flag: '🇮🇳'
+    },
+    malayalam: {
+      name: 'Malayalam',
+      native: 'മലയാളം',
+      greeting: 'SINDA യിലേക്ക് സ്വാഗതം! 🙏 നിങ്ങളുടെ യാത്രയിൽ സഹായിക്കാൻ ഞാനിവിടെയുണ്ട്.',
+      flag: '🇮🇳'
     }
   };
 
-  // Advanced Intent Recognition
-  const recognizeIntent = useCallback((message) => {
-    const intents = {
-      'apply_program': { keywords: ['apply', 'application', 'register', 'sign up'], confidence: 0.95 },
-      'check_eligibility': { keywords: ['eligible', 'qualify', 'requirements'], confidence: 0.92 },
-      'program_info': { keywords: ['tell me about', 'what is', 'information'], confidence: 0.89 },
-      'financial_help': { keywords: ['money', 'financial', 'assistance', 'help'], confidence: 0.96 },
-      'urgent_crisis': { keywords: ['emergency', 'urgent', 'crisis', 'immediate'], confidence: 0.98 }
-    };
+  // Program Categories
+  const programCategories = [
+    {
+      id: 'education',
+      title: 'Education Programs',
+      icon: BookOpen,
+      color: 'from-blue-500 to-indigo-600',
+      description: 'Academic support from pre-school to tertiary education',
+      programs: ['STEP Tuition', 'A-Level Support', 'ITE Programs', 'Bursaries'],
+      count: '8 Programs'
+    },
+    {
+      id: 'family',
+      title: 'Family Services',
+      icon: Heart,
+      color: 'from-cyan-500 to-teal-600',
+      description: 'Counselling, financial aid, and family support',
+      programs: ['Family Service Centre', 'Financial Assistance', 'Crisis Support'],
+      count: '5 Services'
+    },
+    {
+      id: 'youth',
+      title: 'Youth Development',
+      icon: Users,
+      color: 'from-sky-500 to-blue-600',
+      description: 'Leadership and skills development for ages 18-35',
+      programs: ['Youth Club', 'Leadership Seminars', 'Mentoring'],
+      count: '4 Programs'
+    },
+    {
+      id: 'community',
+      title: 'Community Outreach',
+      icon: Globe,
+      color: 'from-indigo-500 to-purple-600',
+      description: 'Bringing SINDA services to your neighborhood',
+      programs: ['Door Knocking', 'SINDA Bus', 'Community Events'],
+      count: '6 Initiatives'
+    }
+  ];
 
-    const detected = [];
-    const entities = [];
+  // Quick Help Options
+  const quickHelp = [
+    { text: 'Apply for STEP tuition', category: 'education' },
+    { text: 'Financial assistance eligibility', category: 'family' },
+    { text: 'Join Youth Club', category: 'youth' },
+    { text: 'Emergency support', category: 'family' }
+  ];
 
-    Object.entries(intents).forEach(([intent, data]) => {
-      const matches = data.keywords.filter(keyword => 
-        message.toLowerCase().includes(keyword)
-      );
-      
-      if (matches.length > 0) {
-        detected.push({
-          intent,
-          confidence: data.confidence,
-          matchedKeywords: matches
-        });
-      }
-    });
+  // Intent Recognition
+  const [detectedIntents, setDetectedIntents] = useState([]);
 
-    // Entity extraction
-    const phoneRegex = /(\+65\s?)?[689]\d{7}/g;
-    const emailRegex = /\S+@\S+\.\S+/g;
-    const dateRegex = /\d{1,2}\/\d{1,2}\/\d{4}/g;
-    const amountRegex = /\$\d+/g;
-
-    const phones = message.match(phoneRegex);
-    const emails = message.match(emailRegex);
-    const dates = message.match(dateRegex);
-    const amounts = message.match(amountRegex);
-
-    if (phones) entities.push({ type: 'phone', values: phones });
-    if (emails) entities.push({ type: 'email', values: emails });
-    if (dates) entities.push({ type: 'date', values: dates });
-    if (amounts) entities.push({ type: 'amount', values: amounts });
-
-    setDetectedIntents(detected);
-    setExtractedEntities(entities);
-
-    return { intents: detected, entities };
-  }, []);
-
-  // Enhanced message handling
+  // Enhanced message handling with API integration
   const addMessage = useCallback((content, isUser = false, metadata = {}) => {
     const newMessage = {
       id: messageId,
@@ -129,64 +166,61 @@ const EnhancedSINDAAssistant = () => {
     };
     setMessages(prev => [...prev, newMessage]);
     setMessageId(prev => prev + 1);
-
-    // Update analytics
-    if (isUser) {
-      setAnalyticsData(prev => ({
-        ...prev,
-        realTimeMetrics: {
-          ...prev.realTimeMetrics,
-          messagesPerMinute: prev.realTimeMetrics.messagesPerMinute + 1
-        }
-      }));
-    }
   }, [messageId]);
 
+  // API integration for chat
   const handleSendMessage = useCallback(async () => {
     if (!inputMessage.trim() || isTyping) return;
 
     const userMessage = inputMessage.trim();
-    const analysis = recognizeIntent(userMessage);
-    
-    addMessage(userMessage, true, { 
-      intents: analysis.intents,
-      entities: analysis.entities 
-    });
+    addMessage(userMessage, true);
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      let response = "I understand you're looking for help with SINDA programs. Let me assist you with that.";
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          messages: messages.map(msg => ({
+            role: msg.isUser ? 'user' : 'assistant',
+            content: msg.content
+          })),
+          conversationId: conversationId
+        }),
+      });
+
+      const data = await response.json();
       
-      if (analysis.intents.length > 0) {
-        const primaryIntent = analysis.intents[0];
-        
-        switch (primaryIntent.intent) {
-          case 'apply_program':
-            response = "Great! I can help you start your application. Let me guide you through the process. Which program are you interested in?";
-            break;
-          case 'check_eligibility':
-            response = "I'll help you check your eligibility. Most SINDA programs require a per capita income of ≤ $1,600. Can you tell me about your household size and income?";
-            break;
-          case 'financial_help':
-            response = "SINDA offers various financial assistance programs including emergency aid, bill payment support, and ongoing monthly assistance. Would you like to know more about eligibility requirements?";
-            break;
-          case 'urgent_crisis':
-            response = "🚨 For immediate crisis support, please call SINDA at 1800 295 3333 right away. They have 24/7 emergency assistance available.";
-            break;
-          default:
-            response = "I can help you with SINDA programs. What specific information are you looking for today?";
+      if (data.message) {
+        addMessage(data.message, false, { 
+          intentConfidence: 0.95,
+          responseGenerated: true,
+          isCrisis: data.isCrisis
+        });
+
+        // Update analytics based on response
+        if (data.suggestedPrograms && data.suggestedPrograms.length > 0) {
+          setDetectedIntents(data.suggestedPrograms.map(program => ({
+            intent: program,
+            confidence: 0.9
+          })));
         }
       }
-
-      addMessage(response, false, { 
-        intentConfidence: analysis.intents[0]?.confidence || 0.8,
-        responseGenerated: true 
-      });
+    } catch (error) {
+      console.error('Chat API error:', error);
+      addMessage(
+        "I'm having some technical difficulties. Please try again or call SINDA directly at 1800 295 3333 for immediate assistance.",
+        false,
+        { error: true }
+      );
+    } finally {
       setIsTyping(false);
-    }, Math.random() * 1000 + 1500);
-  }, [inputMessage, isTyping, addMessage, recognizeIntent]);
+    }
+  }, [inputMessage, isTyping, addMessage, messages, conversationId]);
 
   const handleKeyPress = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -195,331 +229,66 @@ const EnhancedSINDAAssistant = () => {
     }
   }, [handleSendMessage]);
 
-  // Modern Analytics Dashboard
-  const AnalyticsDashboard = () => (
-    <div className="space-y-8 p-6">
-      {/* Real-time Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700 shadow-2xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-400 text-sm font-medium">Active Users</p>
-              <p className="text-3xl font-bold text-white mt-2">{analyticsData.realTimeMetrics.activeUsers}</p>
-              <div className="flex items-center mt-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
-                <span className="text-green-400 text-xs">+12% from yesterday</span>
-              </div>
-            </div>
-            <div className="bg-blue-500/20 p-3 rounded-xl">
-              <Users className="text-blue-400" size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700 shadow-2xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-400 text-sm font-medium">Response Time</p>
-              <p className="text-3xl font-bold text-white mt-2">{analyticsData.realTimeMetrics.responseTime}s</p>
-              <div className="flex items-center mt-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
-                <span className="text-green-400 text-xs">15% faster</span>
-              </div>
-            </div>
-            <div className="bg-green-500/20 p-3 rounded-xl">
-              <Zap className="text-green-400" size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700 shadow-2xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-400 text-sm font-medium">Intent Accuracy</p>
-              <p className="text-3xl font-bold text-white mt-2">{analyticsData.intentAccuracy}%</p>
-              <div className="flex items-center mt-2">
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse mr-2"></div>
-                <span className="text-purple-400 text-xs">+2.3% this week</span>
-              </div>
-            </div>
-            <div className="bg-purple-500/20 p-3 rounded-xl">
-              <Target className="text-purple-400" size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700 shadow-2xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-400 text-sm font-medium">Resolution Rate</p>
-              <p className="text-3xl font-bold text-white mt-2">{analyticsData.realTimeMetrics.resolutionRate}%</p>
-              <div className="flex items-center mt-2">
-                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse mr-2"></div>
-                <span className="text-orange-400 text-xs">+1.7% improvement</span>
-              </div>
-            </div>
-            <div className="bg-orange-500/20 p-3 rounded-xl">
-              <CheckCircle className="text-orange-400" size={24} />
-            </div>
-          </div>
-        </div>
+  // Welcome Screen
+  const WelcomeScreen = () => (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100 flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Floating Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-20 left-20 w-32 h-32 bg-blue-200/20 rounded-full animate-float-slow"></div>
+        <div className="absolute top-60 right-32 w-24 h-24 bg-cyan-200/20 rounded-full animate-float-medium"></div>
+        <div className="absolute bottom-32 left-1/3 w-40 h-40 bg-indigo-200/20 rounded-full animate-float-fast"></div>
       </div>
 
-      {/* Advanced Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700 shadow-2xl">
-          <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-            <Activity className="text-blue-400" size={24} />
-            Neural Network Activity
-          </h3>
-          <div className="space-y-4">
-            {Array.from({length: 6}, (_, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
-                <div className="flex-1 bg-slate-700 rounded-full h-2 relative overflow-hidden">
-                  <div 
-                    className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full"
-                    style={{ width: `${Math.random() * 100}%` }}
-                  />
-                </div>
-                <span className="text-slate-400 text-sm">{(Math.random() * 100).toFixed(1)}%</span>
+      <div className="max-w-4xl w-full relative z-10">
+        <div className="text-center mb-12">
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-8 flex items-center justify-center shadow-xl animate-glow">
+            <BookOpen className="text-white animate-pulse" size={40} />
+          </div>
+          <h1 className="text-5xl font-bold text-gray-800 mb-4 animate-slide-up">
+            Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">SINDA</span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed animate-fade-in">
+            Your AI-powered guide to Singapore Indian Development Association programs and services. 
+            Building stronger communities together since 1991.
+          </p>
+          
+          {/* Key Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+            {[
+              { label: 'Years Serving', value: '30+', color: 'blue' },
+              { label: 'Families Helped', value: '12K+', color: 'cyan' },
+              { label: 'Programs', value: '25+', color: 'indigo' },
+              { label: 'Support', value: '24/7', color: 'teal' }
+            ].map((stat, index) => (
+              <div key={index} className={`bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-${stat.color}-100 animate-slide-up hover:scale-105 transition-all duration-500`} style={{animationDelay: `${index * 0.1}s`}}>
+                <div className={`text-3xl font-bold text-${stat.color}-600 animate-counter`}>{stat.value}</div>
+                <div className="text-sm text-gray-600 mt-1">{stat.label}</div>
               </div>
             ))}
           </div>
-        </div>
 
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700 shadow-2xl">
-          <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-            <TrendingUp className="text-green-400" size={24} />
-            Performance Metrics
-          </h3>
-          <div className="space-y-6">
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-400">CPU Usage</span>
-                <span className="text-green-400">23%</span>
-              </div>
-              <div className="w-full bg-slate-700 rounded-full h-2">
-                <div className="bg-gradient-to-r from-green-500 to-emerald-400 h-2 rounded-full w-[23%]"></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-400">Memory</span>
-                <span className="text-blue-400">67%</span>
-              </div>
-              <div className="w-full bg-slate-700 rounded-full h-2">
-                <div className="bg-gradient-to-r from-blue-500 to-cyan-400 h-2 rounded-full w-[67%]"></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-400">Network</span>
-                <span className="text-purple-400">45%</span>
-              </div>
-              <div className="w-full bg-slate-700 rounded-full h-2">
-                <div className="bg-gradient-to-r from-purple-500 to-pink-400 h-2 rounded-full w-[45%]"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Modern Reports Dashboard
-  const ReportsDashboard = () => (
-    <div className="space-y-8 p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-white">Advanced Analytics</h2>
-        <div className="flex gap-3">
-          <button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all duration-300 shadow-lg">
-            <Download size={18} />
-            Export Data
-          </button>
-          <button className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-3 rounded-xl transition-all duration-300 shadow-lg">
-            Schedule Report
-          </button>
-        </div>
-      </div>
-
-      {/* Report Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700 shadow-2xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-blue-500/20 p-2 rounded-lg">
-              <BarChart3 className="text-blue-400" size={20} />
-            </div>
-            <h3 className="text-xl font-bold text-white">Performance Analytics</h3>
-          </div>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Total Conversations</span>
-              <span className="text-white font-bold text-lg">2,847</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Success Rate</span>
-              <span className="text-green-400 font-bold text-lg">94.3%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Avg Response</span>
-              <span className="text-blue-400 font-bold text-lg">1.2s</span>
-            </div>
-          </div>
-          <button className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-xl transition-all duration-300">
-            View Details
-          </button>
-        </div>
-
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700 shadow-2xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-green-500/20 p-2 rounded-lg">
-              <TrendingUp className="text-green-400" size={20} />
-            </div>
-            <h3 className="text-xl font-bold text-white">Growth Metrics</h3>
-          </div>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">New Users</span>
-              <span className="text-white font-bold text-lg">+167</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Conversion Rate</span>
-              <span className="text-green-400 font-bold text-lg">23.4%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Engagement</span>
-              <span className="text-purple-400 font-bold text-lg">+15%</span>
-            </div>
-          </div>
-          <button className="w-full mt-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 rounded-xl transition-all duration-300">
-            Growth Analysis
-          </button>
-        </div>
-
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700 shadow-2xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-purple-500/20 p-2 rounded-lg">
-              <DollarSign className="text-purple-400" size={20} />
-            </div>
-            <h3 className="text-xl font-bold text-white">ROI Analysis</h3>
-          </div>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Cost Savings</span>
-              <span className="text-white font-bold text-lg">$67,800</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">ROI</span>
-              <span className="text-green-400 font-bold text-lg">340%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Efficiency</span>
-              <span className="text-blue-400 font-bold text-lg">+89%</span>
-            </div>
-          </div>
-          <button className="w-full mt-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-xl transition-all duration-300">
-            Financial Report
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Modern Security Dashboard
-  const SecurityDashboard = () => (
-    <div className="space-y-8 p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-white">Security Center</h2>
-        <div className="flex items-center gap-3 bg-green-500/20 px-4 py-2 rounded-xl border border-green-500/30">
-          <CheckCircle size={20} className="text-green-400" />
-          <span className="text-green-400 font-medium">All Systems Secure</span>
-        </div>
-      </div>
-
-      {/* Security Status Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-green-500/30 shadow-2xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-400 text-sm font-medium">Encryption</p>
-              <p className="text-2xl font-bold text-green-400 mt-2">Active</p>
-              <p className="text-xs text-slate-500 mt-1">AES-256 Enabled</p>
-            </div>
-            <div className="bg-green-500/20 p-3 rounded-xl">
-              <Lock className="text-green-400" size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-blue-500/30 shadow-2xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-400 text-sm font-medium">Compliance</p>
-              <p className="text-2xl font-bold text-blue-400 mt-2">SOC2</p>
-              <p className="text-xs text-slate-500 mt-1">GDPR/PDPA Ready</p>
-            </div>
-            <div className="bg-blue-500/20 p-3 rounded-xl">
-              <Shield className="text-blue-400" size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-purple-500/30 shadow-2xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-400 text-sm font-medium">Uptime</p>
-              <p className="text-2xl font-bold text-purple-400 mt-2">99.7%</p>
-              <p className="text-xs text-slate-500 mt-1">Above 99.5% SLA</p>
-            </div>
-            <div className="bg-purple-500/20 p-3 rounded-xl">
-              <Server className="text-purple-400" size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-orange-500/30 shadow-2xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-400 text-sm font-medium">Last Scan</p>
-              <p className="text-2xl font-bold text-orange-400 mt-2">2h ago</p>
-              <p className="text-xs text-slate-500 mt-1">No threats found</p>
-            </div>
-            <div className="bg-orange-500/20 p-3 rounded-xl">
-              <Eye className="text-orange-400" size={24} />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Modern Chat Interface
-  const ChatInterface = () => (
-    <div className="max-w-6xl mx-auto p-6">
-      {currentStep === 'welcome' && (
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl border border-slate-700 p-12 text-center shadow-2xl">
-          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto mb-8 flex items-center justify-center shadow-lg">
-            <Cpu className="text-white" size={40} />
-          </div>
-          <h2 className="text-4xl font-bold text-white mb-4">Enhanced SINDA Assistant</h2>
-          <p className="text-slate-400 mb-8 text-lg">AI-powered support with advanced analytics and security</p>
           <button
             onClick={() => setCurrentStep('language')}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-4 rounded-2xl font-bold transition-all duration-300 shadow-lg transform hover:scale-105"
+            className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 hover:from-blue-600 hover:via-cyan-600 hover:to-indigo-700 text-white px-12 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105 flex items-center gap-3 mx-auto animate-bounce-gentle group"
           >
-            Start Conversation
+            Start Your Journey
+            <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform duration-300" />
           </button>
         </div>
-      )}
+      </div>
+    </div>
+  );
 
-      {currentStep === 'language' && (
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl border border-slate-700 p-10 shadow-2xl">
-          <h2 className="text-3xl font-bold text-center mb-8 text-white">Choose your language</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {Object.entries(languages).map(([key, lang]) => (
+  // Language Selection
+  const LanguageSelection = () => (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100 flex items-center justify-center p-6">
+      <div className="max-w-4xl w-full">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-gray-800 mb-4 animate-slide-up">Choose Your Language</h2>
+          <p className="text-lg text-gray-600 mb-12 animate-fade-in">Select your preferred language to continue</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Object.entries(languages).map(([key, lang], index) => (
               <button
                 key={key}
                 onClick={() => {
@@ -527,304 +296,230 @@ const EnhancedSINDAAssistant = () => {
                   setCurrentStep('chat');
                   setTimeout(() => addMessage(lang.greeting, false), 500);
                 }}
-                className="bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-slate-600 hover:border-blue-500 rounded-2xl p-8 transition-all duration-300 hover:shadow-xl hover:transform hover:scale-105"
+                className="bg-white/80 backdrop-blur-sm border-2 border-blue-200 hover:border-blue-500 rounded-2xl p-8 transition-all duration-500 hover:shadow-xl hover:transform hover:scale-110 group animate-slide-up"
+                style={{animationDelay: `${index * 0.1}s`}}
               >
-                <div className="text-2xl font-bold text-white mb-2">{lang.name}</div>
-                <div className="text-slate-400 text-sm">Select Language</div>
+                <div className="text-4xl mb-4 animate-pulse">{lang.flag}</div>
+                <div className="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors duration-300">
+                  {lang.native}
+                </div>
+                <div className="text-sm text-gray-500">{lang.name}</div>
               </button>
             ))}
           </div>
         </div>
-      )}
+      </div>
+    </div>
+  );
 
-      {currentStep === 'chat' && (
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl border border-slate-700 overflow-hidden shadow-2xl">
-          {/* Chat Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                  <Code className="text-white" size={28} />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold">Enhanced SINDA Assistant</h3>
-                  <p className="text-blue-100 text-sm">
-                    Intent Accuracy: {analyticsData.intentAccuracy}% | Response Time: {analyticsData.realTimeMetrics.responseTime}s
-                  </p>
-                </div>
+  // Main Chat Interface
+  const ChatInterface = () => (
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-blue-200 overflow-hidden shadow-2xl animate-slide-up">
+        {/* Chat Header */}
+        <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 p-6 text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 animate-wave"></div>
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center animate-glow">
+                <BookOpen className="text-white animate-pulse" size={28} />
               </div>
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => setShowAnalytics(!showAnalytics)}
-                  className="bg-white/20 backdrop-blur-sm p-3 rounded-xl hover:bg-white/30 transition-all duration-300"
-                >
-                  <BarChart3 size={20} />
-                </button>
+              <div>
+                <h3 className="text-2xl font-bold">SINDA Assistant</h3>
+                <p className="text-blue-100 text-sm flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+                  Intent Accuracy: {analyticsData.intentAccuracy}% | Active Users: {analyticsData.realTimeMetrics.activeUsers}
+                </p>
               </div>
             </div>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowAnalytics(!showAnalytics)}
+                className="bg-white/20 backdrop-blur-sm p-3 rounded-xl hover:bg-white/30 transition-all duration-300 hover:scale-110"
+              >
+                <BarChart3 size={20} />
+              </button>
+            </div>
           </div>
+        </div>
 
-          {/* Intent Recognition Display */}
-          {detectedIntents.length > 0 && (
-            <div className="bg-blue-500/10 border-b border-blue-500/20 p-4">
-              <div className="flex items-center gap-3 text-sm">
-                <Target className="text-blue-400" size={16} />
-                <span className="font-medium text-white">Detected Intents:</span>
-                {detectedIntents.map((intent, index) => (
-                  <span key={index} className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-xs border border-blue-500/30">
-                    {intent.intent.replace('_', ' ')} ({Math.round(intent.confidence * 100)}%)
-                  </span>
+        {/* Program Categories Quick Access */}
+        <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-indigo-50 p-6 border-b border-blue-100">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Explore Our Programs</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {programCategories.map((category, index) => {
+              const IconComponent = category.icon;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => addMessage(`Tell me about ${category.title}`, true)}
+                  className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:border-blue-400 rounded-xl p-4 transition-all duration-500 hover:shadow-lg text-left group hover:scale-105 animate-fade-in"
+                  style={{animationDelay: `${index * 0.1}s`}}
+                >
+                  <div className={`w-10 h-10 bg-gradient-to-r ${category.color} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300`}>
+                    <IconComponent className="text-white" size={20} />
+                  </div>
+                  <div className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
+                    {category.title}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">{category.count}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Intent Recognition Display */}
+        {detectedIntents.length > 0 && (
+          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-blue-200 p-4 animate-slide-down">
+            <div className="flex items-center gap-3 text-sm">
+              <Target className="text-blue-600 animate-pulse" size={16} />
+              <span className="font-medium text-gray-800">Detected Intent:</span>
+              {detectedIntents.map((intent, index) => (
+                <span key={index} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs border border-blue-200 animate-fade-in">
+                  {intent.intent.replace('_', ' ')} ({Math.round((intent.confidence || 0.9) * 100)}%)
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Messages */}
+        <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50 backdrop-blur-sm">
+          {messages.length === 0 && (
+            <div className="text-center py-8 animate-fade-in">
+              <div className="text-blue-400 mb-4 animate-bounce-gentle">
+                <MessageCircle size={48} className="mx-auto" />
+              </div>
+              <h4 className="text-lg font-semibold text-gray-600 mb-2">How can I help you today?</h4>
+              <p className="text-gray-500 mb-6">Ask me about SINDA programs, eligibility, or application processes</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-md mx-auto">
+                {quickHelp.map((help, index) => (
+                  <button
+                    key={index}
+                    onClick={() => addMessage(help.text, true)}
+                    className="bg-blue-50 border border-blue-200 hover:border-blue-400 rounded-lg p-3 text-sm text-left transition-all duration-300 hover:shadow-md hover:scale-105 animate-slide-up"
+                    style={{animationDelay: `${index * 0.1}s`}}
+                  >
+                    {help.text}
+                  </button>
                 ))}
               </div>
-              {extractedEntities.length > 0 && (
-                <div className="flex items-center gap-3 text-sm mt-2">
-                  <span className="font-medium text-white">Entities:</span>
-                  {extractedEntities.map((entity, index) => (
-                    <span key={index} className="bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-xs border border-green-500/30">
-                      {entity.type}: {entity.values.join(', ')}
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
           )}
 
-          {/* Messages */}
-          <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-slate-800 to-slate-900">
-            {messages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs lg:max-w-md px-6 py-4 rounded-2xl shadow-lg ${
-                  msg.isUser 
-                    ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white' 
-                    : 'bg-gradient-to-br from-slate-700 to-slate-600 text-white border border-slate-600'
-                } ${msg.isUser ? 'rounded-br-md' : 'rounded-bl-md'}`}>
-                  <p className="text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
-                  <p className={`text-xs mt-2 ${msg.isUser ? 'text-blue-100' : 'text-slate-400'}`}>
-                    {msg.timestamp}
-                  </p>
+          {messages.map((msg, index) => (
+            <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'} animate-slide-up`} style={{animationDelay: `${index * 0.05}s`}}>
+              <div className={`max-w-xs lg:max-w-md px-6 py-4 rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 ${
+                msg.isUser 
+                  ? 'bg-gradient-to-br from-blue-500 via-cyan-500 to-indigo-600 text-white' 
+                  : 'bg-white/90 backdrop-blur-sm text-gray-800 border border-blue-200'
+              } ${msg.isUser ? 'rounded-br-md' : 'rounded-bl-md'}`}>
+                <p className="text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
+                <div className={`flex items-center justify-between mt-2 text-xs ${
+                  msg.isUser ? 'text-blue-100' : 'text-gray-500'
+                }`}>
+                  <span>{msg.timestamp}</span>
+                  {!msg.isUser && msg.metadata?.intentConfidence && (
+                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs animate-pulse">
+                      {Math.round(msg.metadata.intentConfidence * 100)}% confidence
+                    </span>
+                  )}
+                  {msg.metadata?.isCrisis && (
+                    <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs animate-pulse">
+                      Crisis Support
+                    </span>
+                  )}
                 </div>
               </div>
-            ))}
-            
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="bg-gradient-to-br from-slate-700 to-slate-600 border border-slate-600 rounded-2xl rounded-bl-md px-6 py-4 shadow-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                    <span className="text-sm text-slate-300">AI processing with {analyticsData.intentAccuracy}% accuracy...</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Enhanced Input Area */}
-          <div className="p-6 bg-slate-800 border-t border-slate-700">
-            <div className="flex gap-4 items-end">
-              <div className="flex-1">
-                <textarea
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type your message here..."
-                  className="w-full resize-none bg-slate-700 border border-slate-600 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400 text-sm"
-                  rows="2"
-                  disabled={isTyping}
-                />
-              </div>
-              <button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isTyping}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-slate-600 disabled:to-slate-700 disabled:cursor-not-allowed text-white p-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
-              >
-                <Send size={20} />
-              </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Analytics Overlay */}
-      {showAnalytics && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-8">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold text-white">Real-time Analytics</h2>
-                <button 
-                  onClick={() => setShowAnalytics(false)}
-                  className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-700 transition-all duration-300"
-                >
-                  <XCircle size={24} />
-                </button>
-              </div>
-              <AnalyticsDashboard />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
-      {/* Modern Header with Navigation */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 shadow-2xl border-b border-slate-700">
-        <div className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-4 rounded-2xl shadow-lg">
-              <Cpu className="text-white" size={32} />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Enhanced SINDA Assistant</h1>
-              <p className="text-slate-400 flex items-center mt-1">
-                <div className="w-2 h-2 bg-green-400 rounded-full mr-3 animate-pulse"></div>
-                Advanced AI • 97.8% Intent Accuracy • Enterprise Security
-              </p>
-            </div>
-          </div>
+          ))}
           
-          {/* Navigation Tabs */}
-          <div className="flex space-x-2">
+          {isTyping && (
+            <div className="flex justify-start animate-slide-up">
+              <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-2xl rounded-bl-md px-6 py-4 shadow-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  <span className="text-sm text-gray-600">SINDA Assistant is thinking...</span>
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input Area */}
+        <div className="p-6 bg-white/80 backdrop-blur-sm border-t border-blue-200">
+          <div className="flex gap-4 items-end">
+            <div className="flex-1">
+              <textarea
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message here..."
+                className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm transition-all duration-300"
+                rows="2"
+                disabled={isTyping}
+              />
+            </div>
             <button
-              onClick={() => setCurrentView('chat')}
-              className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
-                currentView === 'chat' 
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
-              }`}
+              onClick={handleSendMessage}
+              disabled={!inputMessage.trim() || isTyping}
+              className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 hover:from-blue-600 hover:via-cyan-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white p-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110 disabled:transform-none animate-glow"
             >
-              <MessageCircle size={18} />
-              Chat
-            </button>
-            <button
-              onClick={() => setCurrentView('analytics')}
-              className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
-                currentView === 'analytics' 
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
-              }`}
-            >
-              <BarChart3 size={18} />
-              Analytics
-            </button>
-            <button
-              onClick={() => setCurrentView('reports')}
-              className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
-                currentView === 'reports' 
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
-              }`}
-            >
-              <Download size={18} />
-              Reports
-            </button>
-            <button
-              onClick={() => setCurrentView('security')}
-              className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
-                currentView === 'security' 
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
-              }`}
-            >
-              <Shield size={18} />
-              Security
+              <Send size={20} />
             </button>
           </div>
         </div>
       </div>
-
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto py-8">
-        {currentView === 'chat' && <ChatInterface />}
-        {currentView === 'analytics' && <AnalyticsDashboard />}
-        {currentView === 'reports' && <ReportsDashboard />}
-        {currentView === 'security' && <SecurityDashboard />}
-      </div>
-
-      {/* Modern Status Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-slate-900 to-slate-800 border-t border-slate-700 backdrop-blur-lg bg-opacity-95">
-        <div className="max-w-7xl mx-auto flex justify-between items-center text-sm py-4 px-6">
-          <div className="flex items-center space-x-8">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-slate-300">System Status: Operational</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Activity size={16} className="text-blue-400" />
-              <span className="text-slate-300">Active Users: {analyticsData.realTimeMetrics.activeUsers}</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Zap size={16} className="text-green-400" />
-              <span className="text-slate-300">Avg Response: {analyticsData.realTimeMetrics.responseTime}s</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Target size={16} className="text-purple-400" />
-              <span className="text-slate-300">Intent Accuracy: {analyticsData.intentAccuracy}%</span>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3 text-slate-400">
-            <Lock size={16} className="text-green-400" />
-            <span>End-to-End Encrypted</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Enhanced Styling */}
-      <style jsx>{`
-        @keyframes bounce {
-          0%, 80%, 100% { 
-            transform: scale(0.8); 
-            opacity: 0.5; 
-          }
-          40% { 
-            transform: scale(1.2); 
-            opacity: 1; 
-          }
-        }
-        
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        
-        .animate-bounce {
-          animation: bounce 1.4s infinite;
-        }
-        
-        .animate-pulse {
-          animation: pulse 2s infinite;
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-          width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-          background: #1e293b;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-          background: #475569;
-          border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-          background: #64748b;
-        }
-      `}</style>
     </div>
   );
-};
 
-export default EnhancedSINDAAssistant;
+  // Analytics Dashboard - using the comprehensive version from before
+  const AnalyticsDashboard = () => (
+    <div className="space-y-8 p-6">
+      {/* Key Metrics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg hover:scale-105 transition-all duration-500 animate-slide-up">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 text-sm font-medium">Families Helped</p>
+              <p className="text-3xl font-bold text-blue-600 mt-2 animate-counter">{analyticsData.helpMetrics.totalFamiliesHelped.toLocaleString()}</p>
+              <div className="flex items-center mt-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+                <span className="text-green-600 text-xs">+234 this month</span>
+              </div>
+            </div>
+            <div className="bg-blue-100 p-3 rounded-xl animate-bounce-gentle">
+              <Heart className="text-blue-600" size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-cyan-100 shadow-lg hover:scale-105 transition-all duration-500 animate-slide-up" style={{animationDelay: '0.1s'}}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 text-sm font-medium">Financial Aid</p>
+              <p className="text-3xl font-bold text-cyan-600 mt-2 animate-counter">${(analyticsData.helpMetrics.financialAidDistributed / 1000000).toFixed(1)}M</p>
+              <div className="flex items-center mt-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+                <span className="text-green-600 text-xs">Distributed this year</span>
+              </div>
+            </div>
+            <div className="bg-cyan-100 p-3 rounded-xl animate-bounce-gentle">
+              <DollarSign className="text-cyan-600" size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-indigo-100 shadow-lg hover:scale-105 transition-all duration-500 animate-slide-up" style={{animationDelay: '0.2s'}}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 text-sm font-medium">Job Placements</p>
+              <p className="text-3xl font-bold text-indigo-600 mt-2 animate-counter">{analyticsData.helpMetrics.jobPlacements}</p>
+              <div className="flex items-center mt-2">
