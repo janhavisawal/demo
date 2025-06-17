@@ -41,22 +41,33 @@ const SINDAAssistant = () => {
   };
 
   const queryOpenAI = async (userMessage) => {
+    console.log('🔍 Calling OpenAI API with message:', userMessage);
+    
     try {
+      const requestBody = {
+        message: userMessage,
+        messages: conversationContext,
+        isFirstMessage: isFirstMessage
+      };
+      
+      console.log('📤 Sending request to /api/chat:', requestBody);
+      
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          messages: conversationContext,
-          isFirstMessage: isFirstMessage
-        })
+        body: JSON.stringify(requestBody)
       });
 
+      console.log('📥 Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('✅ API Response data:', data);
       
       // Handle crisis detection
       if (data.isCrisis) {
@@ -73,11 +84,11 @@ const SINDAAssistant = () => {
 
       return {
         message: data.message,
-        isCrisis: data.isCrisis
+        isCrisis: data.isCrisis || false
       };
 
     } catch (error) {
-      console.error('OpenAI API Error:', error);
+      console.error('❌ OpenAI API Error:', error);
       return {
         message: "I'm experiencing some technical difficulties right now. Your feelings and experiences are valid, and you're not alone. If this is urgent, please don't hesitate to call 6298 8775 for immediate support.",
         isCrisis: false
