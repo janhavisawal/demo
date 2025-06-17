@@ -2,53 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom SINDA styles */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  margin: 0;
-  padding: 0;
-}
-
-.sinda-gradient {
-  background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
-}
-
-.sinda-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  border: 1px solid #fed7aa;
-}
-
-.sinda-button {
-  background: #ea580c;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.sinda-button:hover {
-  background: #dc2626;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
-}
-
-.language-card {
-  background: white;
-  border: 2px solid #fed7aa;
-  border-radius: 12px;
-  padding: 16px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin: 8px;
-}
-
-.language-card:hover {
-  border-color: #ea580c;
-  background: #fff7ed;
-  transform: translateY(-2px);
+  font-family: 'Inter', sans-serif;
+  background-color: #f9fafb;
 }
