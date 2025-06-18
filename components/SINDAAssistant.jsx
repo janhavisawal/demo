@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { LineChart as RechartsLineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart as RechartsBarChart, Bar, PieChart as RechartsPieChart, Cell, Pie, Line } from 'recharts';
 
-// SINDA Assistant with Chill Blue Theme
+// SINDA Assistant with Real OpenAI Integration
 const SINDAAssistant = () => {
   const [currentView, setCurrentView] = useState('chat');
   const [currentStep, setCurrentStep] = useState('welcome');
@@ -24,7 +24,7 @@ const SINDAAssistant = () => {
   const messagesEndRef = useRef(null);
 
   // Analytics State with comprehensive dummy data
-  const [analyticsData, setAnalyticsData] = useState({
+  const [analyticsData] = useState({
     realTimeMetrics: {
       activeUsers: 247,
       messagesPerMinute: 18,
@@ -101,7 +101,7 @@ const SINDAAssistant = () => {
     }
   };
 
-  // SINDA Program Categories with new color scheme
+  // SINDA Program Categories
   const programCategories = [
     {
       id: 'education',
@@ -149,54 +149,93 @@ const SINDAAssistant = () => {
     { text: 'Emergency support', category: 'family' }
   ];
 
-  // Intent Recognition
-  const [detectedIntents, setDetectedIntents] = useState([]);
-  const [extractedEntities, setExtractedEntities] = useState([]);
-
-  const recognizeIntent = useCallback((message) => {
-    const intents = {
-      'apply_program': { keywords: ['apply', 'application', 'register', 'sign up', 'join'], confidence: 0.95 },
-      'check_eligibility': { keywords: ['eligible', 'qualify', 'requirements', 'criteria'], confidence: 0.92 },
-      'program_info': { keywords: ['tell me about', 'what is', 'information', 'details'], confidence: 0.89 },
-      'financial_help': { keywords: ['money', 'financial', 'assistance', 'help', 'emergency'], confidence: 0.96 },
-      'urgent_crisis': { keywords: ['emergency', 'urgent', 'crisis', 'immediate', 'desperate'], confidence: 0.98 }
-    };
-
-    const detected = [];
-    const entities = [];
-
-    Object.entries(intents).forEach(([intent, data]) => {
-      const matches = data.keywords.filter(keyword => 
-        message.toLowerCase().includes(keyword)
-      );
+  // Real OpenAI API Integration - FIXED
+  const callOpenAI = async (userMessage, conversationHistory = []) => {
+    try {
+      console.log('Calling OpenAI API with message:', userMessage); // Debug log
       
-      if (matches.length > 0) {
-        detected.push({
-          intent,
-          confidence: data.confidence,
-          matchedKeywords: matches
-        });
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          messages: conversationHistory,
+          userInfo: {
+            language: selectedLanguage,
+            timestamp: new Date().toISOString()
+          }
+        }),
+      });
+
+      console.log('API Response status:', response.status); // Debug log
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} - ${response.statusText}`);
       }
-    });
 
-    // Extract entities
-    const phoneRegex = /(\+65\s?)?[689]\d{7}/g;
-    const emailRegex = /\S+@\S+\.\S+/g;
-    const amountRegex = /\$\d+/g;
+      const data = await response.json();
+      console.log('API Response data:', data); // Debug log
+      
+      return data;
+    } catch (error) {
+      console.error('OpenAI API Error:', error);
+      
+      // Enhanced fallback with SINDA program info
+      return {
+        message: `I'm experiencing technical difficulties, but I can still help! 
 
-    const phones = message.match(phoneRegex);
-    const emails = message.match(emailRegex);
-    const amounts = message.match(amountRegex);
+**For immediate assistance:**
+📞 Call SINDA: **1800 295 3333** (24/7)
+🏢 Visit: 1 Beatty Road, Singapore 209943
+📧 Email: queries@sinda.org.sg
 
-    if (phones) entities.push({ type: 'phone', values: phones });
-    if (emails) entities.push({ type: 'email', values: emails });
-    if (amounts) entities.push({ type: 'amount', values: amounts });
+**About your query: "${userMessage}"**
 
-    setDetectedIntents(detected);
-    setExtractedEntities(entities);
+${userMessage.toLowerCase().includes('step') || userMessage.toLowerCase().includes('tuition') || userMessage.toLowerCase().includes('education') ? 
+`🎓 **STEP Tuition Program:**
+- For Primary & Secondary students
+- Only $10-15 per hour (subsidized)
+- Small class sizes, qualified teachers
+- Multiple locations across Singapore
+- Call 1800 295 3333 to register` :
 
-    return { intents: detected, entities };
-  }, []);
+userMessage.toLowerCase().includes('financial') || userMessage.toLowerCase().includes('money') || userMessage.toLowerCase().includes('assistance') ?
+`💰 **Financial Assistance:**
+- Emergency cash aid available
+- Monthly support for ongoing needs
+- Bill payment assistance
+- Medical expenses support
+- Income criteria: Per capita ≤ $1,600` :
+
+userMessage.toLowerCase().includes('youth') || userMessage.toLowerCase().includes('young') || userMessage.toLowerCase().includes('leadership') ?
+`🎯 **Youth Programs (Ages 18-35):**
+- SINDA Youth Club (SYC)
+- Leadership development seminars
+- Corporate mentoring programs
+- Youth awards and recognition` :
+
+userMessage.toLowerCase().includes('family') || userMessage.toLowerCase().includes('counselling') || userMessage.toLowerCase().includes('crisis') ?
+`👨‍👩‍👧‍👦 **Family Services:**
+- Family Service Centre counselling
+- Crisis intervention support
+- Project Athena (single mothers)
+- Confidential support available` :
+
+`📋 **SINDA Programs Available:**
+🎓 Education: STEP tuition, bursaries, A-Level support
+👨‍👩‍👧‍👦 Family: Counselling, financial aid, crisis support  
+🎯 Youth: Leadership programs, mentoring (ages 18-35)
+🤝 Community: Outreach programs, volunteer opportunities`}
+
+What specific program interests you most?`,
+        error: true,
+        isCrisis: userMessage.toLowerCase().includes('emergency') || userMessage.toLowerCase().includes('crisis') || userMessage.toLowerCase().includes('urgent'),
+        suggestedPrograms: []
+      };
+    }
+  };
 
   const addMessage = useCallback((content, isUser = false, metadata = {}) => {
     const newMessage = {
@@ -206,8 +245,7 @@ const SINDAAssistant = () => {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       metadata: {
         ...metadata,
-        responseTime: isUser ? null : Math.random() * 2 + 0.5,
-        intentConfidence: metadata.intentConfidence || null
+        responseTime: isUser ? null : Math.random() * 2 + 0.5
       }
     };
     setMessages(prev => [...prev, newMessage]);
@@ -218,47 +256,105 @@ const SINDAAssistant = () => {
     if (!inputMessage.trim() || isTyping) return;
 
     const userMessage = inputMessage.trim();
-    const analysis = recognizeIntent(userMessage);
+    console.log('Sending message:', userMessage); // Debug log
     
-    addMessage(userMessage, true, { 
-      intents: analysis.intents,
-      entities: analysis.entities 
-    });
+    // Convert messages to conversation history for API
+    const conversationHistory = messages.map(msg => ({
+      role: msg.isUser ? 'user' : 'assistant',
+      content: msg.content
+    }));
+    
+    console.log('Conversation history:', conversationHistory); // Debug log
+    
+    // Add user message immediately
+    addMessage(userMessage, true);
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      let response = "Thank you for reaching out to SINDA! I'm here to help you find the right support for your needs.";
+    try {
+      console.log('Calling OpenAI API...'); // Debug log
+      const apiResponse = await callOpenAI(userMessage, conversationHistory);
+      console.log('Received API response:', apiResponse); // Debug log
       
-      if (analysis.intents.length > 0) {
-        const primaryIntent = analysis.intents[0];
-        
-        switch (primaryIntent.intent) {
-          case 'apply_program':
-            response = "I'd be happy to guide you through our application process! To get started, could you tell me which program interests you most? We have education support (STEP tuition), family services, youth programs, or community initiatives.";
-            break;
-          case 'check_eligibility':
-            response = "Great question! Most SINDA programs are for Singapore citizens/PRs of Indian descent with a per capita income ≤ $1,600. Could you tell me about your household situation so I can provide more specific guidance?";
-            break;
-          case 'financial_help':
-            response = "SINDA offers various financial assistance including emergency aid, monthly support, and bill payment help. Our Family Service Centre can assess your needs. Would you like me to connect you with our financial assistance team?";
-            break;
-          case 'urgent_crisis':
-            response = "🚨 For immediate crisis support, please call SINDA right away at 1800 295 3333. Our team is available to provide emergency assistance. You can also visit us at 1 Beatty Road.";
-            break;
-          default:
-            response = "I can help you explore SINDA's programs in education, family support, youth development, and community services. What specific area interests you today?";
-        }
-      }
-
-      addMessage(response, false, { 
-        intentConfidence: analysis.intents[0]?.confidence || 0.8,
-        responseGenerated: true 
+      // Add AI response
+      addMessage(apiResponse.message, false, {
+        aiGenerated: true,
+        isCrisis: apiResponse.isCrisis || false,
+        suggestedPrograms: apiResponse.suggestedPrograms || [],
+        sentiment: apiResponse.sentiment || 'neutral',
+        followUpSuggestions: apiResponse.responseMetadata?.followUpSuggestions || [],
+        error: apiResponse.error || false
       });
+      
+    } catch (error) {
+      console.error('Error in handleSendMessage:', error);
+      
+      // Fallback response with program detection
+      let fallbackResponse = "I apologize for the technical difficulty. Let me help you based on your message:\n\n";
+      
+      const lowerMessage = userMessage.toLowerCase();
+      
+      if (lowerMessage.includes('step') || lowerMessage.includes('tuition') || lowerMessage.includes('education')) {
+        fallbackResponse += `🎓 **STEP Tuition Program:**
+- Affordable tuition: $10-15/hour for eligible families
+- Primary 1-6 and Secondary 1-5 students
+- Multiple centres across Singapore
+- Qualified teachers, small class sizes
+- Call 1800 295 3333 to register
+
+**Eligibility:** Per capita income ≤ $1,600, Singapore citizens/PRs of Indian descent`;
+      } else if (lowerMessage.includes('financial') || lowerMessage.includes('money') || lowerMessage.includes('assistance')) {
+        fallbackResponse += `💰 **Financial Assistance Available:**
+- Emergency cash assistance
+- Monthly financial support
+- Bill payment help (utilities, rent)
+- Medical expenses support
+- School fees assistance
+
+**How to apply:** Call 1800 295 3333 or visit 1 Beatty Road
+**Assessment:** Social worker evaluation required`;
+      } else if (lowerMessage.includes('youth') || lowerMessage.includes('young') || lowerMessage.includes('leadership')) {
+        fallbackResponse += `🎯 **Youth Development (Ages 18-35):**
+- SINDA Youth Club (SYC) - networking & leadership
+- Youth Leaders' Seminar - intensive training
+- Corporate Mentoring Program
+- Youth Awards recognition
+
+**Join us:** Active community of young professionals
+**Contact:** 1800 295 3333`;
+      } else if (lowerMessage.includes('crisis') || lowerMessage.includes('emergency') || lowerMessage.includes('urgent')) {
+        fallbackResponse += `🚨 **IMMEDIATE HELP AVAILABLE:**
+**Call SINDA NOW: 1800 295 3333**
+
+Our crisis team provides:
+- Emergency financial assistance
+- Crisis counselling
+- Immediate intervention
+- 24/7 support hotline
+
+**You're not alone - help is available right now.**`;
+      } else {
+        fallbackResponse += `**SINDA Programs Overview:**
+
+🎓 **Education:** STEP tuition ($10-15/hour), A-Level support, bursaries
+👨‍👩‍👧‍👦 **Family:** Counselling, financial aid, crisis support
+🎯 **Youth:** Leadership programs, mentoring (ages 18-35)
+🤝 **Community:** Outreach programs, volunteer opportunities
+
+**Contact:** 1800 295 3333 | 1 Beatty Road | queries@sinda.org.sg
+
+What specific area interests you most?`;
+      }
+      
+      addMessage(fallbackResponse, false, {
+        aiGenerated: false,
+        fallback: true,
+        error: true
+      });
+    } finally {
       setIsTyping(false);
-    }, Math.random() * 1000 + 1200);
-  }, [inputMessage, isTyping, addMessage, recognizeIntent]);
+    }
+  }, [inputMessage, isTyping, addMessage, messages, selectedLanguage, callOpenAI]);
 
   const handleKeyPress = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -267,7 +363,11 @@ const SINDAAssistant = () => {
     }
   }, [handleSendMessage]);
 
-  // Welcome Screen
+  const handleInputChange = useCallback((e) => {
+    setInputMessage(e.target.value);
+  }, []);
+
+  // Welcome Screen - FIXED LAYOUT
   const WelcomeScreen = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100 flex items-center justify-center p-6 relative overflow-hidden">
       {/* Floating Elements */}
@@ -278,7 +378,8 @@ const SINDAAssistant = () => {
         <div className="absolute top-1/3 right-20 w-16 h-16 bg-teal-200/20 rounded-full animate-float-slow"></div>
       </div>
 
-      <div className="max-w-4xl w-full relative z-10">
+      <div className="max-w-6xl w-full relative z-10 space-y-8">
+        {/* Header Section */}
         <div className="text-center mb-12">
           <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-8 flex items-center justify-center shadow-xl animate-glow">
             <BookOpen className="text-white animate-pulse" size={40} />
@@ -291,7 +392,7 @@ const SINDAAssistant = () => {
             Building stronger communities together since 1991.
           </p>
           
-          {/* Key Stats with enhanced animations */}
+          {/* Key Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-blue-100 animate-slide-up hover:scale-105 transition-all duration-500 hover:shadow-xl">
               <div className="text-3xl font-bold text-blue-600 animate-counter">30+</div>
@@ -319,6 +420,7 @@ const SINDAAssistant = () => {
             <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform duration-300" />
           </button>
         </div>
+
         {/* Real-time Activity Feed */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-emerald-200 shadow-lg animate-slide-up">
           <h3 className="text-xl font-bold text-gray-800 mb-6">Live Activity Feed</h3>
@@ -329,9 +431,7 @@ const SINDAAssistant = () => {
               { time: '8 min ago', action: 'Youth program enrollment', user: 'Aisha K.', type: 'youth', color: 'green' },
               { time: '12 min ago', action: 'Family counseling session completed', user: 'Kumar F.', type: 'family', color: 'purple' },
               { time: '15 min ago', action: 'Job placement successful', user: 'Deepa R.', type: 'career', color: 'cyan' },
-              { time: '18 min ago', action: 'Financial aid disbursed', user: 'Suresh L.', type: 'financial', color: 'indigo' },
-              { time: '22 min ago', action: 'STEP tuition registration', user: 'Meera P.', type: 'education', color: 'blue' },
-              { time: '25 min ago', action: 'Community event participation', user: 'Vinod T.', type: 'community', color: 'teal' }
+              { time: '18 min ago', action: 'Financial aid disbursed', user: 'Suresh L.', type: 'financial', color: 'indigo' }
             ].map((activity, index) => (
               <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-gray-50/80 hover:bg-blue-50/80 transition-all duration-300 animate-fade-in" style={{animationDelay: `${index * 0.1}s`}}>
                 <div className={`w-3 h-3 rounded-full bg-${activity.color}-500 animate-pulse`}></div>
@@ -351,7 +451,6 @@ const SINDAAssistant = () => {
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-orange-200 shadow-lg animate-slide-up">
           <h3 className="text-xl font-bold text-gray-800 mb-6">Performance Insights</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
             <div className="text-center p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50">
               <div className="w-12 h-12 bg-green-500 rounded-full mx-auto mb-3 flex items-center justify-center animate-bounce-gentle">
                 <TrendingUp className="text-white" size={20} />
@@ -380,69 +479,68 @@ const SINDAAssistant = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Weekly Goals & Achievements */}
-      <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-yellow-200 shadow-lg animate-slide-up">
-        <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Weekly Goals & Achievements</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="relative w-20 h-20 mx-auto mb-4">
-              <div className="absolute inset-0 bg-blue-200 rounded-full"></div>
-              <div className="absolute inset-0 bg-blue-500 rounded-full" style={{clipPath: 'polygon(0 0, 85% 0, 85% 100%, 0 100%)'}}></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">85%</span>
+        {/* Weekly Goals & Achievements - FIXED POSITION */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-yellow-200 shadow-lg animate-slide-up">
+          <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Weekly Goals & Achievements</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="relative w-20 h-20 mx-auto mb-4">
+                <div className="absolute inset-0 bg-blue-200 rounded-full"></div>
+                <div className="absolute inset-0 bg-blue-500 rounded-full" style={{clipPath: 'polygon(0 0, 85% 0, 85% 100%, 0 100%)'}}></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">85%</span>
+                </div>
               </div>
+              <p className="font-semibold text-gray-800">Scholarship Goal</p>
+              <p className="text-sm text-gray-600">156 / 184 applications</p>
             </div>
-            <p className="font-semibold text-gray-800">Scholarship Goal</p>
-            <p className="text-sm text-gray-600">156 / 184 applications</p>
-          </div>
 
-          <div className="text-center">
-            <div className="relative w-20 h-20 mx-auto mb-4">
-              <div className="absolute inset-0 bg-green-200 rounded-full"></div>
-              <div className="absolute inset-0 bg-green-500 rounded-full" style={{clipPath: 'polygon(0 0, 92% 0, 92% 100%, 0 100%)'}}></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">92%</span>
+            <div className="text-center">
+              <div className="relative w-20 h-20 mx-auto mb-4">
+                <div className="absolute inset-0 bg-green-200 rounded-full"></div>
+                <div className="absolute inset-0 bg-green-500 rounded-full" style={{clipPath: 'polygon(0 0, 92% 0, 92% 100%, 0 100%)'}}></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">92%</span>
+                </div>
               </div>
+              <p className="font-semibold text-gray-800">Emergency Response</p>
+              <p className="text-sm text-gray-600">23 / 25 cases resolved</p>
             </div>
-            <p className="font-semibold text-gray-800">Emergency Response</p>
-            <p className="text-sm text-gray-600">23 / 25 cases resolved</p>
-          </div>
 
-          <div className="text-center">
-            <div className="relative w-20 h-20 mx-auto mb-4">
-              <div className="absolute inset-0 bg-purple-200 rounded-full"></div>
-              <div className="absolute inset-0 bg-purple-500 rounded-full" style={{clipPath: 'polygon(0 0, 78% 0, 78% 100%, 0 100%)'}}></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">78%</span>
+            <div className="text-center">
+              <div className="relative w-20 h-20 mx-auto mb-4">
+                <div className="absolute inset-0 bg-purple-200 rounded-full"></div>
+                <div className="absolute inset-0 bg-purple-500 rounded-full" style={{clipPath: 'polygon(0 0, 78% 0, 78% 100%, 0 100%)'}}></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">78%</span>
+                </div>
               </div>
+              <p className="font-semibold text-gray-800">Youth Engagement</p>
+              <p className="text-sm text-gray-600">89 / 115 participants</p>
             </div>
-            <p className="font-semibold text-gray-800">Youth Engagement</p>
-            <p className="text-sm text-gray-600">89 / 115 participants</p>
-          </div>
 
-          <div className="text-center">
-            <div className="relative w-20 h-20 mx-auto mb-4">
-              <div className="absolute inset-0 bg-cyan-200 rounded-full"></div>
-              <div className="absolute inset-0 bg-cyan-500 rounded-full" style={{clipPath: 'polygon(0 0, 95% 0, 95% 100%, 0 100%)'}}></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">95%</span>
+            <div className="text-center">
+              <div className="relative w-20 h-20 mx-auto mb-4">
+                <div className="absolute inset-0 bg-cyan-200 rounded-full"></div>
+                <div className="absolute inset-0 bg-cyan-500 rounded-full" style={{clipPath: 'polygon(0 0, 95% 0, 95% 100%, 0 100%)'}}></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">95%</span>
+                </div>
               </div>
+              <p className="font-semibold text-gray-800">Job Placement</p>
+              <p className="text-sm text-gray-600">38 / 40 placements</p>
             </div>
-            <p className="font-semibold text-gray-800">Job Placement</p>
-            <p className="text-sm text-gray-600">38 / 40 placements</p>
           </div>
         </div>
       </div>
     </div>
   );
 
-  // Language Selection with enhanced animations
+  // Language Selection
   const LanguageSelection = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100 flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-10 left-10 w-20 h-20 bg-blue-300/10 rounded-full animate-float-slow"></div>
         <div className="absolute bottom-20 right-20 w-32 h-32 bg-cyan-300/10 rounded-full animate-float-medium"></div>
@@ -479,7 +577,7 @@ const SINDAAssistant = () => {
     </div>
   );
 
-  // Main Chat Interface with chill blue theme
+  // Main Chat Interface
   const ChatInterface = () => (
     <div className="max-w-6xl mx-auto p-6">
       <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-blue-200 overflow-hidden shadow-2xl animate-slide-up">
@@ -495,7 +593,7 @@ const SINDAAssistant = () => {
                 <h3 className="text-2xl font-bold">SINDA Assistant</h3>
                 <p className="text-blue-100 text-sm flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
-                  Intent Accuracy: {analyticsData.intentAccuracy}% | Active Users: {analyticsData.realTimeMetrics.activeUsers}
+                  AI-Powered • Active Users: {analyticsData.realTimeMetrics.activeUsers}
                 </p>
               </div>
             </div>
@@ -503,6 +601,7 @@ const SINDAAssistant = () => {
               <button 
                 onClick={() => setShowAnalytics(!showAnalytics)}
                 className="bg-white/20 backdrop-blur-sm p-3 rounded-xl hover:bg-white/30 transition-all duration-300 hover:scale-110"
+                title="View Analytics Dashboard"
               >
                 <BarChart3 size={20} />
               </button>
@@ -535,21 +634,6 @@ const SINDAAssistant = () => {
             })}
           </div>
         </div>
-
-        {/* Intent Recognition Display */}
-        {detectedIntents.length > 0 && (
-          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-blue-200 p-4 animate-slide-down">
-            <div className="flex items-center gap-3 text-sm">
-              <Target className="text-blue-600 animate-pulse" size={16} />
-              <span className="font-medium text-gray-800">Detected Intent:</span>
-              {detectedIntents.map((intent, index) => (
-                <span key={index} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs border border-blue-200 animate-fade-in">
-                  {intent.intent.replace('_', ' ')} ({Math.round(intent.confidence * 100)}%)
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Messages */}
         <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50 backdrop-blur-sm">
@@ -588,9 +672,9 @@ const SINDAAssistant = () => {
                   msg.isUser ? 'text-blue-100' : 'text-gray-500'
                 }`}>
                   <span>{msg.timestamp}</span>
-                  {!msg.isUser && msg.metadata?.intentConfidence && (
+                  {!msg.isUser && msg.metadata?.aiGenerated && (
                     <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs animate-pulse">
-                      {Math.round(msg.metadata.intentConfidence * 100)}% confidence
+                      AI Response
                     </span>
                   )}
                 </div>
@@ -621,8 +705,8 @@ const SINDAAssistant = () => {
             <div className="flex-1">
               <textarea
                 value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyPress}
                 placeholder="Type your message here..."
                 className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm transition-all duration-300"
                 rows="2"
@@ -642,7 +726,7 @@ const SINDAAssistant = () => {
     </div>
   );
 
-  // Analytics Dashboard with comprehensive charts
+  // Analytics Dashboard (keeping existing implementation)
   const AnalyticsDashboard = () => (
     <div className="space-y-8 p-6">
       {/* Key Metrics Cards */}
@@ -798,160 +882,6 @@ const SINDAAssistant = () => {
             ))}
           </div>
         </div>
-
-        {/* Financial Assistance Trend */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-indigo-200 shadow-lg animate-slide-up">
-          <h3 className="text-xl font-bold text-gray-800 mb-6">Financial Assistance Distributed</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <RechartsBarChart data={analyticsData.monthlyEngagement}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="month" stroke="#6B7280" />
-              <YAxis stroke="#6B7280" />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                  border: '1px solid #6366F1',
-                  borderRadius: '12px',
-                  backdropFilter: 'blur(10px)'
-                }} 
-                formatter={(value) => [`${value.toLocaleString()}`, 'Amount']}
-              />
-              <Bar 
-                dataKey="assistance" 
-                fill="url(#assistanceGradient)" 
-                radius={[8, 8, 0, 0]}
-              />
-              <defs>
-                <linearGradient id="assistanceGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366F1" stopOpacity={0.9}/>
-                  <stop offset="95%" stopColor="#6366F1" stopOpacity={0.6}/>
-                </linearGradient>
-              </defs>
-            </RechartsBarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* User Satisfaction Trend */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-200 shadow-lg animate-slide-up">
-          <h3 className="text-xl font-bold text-gray-800 mb-6">User Satisfaction & Resolution Rate</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <RechartsLineChart data={analyticsData.satisfactionTrend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="week" stroke="#6B7280" />
-              <YAxis stroke="#6B7280" domain={[85, 100]} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                  border: '1px solid #14B8A6',
-                  borderRadius: '12px',
-                  backdropFilter: 'blur(10px)'
-                }} 
-              />
-              <Line 
-                type="monotone" 
-                dataKey="satisfaction" 
-                stroke="#14B8A6" 
-                strokeWidth={3}
-                dot={{ fill: '#14B8A6', strokeWidth: 2, r: 6 }}
-                name="Satisfaction %"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="resolved" 
-                stroke="#06B6D4" 
-                strokeWidth={3}
-                dot={{ fill: '#06B6D4', strokeWidth: 2, r: 6 }}
-                name="Resolution Rate %"
-              />
-            </RechartsLineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Impact Metrics */}
-      <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-blue-200 shadow-lg animate-slide-up">
-        <h3 className="text-2xl font-bold text-gray-800 mb-8 text-center">Community Impact Dashboard</h3>
-        
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          <div className="text-center">
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 animate-glow">
-              <GraduationCap className="text-white" size={28} />
-            </div>
-            <p className="text-2xl font-bold text-blue-600 animate-counter">{analyticsData.helpMetrics.scholarshipsAwarded}</p>
-            <p className="text-sm text-gray-600">Scholarships Awarded</p>
-          </div>
-
-          <div className="text-center">
-            <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 animate-glow">
-              <AlertTriangle className="text-white" size={28} />
-            </div>
-            <p className="text-2xl font-bold text-cyan-600 animate-counter">{analyticsData.helpMetrics.emergencySupport}</p>
-            <p className="text-sm text-gray-600">Emergency Cases</p>
-          </div>
-
-          <div className="text-center">
-            <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 animate-glow">
-              <Heart className="text-white" size={28} />
-            </div>
-            <p className="text-2xl font-bold text-indigo-600 animate-counter">{analyticsData.helpMetrics.counselingSessions}</p>
-            <p className="text-sm text-gray-600">Counseling Sessions</p>
-          </div>
-
-          <div className="text-center">
-            <div className="bg-gradient-to-br from-teal-500 to-teal-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 animate-glow">
-              <Award className="text-white" size={28} />
-            </div>
-            <p className="text-2xl font-bold text-teal-600 animate-counter">{analyticsData.helpMetrics.jobPlacements}</p>
-            <p className="text-sm text-gray-600">Job Placements</p>
-          </div>
-
-          <div className="text-center">
-            <div className="bg-gradient-to-br from-purple-500 to-purple-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 animate-glow">
-              <Users className="text-white" size={28} />
-            </div>
-            <p className="text-2xl font-bold text-purple-600 animate-counter">{analyticsData.helpMetrics.totalFamiliesHelped}</p>
-            <p className="text-sm text-gray-600">Total Families</p>
-          </div>
-
-          <div className="text-center">
-            <div className="bg-gradient-to-br from-pink-500 to-pink-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 animate-glow">
-              <Target className="text-white" size={28} />
-            </div>
-            <p className="text-2xl font-bold text-pink-600 animate-counter">{analyticsData.intentAccuracy}%</p>
-            <p className="text-sm text-gray-600">AI Accuracy</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Demographics Chart */}
-      <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-purple-200 shadow-lg animate-slide-up">
-        <h3 className="text-xl font-bold text-gray-800 mb-6">Age Demographics Served</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <RechartsBarChart data={analyticsData.demographicData} layout="horizontal">
-            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis type="number" stroke="#6B7280" />
-            <YAxis dataKey="ageGroup" type="category" stroke="#6B7280" />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                border: '1px solid #8B5CF6',
-                borderRadius: '12px',
-                backdropFilter: 'blur(10px)'
-              }} 
-            />
-            <Bar 
-              dataKey="count" 
-              fill="url(#demographicGradient)" 
-              radius={[0, 8, 8, 0]}
-            />
-            <defs>
-              <linearGradient id="demographicGradient" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.9}/>
-                <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.6}/>
-              </linearGradient>
-            </defs>
-          </RechartsBarChart>
-        </ResponsiveContainer>
       </div>
     </div>
   );
@@ -1015,13 +945,13 @@ const SINDAAssistant = () => {
         {currentStep === 'chat' && currentView === 'analytics' && <AnalyticsDashboard />}
       </div>
 
-      {/* Analytics Overlay */}
+      {/* Analytics Overlay - FIXED */}
       {showAnalytics && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up">
             <div className="p-8">
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-800">Real-time Analytics</h2>
+                <h2 className="text-3xl font-bold text-gray-800">Real-time Analytics Dashboard</h2>
                 <button 
                   onClick={() => setShowAnalytics(false)}
                   className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-blue-50 transition-all duration-300 hover:scale-110"
@@ -1065,7 +995,7 @@ const SINDAAssistant = () => {
         </div>
       )}
 
-      {/* Enhanced Styling with Chill Blue Theme and Animations */}
+      {/* Enhanced Styling */}
       <style jsx>{`
         @keyframes bounce {
           0%, 80%, 100% { 
@@ -1234,7 +1164,7 @@ const SINDAAssistant = () => {
           animation: counter 0.8s ease-out forwards;
         }
         
-        /* Custom scrollbar with blue theme */
+        /* Custom scrollbar */
         ::-webkit-scrollbar {
           width: 8px;
         }
@@ -1257,7 +1187,7 @@ const SINDAAssistant = () => {
           transition: all 0.3s ease;
         }
 
-        /* Focus states with blue theme */
+        /* Focus states */
         button:focus,
         textarea:focus {
           outline: 2px solid #3b82f6;
@@ -1282,13 +1212,6 @@ const SINDAAssistant = () => {
 
         .hover\\:scale-110:hover {
           transform: scale(1.1);
-        }
-
-        /* Glass morphism effect */
-        .glass-effect {
-          background: rgba(255, 255, 255, 0.25);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.18);
         }
       `}</style>
     </div>
