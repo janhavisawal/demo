@@ -140,7 +140,7 @@ const SINDAAssistant = () => {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [messages]);
+  }, [messages.length]);
 
   // Input handling
   const handleInputChange = (e) => {
