@@ -1488,6 +1488,9 @@ const SINDAAssistant = () => {
         </Suspense>
       </div>
 
+      {/* Analytics Modal */}
+      <AnalyticsModal />
+
       {/* Settings Modal */}
       <SettingsModal />
 
