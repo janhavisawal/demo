@@ -149,90 +149,138 @@ const SINDAAssistant = () => {
     { text: 'Emergency support', category: 'family' }
   ];
 
-  // Real OpenAI API Integration - FIXED
+  // Real OpenAI API Integration - DEBUGGED VERSION
   const callOpenAI = async (userMessage, conversationHistory = []) => {
     try {
-      console.log('Calling OpenAI API with message:', userMessage); // Debug log
+      console.log('🚀 Starting OpenAI API call...');
+      console.log('📝 Message:', userMessage);
+      console.log('💬 History length:', conversationHistory.length);
+      
+      const requestBody = {
+        message: userMessage,
+        messages: conversationHistory,
+        userInfo: {
+          language: selectedLanguage,
+          timestamp: new Date().toISOString()
+        }
+      };
+      
+      console.log('📦 Request body:', requestBody);
       
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          message: userMessage,
-          messages: conversationHistory,
-          userInfo: {
-            language: selectedLanguage,
-            timestamp: new Date().toISOString()
-          }
-        }),
+        body: JSON.stringify(requestBody),
       });
 
-      console.log('API Response status:', response.status); // Debug log
-
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response ok:', response.ok);
+      
       if (!response.ok) {
-        throw new Error(`API error: ${response.status} - ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`API error: ${response.status} - ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
-      console.log('API Response data:', data); // Debug log
+      console.log('✅ API Response data:', data);
       
-      return data;
+      return {
+        message: data.message || 'No response received from API',
+        isCrisis: data.isCrisis || false,
+        suggestedPrograms: data.suggestedPrograms || [],
+        sentiment: data.sentiment || 'neutral',
+        responseMetadata: data.responseMetadata || {},
+        error: false
+      };
+      
     } catch (error) {
-      console.error('OpenAI API Error:', error);
+      console.error('❌ OpenAI API Error:', error);
+      console.error('❌ Error stack:', error.stack);
+      
+      // Check if it's a network error
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        console.error('🌐 Network error - API endpoint may not be available');
+      }
       
       // Enhanced fallback with SINDA program info
       return {
-        message: `I'm experiencing technical difficulties, but I can still help! 
+        message: `I'm currently experiencing technical difficulties connecting to my AI service, but I can still help you! 
 
-**For immediate assistance:**
-📞 Call SINDA: **1800 295 3333** (24/7)
-🏢 Visit: 1 Beatty Road, Singapore 209943
-📧 Email: queries@sinda.org.sg
-
-**About your query: "${userMessage}"**
+**Your question: "${userMessage}"**
 
 ${userMessage.toLowerCase().includes('step') || userMessage.toLowerCase().includes('tuition') || userMessage.toLowerCase().includes('education') ? 
 `🎓 **STEP Tuition Program:**
-- For Primary & Secondary students
-- Only $10-15 per hour (subsidized)
-- Small class sizes, qualified teachers
-- Multiple locations across Singapore
-- Call 1800 295 3333 to register` :
+- **Cost:** Only $10-15 per hour (heavily subsidized!)
+- **Levels:** Primary 1-6, Secondary 1-5, JC1-2
+- **Subjects:** English, Math, Science, Mother Tongue
+- **Locations:** Multiple centres across Singapore
+- **Features:** Small classes, qualified teachers
+- **Eligibility:** Per capita income ≤ $1,600, SG citizens/PRs of Indian descent
+- **Apply:** Call 1800 295 3333 now!` :
 
-userMessage.toLowerCase().includes('financial') || userMessage.toLowerCase().includes('money') || userMessage.toLowerCase().includes('assistance') ?
-`💰 **Financial Assistance:**
-- Emergency cash aid available
-- Monthly support for ongoing needs
-- Bill payment assistance
-- Medical expenses support
-- Income criteria: Per capita ≤ $1,600` :
+userMessage.toLowerCase().includes('financial') || userMessage.toLowerCase().includes('money') || userMessage.toLowerCase().includes('assistance') || userMessage.toLowerCase().includes('help') ?
+`💰 **Financial Assistance Available:**
+- **Emergency Aid:** Immediate cash assistance for crisis situations
+- **Monthly Support:** Ongoing financial help for families in need
+- **Bill Payment:** Utilities, rent, medical expenses covered
+- **School Fees:** Education-related cost assistance
+- **Assessment:** Social worker evaluation (confidential)
+- **Eligibility:** Per capita income ≤ $1,600
+- **Apply:** Call 1800 295 3333 or visit 1 Beatty Road` :
 
-userMessage.toLowerCase().includes('youth') || userMessage.toLowerCase().includes('young') || userMessage.toLowerCase().includes('leadership') ?
-`🎯 **Youth Programs (Ages 18-35):**
-- SINDA Youth Club (SYC)
-- Leadership development seminars
-- Corporate mentoring programs
-- Youth awards and recognition` :
+userMessage.toLowerCase().includes('youth') || userMessage.toLowerCase().includes('young') || userMessage.toLowerCase().includes('leadership') || userMessage.toLowerCase().includes('club') ?
+`🎯 **Youth Development (Ages 18-35):**
+- **SINDA Youth Club:** Networking & leadership development
+- **Leadership Seminars:** Intensive skill-building workshops
+- **Corporate Mentoring:** Industry professional guidance
+- **Youth Awards:** Annual recognition program
+- **Benefits:** Career advancement, community impact, networking
+- **Join:** Call 1800 295 3333 or email queries@sinda.org.sg` :
 
-userMessage.toLowerCase().includes('family') || userMessage.toLowerCase().includes('counselling') || userMessage.toLowerCase().includes('crisis') ?
-`👨‍👩‍👧‍👦 **Family Services:**
-- Family Service Centre counselling
-- Crisis intervention support
-- Project Athena (single mothers)
-- Confidential support available` :
+userMessage.toLowerCase().includes('family') || userMessage.toLowerCase().includes('counselling') || userMessage.toLowerCase().includes('crisis') || userMessage.toLowerCase().includes('emergency') ?
+`👨‍👩‍👧‍👦 **Family Services & Crisis Support:**
+- **Family Service Centre:** Professional counselling available
+- **Crisis Intervention:** 24/7 emergency support
+- **Project Athena:** Support for single mothers
+- **Confidential Help:** All services are private and secure
+- **Immediate Support:** Call 1800 295 3333 RIGHT NOW
+- **Address:** 1 Beatty Road, Singapore 209943` :
 
-`📋 **SINDA Programs Available:**
-🎓 Education: STEP tuition, bursaries, A-Level support
-👨‍👩‍👧‍👦 Family: Counselling, financial aid, crisis support  
-🎯 Youth: Leadership programs, mentoring (ages 18-35)
-🤝 Community: Outreach programs, volunteer opportunities`}
+`📋 **SINDA Programs Overview:**
 
-What specific program interests you most?`,
+🎓 **Education Support:**
+- STEP tuition ($10-15/hour)
+- A-Level support, ITE programs
+- Educational bursaries & awards
+
+👨‍👩‍👧‍👦 **Family Services:**
+- Family counselling & crisis support
+- Financial assistance & emergency aid
+- Single mother empowerment programs
+
+🎯 **Youth Development (Ages 18-35):**
+- Leadership training & mentoring
+- Youth club & networking events
+- Career development support
+
+🤝 **Community Outreach:**
+- Door-to-door assistance
+- Mobile SINDA Bus services
+- Community events & volunteering
+
+**Contact SINDA:**
+📞 **Hotline:** 1800 295 3333 (24/7)
+🏢 **Address:** 1 Beatty Road, Singapore 209943
+📧 **Email:** queries@sinda.org.sg`}
+
+For immediate assistance with any SINDA program, please call **1800 295 3333** - our team is ready to help you!`,
         error: true,
         isCrisis: userMessage.toLowerCase().includes('emergency') || userMessage.toLowerCase().includes('crisis') || userMessage.toLowerCase().includes('urgent'),
-        suggestedPrograms: []
+        suggestedPrograms: [],
+        fallback: true
       };
     }
   };
@@ -251,6 +299,173 @@ What specific program interests you most?`,
     setMessages(prev => [...prev, newMessage]);
     setMessageId(prev => prev + 1);
   }, [messageId]);
+
+  // Handle program button clicks
+  const handleProgramClick = useCallback(async (categoryTitle) => {
+    const programMessage = `Tell me about ${categoryTitle}`;
+    console.log('Program button clicked:', programMessage);
+    
+    // Add user message
+    addMessage(programMessage, true);
+    setIsTyping(true);
+
+    // Generate appropriate response based on category
+    let response = "";
+    const lowerTitle = categoryTitle.toLowerCase();
+
+    if (lowerTitle.includes('education')) {
+      response = `🎓 **Education Programs at SINDA**
+
+**STEP (SINDA Tutorials for Enhanced Performance)** - Our flagship program:
+• **Cost:** Only $10-15 per hour (heavily subsidized)
+• **Levels:** Primary 1-6, Secondary 1-5, JC1-2
+• **Subjects:** English, Math, Science, Mother Tongue
+• **Features:** Small classes, qualified teachers, MOE-aligned materials
+• **Locations:** Multiple centres across Singapore
+
+**Other Education Support:**
+• **STEP Plus:** Holistic development & life skills
+• **A-Level Tuition:** Specialized JC support
+• **ITE Programs:** Support for technical education students
+• **SINDA Bursary:** Financial aid for tertiary education
+• **GUIDE Programme:** Academic mentoring
+• **Excellence Awards:** Recognition for outstanding students
+
+**Eligibility:** Per capita income ≤ $1,600, Singapore citizens/PRs of Indian descent
+
+📞 **Apply now:** Call 1800 295 3333 or visit 1 Beatty Road`;
+
+    } else if (lowerTitle.includes('family')) {
+      response = `👨‍👩‍👧‍👦 **Family Services at SINDA**
+
+**SINDA Family Service Centre** - Only self-help group with dedicated FSC:
+• Individual & family counselling
+• Crisis intervention & support
+• Case management services
+• Family life programs
+• Referral services
+
+**Financial Assistance Programs:**
+• **Emergency Aid:** Immediate cash assistance
+• **Monthly Support:** Ongoing financial help
+• **Bill Payment:** Utilities, rent, medical expenses
+• **School Fees:** Education-related costs
+
+**Specialized Programs:**
+• **Project Athena:** Empowerment for single mothers
+• **Prisons Outreach:** Support for families of incarcerated individuals
+
+**Support Available:**
+• Crisis counselling (24/7)
+• Social worker assessment
+• Confidential support
+• Multi-language assistance
+
+**Eligibility:** Per capita income ≤ $1,600 for financial aid
+
+📞 **Need help?** Call 1800 295 3333 immediately - we're here for you!`;
+
+    } else if (lowerTitle.includes('youth')) {
+      response = `🎯 **Youth Development Programs (Ages 18-35)**
+
+**SINDA Youth Club (SYC)** - Established 2010:
+• Leadership development workshops
+• Networking with young professionals
+• Community service projects
+• Social activities & events
+
+**Leadership Development:**
+• **Youth Leaders' Seminar:** Intensive leadership training
+• **Corporate Mentoring:** Industry professional guidance
+• Communication & project management skills
+• Real-world experience opportunities
+
+**Recognition Programs:**
+• **SINDA Youth Awards:** Annual excellence recognition
+• **150+ recipients** each year
+• Categories: Academic, community service, leadership
+• Government officials at ceremonies
+
+**Benefits of Joining:**
+• Build professional networks
+• Develop leadership skills
+• Give back to community
+• Career advancement opportunities
+
+**How to Join:**
+📞 Call 1800 295 3333
+🏢 Visit 1 Beatty Road, Singapore
+💻 Email queries@sinda.org.sg
+
+Ready to become a community leader?`;
+
+    } else if (lowerTitle.includes('community')) {
+      response = `🤝 **Community Outreach Programs**
+
+**Direct Community Engagement:**
+• **Door Knocking Exercise:** Direct outreach to heartland families
+• **SINDA Bus:** Mobile services bringing programs to your area
+• **Community Events:** Festivals, workshops, and gatherings
+
+**Annual Community Programs:**
+• **Back To School Festival:** School supplies & vouchers
+• **Project Give:** Community volunteering opportunities
+• **Cultural Celebrations:** Festivals and heritage events
+
+**Outreach Locations:**
+• Heartland areas with Indian families
+• Underserved neighborhoods
+• Community centers & void decks
+• Shopping malls & public spaces
+
+**Services Brought to You:**
+• Program registration assistance
+• Information about available support
+• Preliminary needs assessment
+• Connection to appropriate services
+
+**Community Impact:**
+• Reaching families who need help most
+• Building stronger neighborhoods
+• Connecting people to opportunities
+• Creating support networks
+
+**Get Involved:**
+📞 Volunteer: Call 1800 295 3333
+🏢 Visit: 1 Beatty Road for more info
+🤝 Join community events and activities
+
+Together, we build stronger communities!`;
+
+    } else {
+      response = `**SINDA Programs Overview**
+
+We offer comprehensive support across four key areas:
+
+🎓 **Education:** STEP tuition, bursaries, academic support
+👨‍👩‍👧‍👦 **Family:** Counselling, financial aid, crisis intervention
+🎯 **Youth:** Leadership development, mentoring (ages 18-35)
+🤝 **Community:** Outreach programs, volunteer opportunities
+
+**Contact Information:**
+📞 Hotline: 1800 295 3333 (24/7)
+🏢 Address: 1 Beatty Road, Singapore 209943
+📧 Email: queries@sinda.org.sg
+
+Which area would you like to explore in detail?`;
+    }
+
+    // Simulate typing delay for better UX
+    setTimeout(() => {
+      addMessage(response, false, {
+        aiGenerated: false,
+        programInfo: true,
+        category: categoryTitle
+      });
+      setIsTyping(false);
+    }, 1000 + Math.random() * 1000);
+
+  }, [addMessage]);
 
   const handleSendMessage = useCallback(async () => {
     if (!inputMessage.trim() || isTyping) return;
@@ -618,7 +833,7 @@ What specific area interests you most?`;
               return (
                 <button
                   key={category.id}
-                  onClick={() => addMessage(`Tell me about ${category.title}`, true)}
+                  onClick={() => handleProgramClick(category.title)}
                   className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:border-blue-400 rounded-xl p-4 transition-all duration-500 hover:shadow-lg text-left group hover:scale-105 animate-fade-in"
                   style={{animationDelay: `${index * 0.1}s`}}
                 >
