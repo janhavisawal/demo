@@ -55,6 +55,7 @@ const SINDAAssistant = () => {
   
   const messagesEndRef = useRef(null);
   const lastMessageCountRef = useRef(0);
+  const isTypingRef = useRef(false);
   const speechRecognition = useRef(null);
   const speechSynthesis = useRef(null);
 
@@ -363,7 +364,7 @@ const SINDAAssistant = () => {
     setMessageId(prev => prev + 1);
   }, [messageId, selectedLanguage, userSession.startTime]);
 
-  // Enhanced message sending with proper async handling
+  // FIXED: Enhanced message sending that resets typing state
   const handleSendMessage = useCallback(async () => {
     const trimmedMessage = inputMessage.trim();
     if (!trimmedMessage || isTyping) return;
@@ -372,6 +373,9 @@ const SINDAAssistant = () => {
       addNotification('Message too long. Please keep under 2000 characters.', 'warning');
       return;
     }
+    
+    // Reset typing state when sending
+    isTypingRef.current = false;
     
     addMessage(trimmedMessage, true, { inputMethod: 'manual' });
     setInputMessage('');
@@ -404,8 +408,16 @@ const SINDAAssistant = () => {
     }
   }, [handleSendMessage]);
 
+  // FIXED: Input handler that tracks typing state
   const handleInputChange = useCallback((e) => {
+    isTypingRef.current = true;
     setInputMessage(e.target.value);
+    
+    // Clear typing state after user stops typing for a bit
+    clearTimeout(handleInputChange.timeoutId);
+    handleInputChange.timeoutId = setTimeout(() => {
+      isTypingRef.current = false;
+    }, 500);
   }, []);
 
   // Enhanced program click handler
@@ -418,11 +430,18 @@ const SINDAAssistant = () => {
     setTimeout(() => handleSendMessage(), 100);
   }, [addMessage, addNotification, handleSendMessage]);
 
-  // FIXED: Better auto-scroll - track last message count to only scroll on new messages
+  // FIXED: Completely prevent scroll during typing
   useEffect(() => {
-    if (messagesEndRef.current && messages.length > lastMessageCountRef.current) {
-      // Only scroll when new messages are actually added
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    // Only scroll if we're not actively typing AND new messages were added
+    if (messagesEndRef.current && 
+        messages.length > lastMessageCountRef.current && 
+        !isTypingRef.current) {
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        if (messagesEndRef.current && !isTypingRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+        }
+      }, 100);
     }
     lastMessageCountRef.current = messages.length;
   }, [messages]);
@@ -761,6 +780,10 @@ const SINDAAssistant = () => {
                   value={inputMessage}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
+                  onFocus={() => { isTypingRef.current = true; }}
+                  onBlur={() => { 
+                    setTimeout(() => { isTypingRef.current = false; }, 200);
+                  }}
                   placeholder="Type your message here..."
                   className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm transition-all duration-300"
                   rows="2"
