@@ -419,8 +419,6 @@ const SINDAAssistant = () => {
   }, [addMessage, addNotification, handleSendMessage]);
 
   // FIXED: Better auto-scroll - track last message count to only scroll on new messages
-  const lastMessageCountRef = useRef(0);
-  
   useEffect(() => {
     if (messagesEndRef.current && messages.length > lastMessageCountRef.current) {
       // Only scroll when new messages are actually added
