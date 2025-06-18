@@ -412,6 +412,132 @@ const SINDAAssistant = () => {
     setTimeout(() => handleSendMessage(), 100);
   }, [addMessage, addNotification, handleSendMessage]);
 
+  // Analytics Modal Component
+  const AnalyticsModal = React.memo(() => {
+    if (!selectedAnalytic) return null;
+    
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="bg-white/95 backdrop-blur-sm border border-blue-200 rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+          <div className="p-8">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">{selectedAnalytic.title}</h2>
+              <button 
+                onClick={() => setSelectedAnalytic(null)}
+                className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-blue-50 transition-all duration-300"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              {selectedAnalytic.type === 'metric' && (
+                <>
+                  <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Performance Overview</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {selectedAnalytic.data.details.map((detail, index) => (
+                        <div key={index} className="bg-white/80 rounded-lg p-4">
+                          <div className="text-sm text-gray-600">{detail.period}</div>
+                          <div className="text-xl font-bold text-blue-600">{detail.value}</div>
+                          <div className="text-xs text-green-600">{detail.change}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Key Insights</h3>
+                    <div className="space-y-3">
+                      {selectedAnalytic.data.insights.map((insight, index) => (
+                        <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                          <span className="text-sm text-gray-700">{insight}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              {selectedAnalytic.type === 'chart' && (
+                <>
+                  <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-6">
+                    <p className="text-gray-700 mb-4">{selectedAnalytic.data.summary}</p>
+                    
+                    {selectedAnalytic.data.breakdown && (
+                      <div className="grid grid-cols-2 gap-4 mb-6">
+                        {selectedAnalytic.data.breakdown.map((item, index) => (
+                          <div key={index} className="bg-white/80 rounded-lg p-4">
+                            <div className="text-sm text-gray-600">{item.metric}</div>
+                            <div className="text-xl font-bold text-blue-600">{item.value}</div>
+                            <div className="text-xs text-green-600">{item.change}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {selectedAnalytic.data.topPrograms && (
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-3">Top Performing Programs</h4>
+                        <div className="space-y-2">
+                          {selectedAnalytic.data.topPrograms.map((program, index) => (
+                            <div key={index} className="flex items-center justify-between bg-white/80 rounded-lg p-3">
+                              <span className="text-sm font-medium text-gray-700">{program.name}</span>
+                              <div className="text-right">
+                                <div className="text-sm font-bold text-blue-600">{program.users.toLocaleString()}</div>
+                                <div className="text-xs text-green-600">{program.growth}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {selectedAnalytic.data.programDetails && (
+                      <div className="space-y-4">
+                        {selectedAnalytic.data.programDetails.map((program, index) => (
+                          <div key={index} className="bg-white/80 rounded-lg p-4">
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-semibold text-gray-800">{program.name}</h4>
+                              <span className="text-lg font-bold text-blue-600">{program.percentage}%</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-4 text-sm">
+                              <div>
+                                <span className="text-gray-600">Beneficiaries: </span>
+                                <span className="font-medium">{program.beneficiaries.toLocaleString()}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Budget: </span>
+                                <span className="font-medium">{program.budget}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Growth: </span>
+                                <span className="font-medium text-green-600">{program.growth}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Satisfaction: </span>
+                                <span className="font-medium">{program.satisfaction}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Waiting List: </span>
+                                <span className="font-medium">{program.waitingList}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  });
+
   // FIXED: Completely prevent scroll during typing
   useEffect(() => {
     // Only scroll if we're not actively typing AND new messages were added
