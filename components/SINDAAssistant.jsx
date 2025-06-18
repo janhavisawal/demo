@@ -21,8 +21,6 @@ const SINDAAssistant = () => {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [messageId, setMessageId] = useState(0);
   const messagesEndRef = useRef(null);
-  const messagesContainerRef = useRef(null);
-  const inputRef = useRef(null);
 
   // Analytics Data
   const [analyticsData] = useState({
@@ -134,19 +132,17 @@ const SINDAAssistant = () => {
   // Intent Recognition
   const [detectedIntents, setDetectedIntents] = useState([]);
 
-  // Fixed auto-scroll - only scroll when messages change, not on input change
-  const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, []);
-
-  // Only scroll when messages array length changes (new message added)
+  // Auto-scroll only when new messages are added
   useEffect(() => {
-    scrollToBottom();
-  }, [messages.length, scrollToBottom]);
+    if (messages.length > 0) {
+      const timer = setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [messages]);
 
-  // Input handling - removed auto-scroll trigger
+  // Input handling
   const handleInputChange = (e) => {
     setInputMessage(e.target.value);
   };
@@ -269,7 +265,7 @@ Ready to join our youth community? Contact us for upcoming events!`,
     return { intents: detected };
   }, []);
 
-  // Add message - optimized to prevent unnecessary re-renders
+  // Add message
   const addMessage = useCallback((content, isUser = false, metadata = {}) => {
     const newMessage = {
       id: messageId,
@@ -484,12 +480,8 @@ Ready to join our youth community? Contact us for upcoming events!`,
           </div>
         )}
 
-        {/* Messages Container - Fixed height and stable scrolling */}
-        <div 
-          ref={messagesContainerRef}
-          className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50"
-          style={{ scrollBehavior: 'smooth' }}
-        >
+        {/* Messages */}
+        <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50">
           {messages.length === 0 && (
             <div className="text-center py-8">
               <div className="text-blue-400 mb-4">
@@ -514,7 +506,7 @@ Ready to join our youth community? Contact us for upcoming events!`,
 
           {messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-xs lg:max-w-md px-6 py-4 rounded-2xl shadow-lg ${
+              <div className={`max-w-xs lg:max-w-md px-6 py-4 rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 ${
                 msg.isUser 
                   ? 'bg-gradient-to-br from-blue-500 via-cyan-500 to-indigo-600 text-white' 
                   : 'bg-white/90 backdrop-blur-sm text-gray-800 border border-blue-200'
@@ -551,20 +543,18 @@ Ready to join our youth community? Contact us for upcoming events!`,
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area - Stable positioning */}
+        {/* Input Area */}
         <div className="p-6 bg-white/80 backdrop-blur-sm border-t border-blue-200">
           <div className="flex gap-4 items-end">
             <div className="flex-1">
               <textarea
-                ref={inputRef}
                 value={inputMessage}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
                 placeholder="Type your message here..."
-                className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm"
+                className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm transition-all duration-300"
                 rows="2"
                 disabled={isTyping}
-                style={{ minHeight: '60px', maxHeight: '120px' }}
               />
             </div>
             <button
