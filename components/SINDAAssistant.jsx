@@ -20,11 +20,9 @@ const SINDAAssistant = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [messageId, setMessageId] = useState(0);
-  const [userIsScrolling, setUserIsScrolling] = useState(false);
   const messagesEndRef = useRef(null);
-  const chatContainerRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
-  const scrollTimeoutRef = useRef(null);
 
   // Analytics Data
   const [analyticsData] = useState({
@@ -136,59 +134,22 @@ const SINDAAssistant = () => {
   // Intent Recognition
   const [detectedIntents, setDetectedIntents] = useState([]);
 
-  // Handle scroll detection to prevent auto-scroll during user interaction
-  const handleScroll = useCallback(() => {
-    if (chatContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
-      
-      // If user scrolls up, set userIsScrolling to true
-      if (!isNearBottom) {
-        setUserIsScrolling(true);
-        
-        // Clear existing timeout
-        if (scrollTimeoutRef.current) {
-          clearTimeout(scrollTimeoutRef.current);
-        }
-        
-        // Reset userIsScrolling after 3 seconds of no scrolling
-        scrollTimeoutRef.current = setTimeout(() => {
-          setUserIsScrolling(false);
-        }, 3000);
-      } else {
-        setUserIsScrolling(false);
-      }
+  // Fixed auto-scroll - only scroll when messages change, not on input change
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
 
-  // Auto-scroll only when new messages are added and user is not scrolling
+  // Only scroll when messages array length changes (new message added)
   useEffect(() => {
-    if (messages.length > 0 && !userIsScrolling && messagesEndRef.current) {
-      // Use a longer delay to ensure DOM has updated
-      const timer = setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ 
-          behavior: "smooth", 
-          block: "end" 
-        });
-      }, 300);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [messages.length, userIsScrolling]); // Only depend on messages.length, not the full messages array
+    scrollToBottom();
+  }, [messages.length, scrollToBottom]);
 
-  // Cleanup scroll timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Input handling with debounce to prevent flickering
-  const handleInputChange = useCallback((e) => {
+  // Input handling - removed auto-scroll trigger
+  const handleInputChange = (e) => {
     setInputMessage(e.target.value);
-  }, []);
+  };
 
   // Program responses
   const getProgramResponse = (programId) => {
@@ -310,38 +271,29 @@ Ready to join our youth community? Contact us for upcoming events!`,
 
   // Add message - optimized to prevent unnecessary re-renders
   const addMessage = useCallback((content, isUser = false, metadata = {}) => {
-    setMessages(prev => {
-      const newMessage = {
-        id: messageId,
-        content,
-        isUser,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        metadata: {
-          ...metadata,
-          responseTime: isUser ? null : Math.random() * 2 + 0.5,
-          intentConfidence: metadata.intentConfidence || null
-        }
-      };
-      return [...prev, newMessage];
-    });
+    const newMessage = {
+      id: messageId,
+      content,
+      isUser,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      metadata: {
+        ...metadata,
+        responseTime: isUser ? null : Math.random() * 2 + 0.5,
+        intentConfidence: metadata.intentConfidence || null
+      }
+    };
+    setMessages(prev => [...prev, newMessage]);
     setMessageId(prev => prev + 1);
   }, [messageId]);
 
-  // Send message - optimized to prevent input flickering
+  // Send message
   const handleSendMessage = useCallback(async () => {
     if (!inputMessage.trim() || isTyping) return;
 
     const userMessage = inputMessage.trim();
     const analysis = recognizeIntent(userMessage);
     
-    // Clear input immediately to prevent flickering
     setInputMessage('');
-    
-    // Focus back on input to maintain cursor position
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
-    
     addMessage(userMessage, true, { 
       intents: analysis.intents
     });
@@ -532,10 +484,9 @@ Ready to join our youth community? Contact us for upcoming events!`,
           </div>
         )}
 
-        {/* Messages */}
+        {/* Messages Container - Fixed height and stable scrolling */}
         <div 
-          ref={chatContainerRef}
-          onScroll={handleScroll}
+          ref={messagesContainerRef}
           className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50"
           style={{ scrollBehavior: 'smooth' }}
         >
@@ -563,7 +514,7 @@ Ready to join our youth community? Contact us for upcoming events!`,
 
           {messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-xs lg:max-w-md px-6 py-4 rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 ${
+              <div className={`max-w-xs lg:max-w-md px-6 py-4 rounded-2xl shadow-lg ${
                 msg.isUser 
                   ? 'bg-gradient-to-br from-blue-500 via-cyan-500 to-indigo-600 text-white' 
                   : 'bg-white/90 backdrop-blur-sm text-gray-800 border border-blue-200'
@@ -600,7 +551,7 @@ Ready to join our youth community? Contact us for upcoming events!`,
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area */}
+        {/* Input Area - Stable positioning */}
         <div className="p-6 bg-white/80 backdrop-blur-sm border-t border-blue-200">
           <div className="flex gap-4 items-end">
             <div className="flex-1">
@@ -610,7 +561,7 @@ Ready to join our youth community? Contact us for upcoming events!`,
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
                 placeholder="Type your message here..."
-                className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm transition-all duration-300"
+                className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm"
                 rows="2"
                 disabled={isTyping}
                 style={{ minHeight: '60px', maxHeight: '120px' }}
@@ -783,21 +734,9 @@ Ready to join our youth community? Contact us for upcoming events!`,
           background: linear-gradient(to bottom, #2563eb, #1e40af);
         }
 
-        /* Smooth transitions with reduced motion support */
+        /* Smooth transitions */
         * {
           transition: all 0.3s ease;
-        }
-
-        /* Prevent layout shift and flickering */
-        .chat-container {
-          contain: layout style;
-          will-change: scroll-position;
-        }
-
-        /* Optimize textarea performance */
-        textarea {
-          will-change: contents;
-          contain: layout;
         }
 
         /* Focus states */
@@ -825,28 +764,6 @@ Ready to join our youth community? Contact us for upcoming events!`,
 
         .hover\\:scale-110:hover {
           transform: scale(1.1);
-        }
-
-        /* Reduced motion support */
-        @media (prefers-reduced-motion: reduce) {
-          * {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-          }
-          
-          .animate-bounce,
-          .animate-pulse,
-          .animate-slide-up,
-          .animate-fade-in,
-          .animate-glow {
-            animation: none !important;
-          }
-          
-          .hover\\:scale-105:hover,
-          .hover\\:scale-110:hover {
-            transform: none !important;
-          }
         }
       `}</style>
     </div>
