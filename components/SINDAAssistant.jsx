@@ -54,6 +54,7 @@ const SINDAAssistant = () => {
   });
   
   const messagesEndRef = useRef(null);
+  const lastMessageCountRef = useRef(0);
   const speechRecognition = useRef(null);
   const speechSynthesis = useRef(null);
 
@@ -417,11 +418,15 @@ const SINDAAssistant = () => {
     setTimeout(() => handleSendMessage(), 100);
   }, [addMessage, addNotification, handleSendMessage]);
 
-  // Auto-scroll effect
+  // FIXED: Better auto-scroll - track last message count to only scroll on new messages
+  const lastMessageCountRef = useRef(0);
+  
   useEffect(() => {
-    if (messagesEndRef.current) {
+    if (messagesEndRef.current && messages.length > lastMessageCountRef.current) {
+      // Only scroll when new messages are actually added
       messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
     }
+    lastMessageCountRef.current = messages.length;
   }, [messages]);
 
   // Welcome Screen Component
