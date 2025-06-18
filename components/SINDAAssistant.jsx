@@ -42,7 +42,9 @@ const SINDAAssistant = () => {
   const [compactMode, setCompactMode] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
-  const [isListening, setIsListening] = useState(false);
+  // State for analytics drill-down
+  const [selectedMetric, setSelectedMetric] = useState(null);
+  const [showMetricDetails, setShowMetricDetails] = useState(false);
   
   // Performance and Analytics State
   const [userSession] = useState({
@@ -494,6 +496,194 @@ const SINDAAssistant = () => {
           </button>
         </div>
       </div>
+
+      {/* Analytics Detail Modal */}
+      {showMetricDetails && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white/95 backdrop-blur-sm border border-blue-200 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">{selectedMetric} - Detailed Analysis</h2>
+                <button 
+                  onClick={() => setShowMetricDetails(false)}
+                  className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-blue-50 transition-all duration-300"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              
+              {selectedMetric && getMetricDetails(selectedMetric) && (
+                <div className="space-y-6">
+                  {/* Current Value */}
+                  <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-6">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">Current Value</h3>
+                    <div className="text-4xl font-bold text-blue-600">{getMetricDetails(selectedMetric).current}</div>
+                  </div>
+
+                  {/* Breakdown */}
+                  {getMetricDetails(selectedMetric).breakdown && (
+                    <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                      <h3 className="text-xl font-bold text-gray-800 mb-4">Breakdown</h3>
+                      <div className="space-y-3">
+                        {getMetricDetails(selectedMetric).breakdown.map((item, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span className="font-medium">{item.time || item.category || item.service || item.rating}</span>
+                            <div className="text-right">
+                              <div className="font-bold text-blue-600">
+                                {item.users || item.count || item.time || 'N/A'}
+                              </div>
+                              {item.trend && <div className="text-xs text-green-600">{item.trend}</div>}
+                              {item.percentage && <div className="text-xs text-gray-500">{item.percentage}%</div>}
+                              {item.status && <div className={`text-xs ${item.status === 'Excellent' ? 'text-green-600' : 'text-blue-600'}`}>{item.status}</div>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Demographics or Outcomes or Targets or Feedback */}
+                  {getMetricDetails(selectedMetric).demographics && (
+                    <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                      <h3 className="text-xl font-bold text-gray-800 mb-4">Demographics</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {getMetricDetails(selectedMetric).demographics.map((demo, index) => (
+                          <div key={index} className="p-3 bg-blue-50 rounded-lg">
+                            <div className="font-medium text-gray-800">{demo.group}</div>
+                            <div className="text-2xl font-bold text-blue-600">{demo.count}</div>
+                            <div className="text-xs text-gray-600">{demo.percentage}%</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {getMetricDetails(selectedMetric).outcomes && (
+                    <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                      <h3 className="text-xl font-bold text-gray-800 mb-4">Outcomes</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {getMetricDetails(selectedMetric).outcomes.map((outcome, index) => (
+                          <div key={index} className="p-3 bg-green-50 rounded-lg">
+                            <div className="text-sm text-gray-600">{outcome.metric}</div>
+                            <div className="text-2xl font-bold text-green-600">{outcome.value}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {getMetricDetails(selectedMetric).targets && (
+                    <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                      <h3 className="text-xl font-bold text-gray-800 mb-4">Performance Targets</h3>
+                      <div className="space-y-3">
+                        {getMetricDetails(selectedMetric).targets.map((target, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span className="font-medium">{target.service}</span>
+                            <div className="text-right">
+                              <div className="text-sm text-gray-600">Target: {target.target}</div>
+                              <div className="font-bold text-blue-600">Current: {target.current}</div>
+                              <div className={`text-xs ${target.status === 'Exceeding' ? 'text-green-600' : 'text-blue-600'}`}>{target.status}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {getMetricDetails(selectedMetric).feedback && (
+                    <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                      <h3 className="text-xl font-bold text-gray-800 mb-4">Feedback Categories</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {getMetricDetails(selectedMetric).feedback.map((feedback, index) => (
+                          <div key={index} className="p-3 bg-purple-50 rounded-lg">
+                            <div className="font-medium text-gray-800">{feedback.category}</div>
+                            <div className="text-2xl font-bold text-purple-600">{feedback.score}/5</div>
+                            <div className="text-xs text-gray-600">{feedback.comments} comments</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Chart Data for Charts */}
+                  {selectedMetric === 'Monthly Engagement Chart' && (
+                    <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                      <h3 className="text-xl font-bold text-gray-800 mb-4">Monthly Data Points</h3>
+                      <div className="space-y-3">
+                        {analyticsData.monthlyEngagement.map((month, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                            <span className="font-medium">{month.month} 2024</span>
+                            <div className="grid grid-cols-3 gap-4 text-sm">
+                              <div>
+                                <div className="text-gray-600">Users</div>
+                                <div className="font-bold text-blue-600">{month.users}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-600">Programs</div>
+                                <div className="font-bold text-green-600">{month.programs}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-600">Satisfaction</div>
+                                <div className="font-bold text-purple-600">{month.satisfaction}%</div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedMetric === 'Program Distribution Chart' && (
+                    <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                      <h3 className="text-xl font-bold text-gray-800 mb-4">Program Details</h3>
+                      <div className="space-y-3">
+                        {analyticsData.programDistribution.map((program, index) => (
+                          <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div 
+                                className="w-4 h-4 rounded-full" 
+                                style={{backgroundColor: program.color}}
+                              ></div>
+                              <span className="font-medium">{program.name}</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-4 text-sm">
+                              <div>
+                                <div className="text-gray-600">Count</div>
+                                <div className="font-bold" style={{color: program.color}}>{program.count.toLocaleString()}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-600">Budget</div>
+                                <div className="font-bold text-green-600">${(program.budget/1000).toFixed(0)}K</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-600">Growth</div>
+                                <div className="font-bold text-blue-600">{program.growth}</div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Insights */}
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6">
+                    <h3 className="text-xl font-bold text-gray-800 mb-4">Key Insights</h3>
+                    <div className="space-y-2">
+                      {getMetricDetails(selectedMetric).insights.map((insight, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                          <span className="text-gray-700">{insight}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   ));
 
@@ -991,7 +1181,14 @@ const SINDAAssistant = () => {
             trend: 'up'
           }
         ].map((metric, index) => (
-          <div key={index} className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg hover:scale-105 transition-all duration-500">
+          <div 
+            key={index} 
+            className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg hover:scale-105 transition-all duration-500 cursor-pointer hover:shadow-xl"
+            onClick={() => {
+              setSelectedMetric(metric.label);
+              setShowMetricDetails(true);
+            }}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">{metric.label}</p>
@@ -1014,7 +1211,13 @@ const SINDAAssistant = () => {
       {/* Charts section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Monthly engagement trend */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-200 shadow-lg">
+        <div 
+          className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-200 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300"
+          onClick={() => {
+            setSelectedMetric('Monthly Engagement Chart');
+            setShowMetricDetails(true);
+          }}
+        >
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-800">Monthly Engagement</h3>
             <div className="flex items-center gap-2">
@@ -1054,7 +1257,13 @@ const SINDAAssistant = () => {
         </div>
 
         {/* Program distribution */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-cyan-200 shadow-lg">
+        <div 
+          className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-cyan-200 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300"
+          onClick={() => {
+            setSelectedMetric('Program Distribution Chart');
+            setShowMetricDetails(true);
+          }}
+        >
           <h3 className="text-xl font-bold text-gray-800 mb-6">Program Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
             <RechartsPieChart>
