@@ -316,29 +316,10 @@ const SINDAAssistant = () => {
     { text: 'Family counselling services', category: 'family', priority: 'medium', tags: ['mental health', 'support'], estimatedTime: '30 min', successRate: 96 }
   ], []);
 
-  // FIXED: Enhanced notification system with stable implementation
+  // FIXED: Simple notification system without popups
   const addNotification = useCallback((message, type = 'info', category = 'general', persistent = false, action = null) => {
-    const newNotification = {
-      id: Date.now() + Math.random(),
-      message,
-      type,
-      category,
-      persistent,
-      timestamp: new Date().toLocaleTimeString(),
-      read: false,
-      action,
-      priority: type === 'error' ? 'high' : type === 'warning' ? 'medium' : 'low'
-    };
-    
-    setNotifications(prev => [newNotification, ...prev.slice(0, 9)]);
-    
-    // Auto-remove notification after delay unless persistent
-    if (!persistent) {
-      const delay = type === 'error' ? 8000 : type === 'warning' ? 6000 : 4000;
-      setTimeout(() => {
-        setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
-      }, delay);
-    }
+    // Just log to console instead of popup notifications
+    console.log(`${type.toUpperCase()}: ${message}`);
   }, []);
 
   // FIXED: Enhanced message handling with stable dependencies
@@ -865,7 +846,380 @@ const SINDAAssistant = () => {
     </div>
   ));
 
-  // Settings Modal
+  // Dashboard Component
+  const MainDashboard = React.memo(() => (
+    <div className="space-y-8 p-6">
+      {/* Welcome banner */}
+      <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 rounded-3xl p-8 text-white">
+        <h2 className="text-3xl font-bold mb-2">Welcome to SINDA Dashboard</h2>
+        <p className="text-blue-100 mb-4">Your comprehensive overview of community support and engagement</p>
+        <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+            <span>All systems operational</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Clock size={16} />
+            <span>Last updated: {new Date().toLocaleTimeString()}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { label: 'Today\'s Interactions', value: '247', icon: MessageCircle, color: 'blue' },
+          { label: 'Emergency Cases', value: '12', icon: AlertTriangle, color: 'red' },
+          { label: 'New Applications', value: '34', icon: FileText, color: 'green' },
+          { label: 'System Health', value: '99.97%', icon: Shield, color: 'purple' }
+        ].map((stat, index) => (
+          <div key={index} className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg hover:scale-105 transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm">{stat.label}</p>
+                <p className={`text-2xl font-bold text-${stat.color}-600 mt-1`}>{stat.value}</p>
+              </div>
+              <div className={`bg-${stat.color}-100 p-3 rounded-xl`}>
+                <stat.icon className={`text-${stat.color}-600`} size={24} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Recent activity and trending programs */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-lg">
+          <h3 className="text-xl font-bold text-gray-800 mb-4">Recent Activity</h3>
+          <div className="space-y-3">
+            {analyticsData.trendingTopics.slice(0, 5).map((topic, index) => (
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-blue-50 transition-colors duration-200">
+                <div>
+                  <div className="text-sm font-medium text-gray-800">{topic.topic}</div>
+                  <div className="text-xs text-gray-500">{topic.category} • {topic.timeToResolve}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-semibold text-gray-700">{topic.count}</div>
+                  <div className="text-xs text-green-600">{topic.growth}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-lg">
+          <h3 className="text-xl font-bold text-gray-800 mb-4">System Performance</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">CPU Usage</span>
+              <div className="flex items-center gap-2">
+                <div className="w-32 bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-500" 
+                    style={{width: `${performanceMetrics.cpuUsage}%`}}
+                  ></div>
+                </div>
+                <span className="text-sm font-medium">{performanceMetrics.cpuUsage.toFixed(1)}%</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Memory Usage</span>
+              <div className="flex items-center gap-2">
+                <div className="w-32 bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-green-500 h-2 rounded-full transition-all duration-500" 
+                    style={{width: `${performanceMetrics.memoryUsage}%`}}
+                  ></div>
+                </div>
+                <span className="text-sm font-medium">{performanceMetrics.memoryUsage.toFixed(1)}%</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Cache Hit Rate</span>
+              <div className="flex items-center gap-2">
+                <div className="w-32 bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-purple-500 h-2 rounded-full transition-all duration-500" 
+                    style={{width: `${performanceMetrics.cacheHitRate}%`}}
+                  ></div>
+                </div>
+                <span className="text-sm font-medium">{performanceMetrics.cacheHitRate.toFixed(1)}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ));
+
+  // Analytics Dashboard Component
+  const AnalyticsDashboard = React.memo(() => (
+    <div className="space-y-8 p-6">
+      {/* Real-time metrics overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { 
+            label: 'Active Users', 
+            value: analyticsData.realTimeMetrics.activeUsers, 
+            change: '+15%', 
+            color: 'blue', 
+            icon: Users,
+            trend: 'up'
+          },
+          { 
+            label: 'Families Helped', 
+            value: analyticsData.helpMetrics.totalFamiliesHelped.toLocaleString(), 
+            change: '+234', 
+            color: 'cyan', 
+            icon: Heart,
+            trend: 'up'
+          },
+          { 
+            label: 'Response Time', 
+            value: `${analyticsData.realTimeMetrics.responseTime}s`, 
+            change: '-0.3s', 
+            color: 'green', 
+            icon: Clock,
+            trend: 'down'
+          },
+          { 
+            label: 'Satisfaction', 
+            value: `${analyticsData.realTimeMetrics.averageSatisfaction}/5`, 
+            change: '+0.2', 
+            color: 'purple', 
+            icon: Star,
+            trend: 'up'
+          }
+        ].map((metric, index) => (
+          <div key={index} className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg hover:scale-105 transition-all duration-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">{metric.label}</p>
+                <p className={`text-3xl font-bold text-${metric.color}-600 mt-2`}>{metric.value}</p>
+                <div className="flex items-center mt-2">
+                  <div className={`w-2 h-2 ${metric.trend === 'up' ? 'bg-green-400' : 'bg-blue-400'} rounded-full animate-pulse mr-2`}></div>
+                  <span className={`${metric.trend === 'up' ? 'text-green-600' : 'text-blue-600'} text-xs`}>
+                    {metric.change} from last week
+                  </span>
+                </div>
+              </div>
+              <div className={`bg-${metric.color}-100 p-3 rounded-xl`}>
+                <metric.icon className={`text-${metric.color}-600`} size={24} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Monthly engagement trend */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-200 shadow-lg">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-800">Monthly Engagement</h3>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="text-green-500" size={20} />
+              <span className="text-green-600 text-sm font-medium">+24% growth</span>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={analyticsData.monthlyEngagement}>
+              <defs>
+                <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <XAxis dataKey="month" stroke="#6B7280" />
+              <YAxis stroke="#6B7280" />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                  border: '1px solid #3B82F6',
+                  borderRadius: '12px',
+                  backdropFilter: 'blur(10px)'
+                }} 
+              />
+              <Area 
+                type="monotone" 
+                dataKey="users" 
+                stroke="#3B82F6" 
+                fillOpacity={1} 
+                fill="url(#colorUsers)"
+                strokeWidth={3}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Program distribution */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-cyan-200 shadow-lg">
+          <h3 className="text-xl font-bold text-gray-800 mb-6">Program Distribution</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <RechartsPieChart>
+              <Pie
+                data={analyticsData.programDistribution}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={120}
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {analyticsData.programDistribution.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                  border: '1px solid #06B6D4',
+                  borderRadius: '12px',
+                  backdropFilter: 'blur(10px)'
+                }} 
+              />
+            </RechartsPieChart>
+          </ResponsiveContainer>
+          <div className="mt-4 space-y-2">
+            {analyticsData.programDistribution.map((item, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-4 h-4 rounded-full" 
+                    style={{backgroundColor: item.color}}
+                  ></div>
+                  <span className="text-sm text-gray-700">{item.name}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-semibold text-gray-800">{item.count.toLocaleString()}</span>
+                  <div className="text-xs text-green-600">{item.growth}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  ));
+
+  // WhatsApp Interface Component
+  const WhatsAppInterface = React.memo(() => (
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-green-200 overflow-hidden shadow-2xl">
+        {/* WhatsApp Header */}
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <Phone className="text-white" size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">SINDA WhatsApp</h3>
+                <p className="text-green-100 text-sm">24/7 Community Support</p>
+              </div>
+            </div>
+            <div className="text-right text-sm">
+              <div>Active Chats: {whatsappStats.activeChats}</div>
+              <div>Response Rate: {whatsappStats.responseRate}%</div>
+            </div>
+          </div>
+        </div>
+
+        {/* WhatsApp Stats */}
+        <div className="bg-green-50 p-4 border-b border-green-100">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Total Messages', value: whatsappStats.totalMessages.toLocaleString() },
+              { label: 'Avg Response', value: `${whatsappStats.avgResponseTime}min` },
+              { label: 'Satisfaction', value: `${whatsappStats.satisfactionScore}/5` },
+              { label: 'Resolution Rate', value: `${whatsappStats.resolutionRate}%` }
+            ].map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="text-lg font-bold text-green-700">{stat.value}</div>
+                <div className="text-xs text-green-600">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* WhatsApp Chat Simulation */}
+        <div className="h-80 overflow-y-auto p-4 bg-gray-50">
+          {whatsappMessages.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <Phone size={48} className="mx-auto mb-4 text-green-400" />
+              <p>WhatsApp conversation will appear here</p>
+              <p className="text-sm mt-2">Start by sending a test message below</p>
+            </div>
+          )}
+          
+          {whatsappMessages.map((msg, index) => (
+            <div key={msg.id} className={`flex mb-3 ${msg.isIncoming ? 'justify-start' : 'justify-end'}`}>
+              <div className={`max-w-xs px-4 py-2 rounded-lg ${
+                msg.isIncoming 
+                  ? 'bg-white border border-gray-200' 
+                  : 'bg-green-500 text-white'
+              }`}>
+                <p className="text-sm">{msg.content}</p>
+                <div className={`text-xs mt-1 ${msg.isIncoming ? 'text-gray-500' : 'text-green-100'}`}>
+                  {msg.timestamp}
+                  {!msg.isIncoming && (
+                    <span className="ml-2">
+                      {msg.delivered && '✓'}
+                      {msg.read && '✓'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* WhatsApp Input */}
+        <div className="p-4 bg-white border-t border-gray-200">
+          <div className="flex gap-3">
+            <input
+              type="text"
+              placeholder="Type a WhatsApp message..."
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && e.target.value.trim()) {
+                  const message = e.target.value.trim();
+                  const newMsg = {
+                    id: Date.now(),
+                    content: message,
+                    isIncoming: true,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    platform: 'whatsapp'
+                  };
+                  setWhatsappMessages(prev => [...prev, newMsg]);
+                  
+                  // Simulate AI response
+                  setTimeout(() => {
+                    const responseMsg = {
+                      id: Date.now() + 1,
+                      content: "Thank you for contacting SINDA! 🙏 I'll help you find the right support. What assistance do you need today?",
+                      isIncoming: false,
+                      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                      platform: 'whatsapp',
+                      delivered: true,
+                      read: false
+                    };
+                    setWhatsappMessages(prev => [...prev, responseMsg]);
+                  }, 1000);
+                  
+                  e.target.value = '';
+                }
+              }}
+            />
+            <button className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors duration-200">
+              <Send size={20} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  ));
   const SettingsModal = React.memo(() => {
     if (!showSettings) return null;
     
@@ -1034,15 +1388,17 @@ const SINDAAssistant = () => {
         }>
           {currentStep === 'welcome' && <WelcomeScreen />}
           {currentStep === 'language' && <LanguageSelection />}
-          {currentStep === 'chat' && <ChatInterface />}
+          {currentStep === 'chat' && currentView === 'dashboard' && <MainDashboard />}
+          {currentStep === 'chat' && currentView === 'chat' && <ChatInterface />}
+          {currentStep === 'chat' && currentView === 'whatsapp' && <WhatsAppInterface />}
+          {currentStep === 'chat' && currentView === 'analytics' && <AnalyticsDashboard />}
         </Suspense>
       </div>
 
       {/* Settings Modal */}
       <SettingsModal />
 
-      {/* Notification Panel */}
-      <NotificationPanel />
+      {/* Notification Panel - Removed as requested */}
 
       {/* Footer */}
       {currentStep === 'chat' && (
