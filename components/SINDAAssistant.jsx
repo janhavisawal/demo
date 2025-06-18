@@ -20,9 +20,11 @@ const SINDAAssistant = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [messageId, setMessageId] = useState(0);
+  const [userIsScrolling, setUserIsScrolling] = useState(false);
   const messagesEndRef = useRef(null);
-  const messagesContainerRef = useRef(null);
+  const chatContainerRef = useRef(null);
   const inputRef = useRef(null);
+  const scrollTimeoutRef = useRef(null);
 
   // Analytics Data
   const [analyticsData] = useState({
@@ -134,22 +136,59 @@ const SINDAAssistant = () => {
   // Intent Recognition
   const [detectedIntents, setDetectedIntents] = useState([]);
 
-  // Fixed auto-scroll - only scroll when messages change, not on input change
-  const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  // Handle scroll detection to prevent auto-scroll during user interaction
+  const handleScroll = useCallback(() => {
+    if (chatContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
+      
+      // If user scrolls up, set userIsScrolling to true
+      if (!isNearBottom) {
+        setUserIsScrolling(true);
+        
+        // Clear existing timeout
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+        }
+        
+        // Reset userIsScrolling after 3 seconds of no scrolling
+        scrollTimeoutRef.current = setTimeout(() => {
+          setUserIsScrolling(false);
+        }, 3000);
+      } else {
+        setUserIsScrolling(false);
+      }
     }
   }, []);
 
-  // Only scroll when messages array length changes (new message added)
+  // Auto-scroll only when new messages are added and user is not scrolling
   useEffect(() => {
-    scrollToBottom();
-  }, [messages.length, scrollToBottom]);
+    if (messages.length > 0 && !userIsScrolling && messagesEndRef.current) {
+      // Use a longer delay to ensure DOM has updated
+      const timer = setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ 
+          behavior: "smooth", 
+          block: "end" 
+        });
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length, userIsScrolling]); // Only depend on messages.length, not the full messages array
 
-  // Input handling - removed auto-scroll trigger
-  const handleInputChange = (e) => {
+  // Cleanup scroll timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Input handling with debounce to prevent flickering
+  const handleInputChange = useCallback((e) => {
     setInputMessage(e.target.value);
-  };
+  }, []);
 
   // Program responses
   const getProgramResponse = (programId) => {
@@ -271,29 +310,38 @@ Ready to join our youth community? Contact us for upcoming events!`,
 
   // Add message - optimized to prevent unnecessary re-renders
   const addMessage = useCallback((content, isUser = false, metadata = {}) => {
-    const newMessage = {
-      id: messageId,
-      content,
-      isUser,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      metadata: {
-        ...metadata,
-        responseTime: isUser ? null : Math.random() * 2 + 0.5,
-        intentConfidence: metadata.intentConfidence || null
-      }
-    };
-    setMessages(prev => [...prev, newMessage]);
+    setMessages(prev => {
+      const newMessage = {
+        id: messageId,
+        content,
+        isUser,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        metadata: {
+          ...metadata,
+          responseTime: isUser ? null : Math.random() * 2 + 0.5,
+          intentConfidence: metadata.intentConfidence || null
+        }
+      };
+      return [...prev, newMessage];
+    });
     setMessageId(prev => prev + 1);
   }, [messageId]);
 
-  // Send message
+  // Send message - optimized to prevent input flickering
   const handleSendMessage = useCallback(async () => {
     if (!inputMessage.trim() || isTyping) return;
 
     const userMessage = inputMessage.trim();
     const analysis = recognizeIntent(userMessage);
     
+    // Clear input immediately to prevent flickering
     setInputMessage('');
+    
+    // Focus back on input to maintain cursor position
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+    
     addMessage(userMessage, true, { 
       intents: analysis.intents
     });
@@ -416,50 +464,50 @@ Ready to join our youth community? Contact us for upcoming events!`,
 
   // Chat Interface
   const ChatInterface = () => (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-blue-200 overflow-hidden shadow-2xl">
+    <div className="h-full flex flex-col max-w-7xl mx-auto p-4">
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-blue-200 overflow-hidden shadow-2xl flex flex-col h-full">
         {/* Chat Header */}
-        <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 p-6 text-white">
+        <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 p-4 text-white flex-shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                <BookOpen className="text-white" size={28} />
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <BookOpen className="text-white" size={24} />
               </div>
               <div>
-                <h3 className="text-2xl font-bold">SINDA Assistant</h3>
-                <p className="text-blue-100 text-sm flex items-center gap-2">
+                <h3 className="text-xl font-bold">SINDA Assistant</h3>
+                <p className="text-blue-100 text-xs flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
                   Intent Accuracy: {analyticsData.intentAccuracy}% | Active Users: {analyticsData.realTimeMetrics.activeUsers}
                 </p>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button 
                 onClick={() => setShowAnalytics(!showAnalytics)}
-                className="bg-white/20 backdrop-blur-sm p-3 rounded-xl hover:bg-white/30 transition-all duration-300"
+                className="bg-white/20 backdrop-blur-sm p-2 rounded-lg hover:bg-white/30 transition-all duration-300"
               >
-                <BarChart3 size={20} />
+                <BarChart3 size={18} />
               </button>
             </div>
           </div>
         </div>
 
         {/* Program Categories */}
-        <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-indigo-50 p-6 border-b border-blue-100">
-          <h4 className="text-lg font-semibold text-gray-800 mb-4">Explore Our Programs</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-indigo-50 p-4 border-b border-blue-100 flex-shrink-0">
+          <h4 className="text-base font-semibold text-gray-800 mb-3">Explore Our Programs</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {programCategories.map((category) => {
               const IconComponent = category.icon;
               return (
                 <button
                   key={category.id}
                   onClick={() => handleProgramClick(category)}
-                  className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:border-blue-400 rounded-xl p-4 transition-all duration-500 hover:shadow-lg text-left group hover:scale-105"
+                  className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:border-blue-400 rounded-lg p-3 transition-all duration-300 hover:shadow-md text-left group"
                 >
-                  <div className={`w-10 h-10 bg-gradient-to-r ${category.color} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300`}>
-                    <IconComponent className="text-white" size={20} />
+                  <div className={`w-8 h-8 bg-gradient-to-r ${category.color} rounded-lg flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300`}>
+                    <IconComponent className="text-white" size={16} />
                   </div>
-                  <div className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
+                  <div className="text-xs font-semibold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
                     {category.title}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">{category.count}</div>
@@ -471,12 +519,12 @@ Ready to join our youth community? Contact us for upcoming events!`,
 
         {/* Intent Recognition Display */}
         {detectedIntents.length > 0 && (
-          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-blue-200 p-4">
+          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-blue-200 p-3 flex-shrink-0">
             <div className="flex items-center gap-3 text-sm">
-              <Target className="text-blue-600 animate-pulse" size={16} />
+              <Target className="text-blue-600 animate-pulse" size={14} />
               <span className="font-medium text-gray-800">Detected Intent:</span>
               {detectedIntents.map((intent, index) => (
-                <span key={index} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs border border-blue-200">
+                <span key={index} className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs border border-blue-200">
                   {intent.intent.replace('_', ' ')} ({Math.round(intent.confidence * 100)}%)
                 </span>
               ))}
@@ -484,26 +532,27 @@ Ready to join our youth community? Contact us for upcoming events!`,
           </div>
         )}
 
-        {/* Messages Container - Fixed height and stable scrolling */}
+        {/* Messages */}
         <div 
-          ref={messagesContainerRef}
-          className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50"
+          ref={chatContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-blue-50/30 to-white/50 min-h-0"
           style={{ scrollBehavior: 'smooth' }}
         >
           {messages.length === 0 && (
-            <div className="text-center py-8">
-              <div className="text-blue-400 mb-4">
-                <MessageCircle size={48} className="mx-auto" />
+            <div className="text-center py-6">
+              <div className="text-blue-400 mb-3">
+                <MessageCircle size={40} className="mx-auto" />
               </div>
-              <h4 className="text-lg font-semibold text-gray-600 mb-2">How can I help you today?</h4>
-              <p className="text-gray-500 mb-6">Ask me about SINDA programs, eligibility, or application processes</p>
+              <h4 className="text-base font-semibold text-gray-600 mb-2">How can I help you today?</h4>
+              <p className="text-gray-500 mb-4 text-sm">Ask me about SINDA programs, eligibility, or application processes</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-md mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-w-sm mx-auto">
                 {quickHelp.map((help, index) => (
                   <button
                     key={index}
                     onClick={() => addMessage(help.text, true)}
-                    className="bg-blue-50 border border-blue-200 hover:border-blue-400 rounded-lg p-3 text-sm text-left transition-all duration-300 hover:shadow-md hover:scale-105"
+                    className="bg-blue-50 border border-blue-200 hover:border-blue-400 rounded-lg p-2 text-xs text-left transition-all duration-300 hover:shadow-md"
                   >
                     {help.text}
                   </button>
@@ -514,7 +563,7 @@ Ready to join our youth community? Contact us for upcoming events!`,
 
           {messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-xs lg:max-w-md px-6 py-4 rounded-2xl shadow-lg ${
+              <div className={`max-w-xs lg:max-w-sm px-4 py-3 rounded-xl shadow-md transition-all duration-300 ${
                 msg.isUser 
                   ? 'bg-gradient-to-br from-blue-500 via-cyan-500 to-indigo-600 text-white' 
                   : 'bg-white/90 backdrop-blur-sm text-gray-800 border border-blue-200'
@@ -536,7 +585,7 @@ Ready to join our youth community? Contact us for upcoming events!`,
           
           {isTyping && (
             <div className="flex justify-start">
-              <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-2xl rounded-bl-md px-6 py-4 shadow-lg">
+              <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-xl rounded-bl-md px-4 py-3 shadow-md">
                 <div className="flex items-center space-x-3">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
@@ -551,9 +600,9 @@ Ready to join our youth community? Contact us for upcoming events!`,
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area - Stable positioning */}
-        <div className="p-6 bg-white/80 backdrop-blur-sm border-t border-blue-200">
-          <div className="flex gap-4 items-end">
+        {/* Input Area */}
+        <div className="p-4 bg-white/80 backdrop-blur-sm border-t border-blue-200 flex-shrink-0">
+          <div className="flex gap-3 items-end">
             <div className="flex-1">
               <textarea
                 ref={inputRef}
@@ -561,18 +610,18 @@ Ready to join our youth community? Contact us for upcoming events!`,
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
                 placeholder="Type your message here..."
-                className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm"
+                className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm transition-all duration-300"
                 rows="2"
                 disabled={isTyping}
-                style={{ minHeight: '60px', maxHeight: '120px' }}
+                style={{ minHeight: '50px', maxHeight: '100px' }}
               />
             </div>
             <button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isTyping}
-              className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 hover:from-blue-600 hover:via-cyan-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white p-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110 disabled:transform-none"
+              className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 hover:from-blue-600 hover:via-cyan-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white p-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
             >
-              <Send size={20} />
+              <Send size={18} />
             </button>
           </div>
         </div>
@@ -581,19 +630,19 @@ Ready to join our youth community? Contact us for upcoming events!`,
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100">
+    <div className="h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100 flex flex-col">
       {/* Header */}
       {currentStep === 'chat' && (
-        <div className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-blue-200">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-2xl shadow-lg">
-                <BookOpen className="text-white" size={28} />
+        <div className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-blue-200 flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2 rounded-xl shadow-lg">
+                <BookOpen className="text-white" size={20} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">SINDA Assistant</h1>
-                <p className="text-gray-600 flex items-center">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                <h1 className="text-lg font-bold text-gray-800">SINDA Assistant</h1>
+                <p className="text-gray-600 flex items-center text-sm">
+                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse"></div>
                   AI-Powered Community Support • Since 1991
                 </p>
               </div>
@@ -602,13 +651,13 @@ Ready to join our youth community? Contact us for upcoming events!`,
             <div className="flex space-x-2">
               <button
                 onClick={() => setCurrentView('chat')}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 hover:scale-105 ${
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-sm ${
                   currentView === 'chat' 
                     ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg' 
                     : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
                 }`}
               >
-                <MessageCircle size={18} />
+                <MessageCircle size={16} />
                 Chat
               </button>
             </div>
@@ -617,7 +666,7 @@ Ready to join our youth community? Contact us for upcoming events!`,
       )}
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto py-8">
+      <div className="flex-1 min-h-0">
         {currentStep === 'welcome' && <WelcomeScreen />}
         {currentStep === 'language' && <LanguageSelection />}
         {currentStep === 'chat' && <ChatInterface />}
@@ -625,28 +674,28 @@ Ready to join our youth community? Contact us for upcoming events!`,
 
       {/* Footer */}
       {currentStep === 'chat' && (
-        <div className="bg-white/80 backdrop-blur-sm border-t border-blue-200 mt-12">
-          <div className="max-w-7xl mx-auto flex justify-between items-center text-sm py-6 px-6">
-            <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+        <div className="bg-white/80 backdrop-blur-sm border-t border-blue-200 flex-shrink-0">
+          <div className="max-w-7xl mx-auto flex justify-between items-center text-xs py-3 px-4">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
                 <span className="text-gray-600">System Status: Operational</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <Phone size={16} className="text-blue-500" />
+              <div className="flex items-center space-x-2">
+                <Phone size={14} className="text-blue-500" />
                 <span className="text-gray-600">Hotline: 1800 295 3333</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <MapPin size={16} className="text-blue-500" />
+              <div className="flex items-center space-x-2">
+                <MapPin size={14} className="text-blue-500" />
                 <span className="text-gray-600">1 Beatty Road, Singapore 209943</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <Mail size={16} className="text-blue-500" />
+              <div className="flex items-center space-x-2">
+                <Mail size={14} className="text-blue-500" />
                 <span className="text-gray-600">queries@sinda.org.sg</span>
               </div>
             </div>
-            <div className="flex items-center space-x-3 text-gray-500">
-              <Lock size={16} className="text-green-500" />
+            <div className="flex items-center space-x-2 text-gray-500">
+              <Lock size={14} className="text-green-500" />
               <span>Secure & Confidential</span>
             </div>
           </div>
@@ -734,9 +783,21 @@ Ready to join our youth community? Contact us for upcoming events!`,
           background: linear-gradient(to bottom, #2563eb, #1e40af);
         }
 
-        /* Smooth transitions */
+        /* Smooth transitions with reduced motion support */
         * {
           transition: all 0.3s ease;
+        }
+
+        /* Prevent layout shift and flickering */
+        .chat-container {
+          contain: layout style;
+          will-change: scroll-position;
+        }
+
+        /* Optimize textarea performance */
+        textarea {
+          will-change: contents;
+          contain: layout;
         }
 
         /* Focus states */
@@ -764,6 +825,28 @@ Ready to join our youth community? Contact us for upcoming events!`,
 
         .hover\\:scale-110:hover {
           transform: scale(1.1);
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+          * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+          
+          .animate-bounce,
+          .animate-pulse,
+          .animate-slide-up,
+          .animate-fade-in,
+          .animate-glow {
+            animation: none !important;
+          }
+          
+          .hover\\:scale-105:hover,
+          .hover\\:scale-110:hover {
+            transform: none !important;
+          }
         }
       `}</style>
     </div>
