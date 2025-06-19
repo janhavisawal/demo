@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { LineChart as RechartsLineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart as RechartsBarChart, Bar, PieChart as RechartsPieChart, Cell, Pie } from "recharts";
 
-// Enhanced SINDA Assistant with COMPLETELY FIXED Input Focus Issues
+// SIMPLIFIED SINDA Assistant - No Complex Focus Management
 const SINDAAssistant = () => {
   // Core State Management
   const [currentView, setCurrentView] = useState('dashboard');
@@ -24,42 +24,20 @@ const SINDAAssistant = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [messageId, setMessageId] = useState(0);
   
-  // FIXED: Enhanced focus management refs
+  // Simple refs - no complex focus management
   const inputRef = useRef(null);
-  const stableInputRef = useRef('');
-  const lastFocusTime = useRef(0);
-  const isUserTyping = useRef(false);
+  const messageScrollRef = useRef(null);
+  const scrollTimeoutRef = useRef(null);
   
   // Advanced Features State
-  const [whatsappMessages, setWhatsappMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [notifications, setNotifications] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all');
   const [showSettings, setShowSettings] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [apiConnected, setApiConnected] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [autoTranslate, setAutoTranslate] = useState(false);
-  const [compactMode, setCompactMode] = useState(false);
-  const [highContrast, setHighContrast] = useState(false);
-  const [voiceEnabled, setVoiceEnabled] = useState(false);
   
   // State for analytics modal
   const [selectedAnalytic, setSelectedAnalytic] = useState(null);
-  
-  // Production-ready scroll refs and state
-  const messagesEndRef = useRef(null);
-  const messageScrollRef = useRef(null);
-  const previousMessageCountRef = useRef(0);
-  const isTypingRef = useRef(false);
-  const speechRecognition = useRef(null);
-  const speechSynthesis = useRef(null);
-  const scrollTimeoutRef = useRef(null);
   
   // Scroll control state
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -75,51 +53,20 @@ const SINDAAssistant = () => {
     completedActions: []
   });
 
-  // Enhanced WhatsApp stats with real-time updates
-  const [whatsappStats, setWhatsappStats] = useState({
-    totalMessages: 1547,
-    activeChats: 89,
-    responseRate: 97.3,
-    avgResponseTime: 1.2,
-    satisfactionScore: 4.7,
-    resolutionRate: 94.8
-  });
-
-  // Comprehensive Performance Metrics
-  const [performanceMetrics, setPerformanceMetrics] = useState({
-    averageLoadTime: 0.8,
-    errorRate: 0.02,
-    uptime: 99.97,
-    memoryUsage: 67.8,
-    cpuUsage: 34.1,
-    cacheHitRate: 94.3,
-    lastUpdated: new Date().toISOString(),
-    peakUsers: 1247,
-    dailyActiveUsers: 8456
-  });
+  // SIMPLE: Standard input change handler - no complexity
+  const handleInputChange = (e) => {
+    setInputMessage(e.target.value);
+  };
   
-  // FIXED: BULLETPROOF input handlers that NEVER lose focus
-  const handleInputChange = useCallback((e) => {
-    const value = e.target.value;
-    stableInputRef.current = value;
-    isUserTyping.current = true;
-    
-    // Use requestAnimationFrame to prevent focus loss during rapid typing
-    requestAnimationFrame(() => {
-      setInputMessage(value);
-    });
-  }, []);
-  
-  const handleKeyPress = useCallback((e) => {
+  // SIMPLE: Standard key press handler
+  const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      const message = stableInputRef.current?.trim();
-      if (message && message.length > 0) {
-        isUserTyping.current = false;
+      if (inputMessage.trim() && !isTyping) {
         handleSendMessage();
       }
     }
-  }, []);
+  };
 
   // Static data moved outside render with useMemo
   const analyticsData = useMemo(() => ({
@@ -355,12 +302,7 @@ const SINDAAssistant = () => {
     { text: 'Family counselling services', category: 'family', priority: 'medium', tags: ['mental health', 'support'], estimatedTime: '30 min', successRate: 96 }
   ], []);
 
-  // Simple notification system without popups
-  const addNotification = useCallback((message, type = 'info', category = 'general', persistent = false, action = null) => {
-    console.log(`${type.toUpperCase()}: ${message}`);
-  }, []);
-
-  // Robust scroll handler with safer margin and user intent tracking
+  // Simple scroll handler
   const handleScroll = useCallback((e) => {
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
@@ -369,15 +311,13 @@ const SINDAAssistant = () => {
     scrollTimeoutRef.current = setTimeout(() => {
       const { scrollTop, scrollHeight, clientHeight } = e.target;
       const isAtBottom = scrollHeight - scrollTop - clientHeight <= 5;
-      const hasUserScrolled = !isAtBottom;
-      
-      setAutoScroll(prev => prev !== isAtBottom ? isAtBottom : prev);
-      setShowScrollButton(prev => prev !== !isAtBottom ? !isAtBottom : prev);
-      setUserScrolled(prev => prev !== hasUserScrolled ? hasUserScrolled : prev);
+      setShowScrollButton(!isAtBottom);
+      setAutoScroll(isAtBottom);
+      setUserScrolled(!isAtBottom);
     }, 150);
   }, []);
 
-  // Robust scroll to bottom using scrollTo instead of scrollIntoView
+  // Simple scroll to bottom
   const scrollToBottom = useCallback(() => {
     if (messageScrollRef.current) {
       messageScrollRef.current.scrollTo({
@@ -390,35 +330,9 @@ const SINDAAssistant = () => {
     }
   }, []);
 
-  // Enhanced message handling with minimal dependencies
-  const addMessage = useCallback((content, isUser = false, metadata = {}) => {
-    if (!content?.trim()) return;
-
-    setMessages(prev => {
-      const newMessage = {
-        id: prev.length + Date.now(),
-        content: content.trim(),
-        isUser,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        metadata: {
-          ...metadata,
-          responseTime: isUser ? null : Math.random() * 2 + 0.5,
-          language: selectedLanguage,
-          wordCount: content.trim().split(' ').length,
-          characterCount: content.trim().length,
-          sessionId: userSession.startTime
-        }
-      };
-      
-      const updated = [...prev, newMessage];
-      previousMessageCountRef.current = updated.length;
-      return updated;
-    });
-  }, [selectedLanguage, userSession.startTime]);
-
-  // FIXED: COMPLETELY FOCUS-SAFE send message function
-  const handleSendMessage = useCallback(async () => {
-    const trimmedMessage = stableInputRef.current?.trim();
+  // SIMPLE: Standard send message function
+  const handleSendMessage = useCallback(() => {
+    const trimmedMessage = inputMessage.trim();
     if (!trimmedMessage || isTyping) return;
 
     if (trimmedMessage.length > 2000) {
@@ -426,34 +340,17 @@ const SINDAAssistant = () => {
       return;
     }
     
-    // Store focus state before any operations
-    const wasInputFocused = document.activeElement === inputRef.current;
-    
     // Add user message
-    setMessages(prev => {
-      const newMessage = {
-        id: prev.length + Date.now(),
-        content: trimmedMessage,
-        isUser: true,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        metadata: { inputMethod: 'manual' }
-      };
-      return [...prev, newMessage];
-    });
+    setMessages(prev => [...prev, {
+      id: Date.now(),
+      content: trimmedMessage,
+      isUser: true,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      metadata: { inputMethod: 'manual' }
+    }]);
     
-    // Clear input SAFELY with focus preservation
-    stableInputRef.current = '';
-    isUserTyping.current = false;
-    
-    requestAnimationFrame(() => {
-      setInputMessage('');
-      
-      // Restore focus immediately after clearing
-      if (wasInputFocused && inputRef.current) {
-        inputRef.current.focus();
-      }
-    });
-    
+    // Clear input immediately
+    setInputMessage('');
     setIsTyping(true);
 
     // Generate response
@@ -481,47 +378,34 @@ const SINDAAssistant = () => {
       }
       
       // Add AI response
-      setMessages(prev => {
-        const aiMessage = {
-          id: prev.length + Date.now(),
-          content: response,
-          isUser: false,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          metadata: {
-            aiGenerated: true,
-            confidence: 0.98,
-            sentiment: 'helpful',
-            responseType: 'actionable'
-          }
-        };
-        return [...prev, aiMessage];
-      });
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        content: response,
+        isUser: false,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        metadata: {
+          aiGenerated: true,
+          confidence: 0.98,
+          sentiment: 'helpful',
+          responseType: 'actionable'
+        }
+      }]);
       
       setIsTyping(false);
-      
-      // Ensure input stays focused after response
-      requestAnimationFrame(() => {
-        if (inputRef.current && !isUserTyping.current) {
-          inputRef.current.focus();
-        }
-      });
     }, 1200);
-  }, [isTyping]);
+  }, [inputMessage, isTyping]);
 
-  // Direct message sending function - completely stable
+  // SIMPLE: Direct message sending function
   const sendDirectMessage = useCallback((message) => {
     if (!message?.trim() || isTyping) return;
     
-    setMessages(prev => {
-      const newMessage = {
-        id: prev.length + Date.now(),
-        content: message.trim(),
-        isUser: true,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        metadata: { triggerType: 'programButton' }
-      };
-      return [...prev, newMessage];
-    });
+    setMessages(prev => [...prev, {
+      id: Date.now(),
+      content: message.trim(),
+      isUser: true,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      metadata: { triggerType: 'programButton' }
+    }]);
     
     setIsTyping(true);
 
@@ -545,39 +429,33 @@ const SINDAAssistant = () => {
         response = `🌟 **Welcome! Let me help you find exactly what you need**\n\n⚡ **Quick Actions:**\n📞 **Urgent help:** 1800 295 3333 (24/7)\n📧 **General info:** queries@sinda.org.sg\n📍 **Visit:** 1 Beatty Road (9AM-6PM)\n💬 **WhatsApp:** 9123 4567\n\n🎯 **Most Popular Programs:**\n• STEP tuition registration\n• Emergency financial aid\n• Youth leadership programs\n• Family counseling support`;
       }
       
-      setMessages(prev => {
-        const aiMessage = {
-          id: prev.length + Date.now(),
-          content: response,
-          isUser: false,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          metadata: {
-            aiGenerated: true,
-            confidence: 0.98,
-            sentiment: 'helpful',
-            responseType: 'programInfo'
-          }
-        };
-        return [...prev, aiMessage];
-      });
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        content: response,
+        isUser: false,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        metadata: {
+          aiGenerated: true,
+          confidence: 0.98,
+          sentiment: 'helpful',
+          responseType: 'programInfo'
+        }
+      }]);
       
       setIsTyping(false);
     }, 1200);
   }, [isTyping]);
 
-  // FIXED: Focus-safe quick message setter
-  const setQuickMessage = useCallback((message) => {
-    stableInputRef.current = message;
+  // SIMPLE: Quick message setter
+  const setQuickMessage = (message) => {
     setInputMessage(message);
-    
-    // Keep focus and position cursor at end
-    requestAnimationFrame(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
+    if (inputRef.current) {
+      inputRef.current.focus();
+      setTimeout(() => {
         inputRef.current.setSelectionRange(message.length, message.length);
-      }
-    });
-  }, []);
+      }, 0);
+    }
+  };
 
   // Analytics Modal Component
   const AnalyticsModal = React.memo(() => {
@@ -596,141 +474,19 @@ const SINDAAssistant = () => {
                 <X size={24} />
               </button>
             </div>
-            
-            <div className="space-y-6">
-              {selectedAnalytic.type === 'metric' && (
-                <>
-                  <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Performance Overview</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      {selectedAnalytic.data.details.map((detail, index) => (
-                        <div key={index} className="bg-white/80 rounded-lg p-4">
-                          <div className="text-sm text-gray-600">{detail.period}</div>
-                          <div className="text-xl font-bold text-blue-600">{detail.value}</div>
-                          <div className="text-xs text-green-600">{detail.change}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Key Insights</h3>
-                    <div className="space-y-3">
-                      {selectedAnalytic.data.insights.map((insight, index) => (
-                        <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                          <span className="text-sm text-gray-700">{insight}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-              
-              {selectedAnalytic.type === 'chart' && (
-                <>
-                  <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-6">
-                    <p className="text-gray-700 mb-4">{selectedAnalytic.data.summary}</p>
-                    
-                    {selectedAnalytic.data.breakdown && (
-                      <div className="grid grid-cols-2 gap-4 mb-6">
-                        {selectedAnalytic.data.breakdown.map((item, index) => (
-                          <div key={index} className="bg-white/80 rounded-lg p-4">
-                            <div className="text-sm text-gray-600">{item.metric}</div>
-                            <div className="text-xl font-bold text-blue-600">{item.value}</div>
-                            <div className="text-xs text-green-600">{item.change}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {selectedAnalytic.data.topPrograms && (
-                      <div>
-                        <h4 className="font-semibold text-gray-800 mb-3">Top Performing Programs</h4>
-                        <div className="space-y-2">
-                          {selectedAnalytic.data.topPrograms.map((program, index) => (
-                            <div key={index} className="flex items-center justify-between bg-white/80 rounded-lg p-3">
-                              <span className="text-sm font-medium text-gray-700">{program.name}</span>
-                              <div className="text-right">
-                                <div className="text-sm font-bold text-blue-600">{program.users.toLocaleString()}</div>
-                                <div className="text-xs text-green-600">{program.growth}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {selectedAnalytic.data.programDetails && (
-                      <div className="space-y-4">
-                        {selectedAnalytic.data.programDetails.map((program, index) => (
-                          <div key={index} className="bg-white/80 rounded-lg p-4">
-                            <div className="flex justify-between items-start mb-2">
-                              <h4 className="font-semibold text-gray-800">{program.name}</h4>
-                              <span className="text-lg font-bold text-blue-600">{program.percentage}%</span>
-                            </div>
-                            <div className="grid grid-cols-3 gap-4 text-sm">
-                              <div>
-                                <span className="text-gray-600">Beneficiaries: </span>
-                                <span className="font-medium">{program.beneficiaries.toLocaleString()}</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Budget: </span>
-                                <span className="font-medium">{program.budget}</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Growth: </span>
-                                <span className="font-medium text-green-600">{program.growth}</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Satisfaction: </span>
-                                <span className="font-medium">{program.satisfaction}</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Waiting List: </span>
-                                <span className="font-medium">{program.waitingList}</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
           </div>
         </div>
       </div>
     );
   });
 
-  // FIXED: Focus restoration effect
+  // Simple auto-scroll effect
   useEffect(() => {
-    const handleFocusRestoration = () => {
-      const timeSinceFocus = Date.now() - lastFocusTime.current;
-      if (timeSinceFocus < 1000 && inputRef.current && !isTyping && isUserTyping.current) {
-        inputRef.current.focus();
-      }
-    };
-    
-    const timeoutId = setTimeout(handleFocusRestoration, 50);
-    return () => clearTimeout(timeoutId);
-  }, [inputMessage, isTyping]);
-
-  // Robust auto-scroll - only when new messages AND user hasn't manually scrolled
-  useEffect(() => {
-    const hasNewMessages = messages.length > previousMessageCountRef.current;
-    
-    if (hasNewMessages && autoScroll && !userScrolled && messageScrollRef.current) {
+    if (autoScroll && !userScrolled && messageScrollRef.current) {
       messageScrollRef.current.scrollTo({
         top: messageScrollRef.current.scrollHeight,
         behavior: 'smooth'
       });
-    }
-    
-    if (messages.length !== previousMessageCountRef.current) {
-      previousMessageCountRef.current = messages.length;
     }
   }, [messages.length, autoScroll, userScrolled]);
 
@@ -835,8 +591,15 @@ const SINDAAssistant = () => {
                 onClick={() => {
                   setSelectedLanguage(key);
                   setCurrentStep('chat');
-                  setTimeout(() => addMessage(lang.greeting, false), 500);
-                  addNotification(`Language set to ${lang.name}`, 'success', 'language');
+                  setTimeout(() => {
+                    setMessages([{
+                      id: Date.now(),
+                      content: lang.greeting,
+                      isUser: false,
+                      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                      metadata: { welcome: true }
+                    }]);
+                  }, 500);
                 }}
                 className={`bg-white/80 backdrop-blur-sm border-2 hover:border-blue-500 rounded-2xl p-8 transition-all duration-500 hover:shadow-xl hover:transform hover:scale-110 group ${
                   selectedLanguage === key ? 'border-blue-500 bg-blue-50' : 'border-blue-200'
@@ -1062,7 +825,7 @@ const SINDAAssistant = () => {
     </div>
   ));
 
-  // Chat Interface Component
+  // Chat Interface Component - SIMPLIFIED
   const ChatInterface = React.memo(() => {
     return (
       <div className="max-w-4xl mx-auto p-6">
@@ -1186,11 +949,6 @@ const SINDAAssistant = () => {
                           AI ({(msg.metadata.confidence * 100).toFixed(0)}%)
                         </span>
                       )}
-                      {msg.metadata?.wordCount && (
-                        <span className="text-xs opacity-50">
-                          {msg.metadata.wordCount}w
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -1211,7 +969,6 @@ const SINDAAssistant = () => {
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} style={{ height: '1px', flexShrink: 0 }} />
             
             {showScrollButton && (
               <div className="absolute bottom-4 right-4 z-10">
@@ -1221,18 +978,13 @@ const SINDAAssistant = () => {
                   title="Scroll to bottom"
                 >
                   <ArrowRight size={16} className="rotate-90" />
-                  <span className="text-xs hidden sm:inline">
-                    {messages.length > previousMessageCountRef.current ? 
-                      `${messages.length - previousMessageCountRef.current} new` : 
-                      'New messages'
-                    }
-                  </span>
+                  <span className="text-xs hidden sm:inline">New messages</span>
                 </button>
               </div>
             )}
           </div>
 
-          {/* FIXED INPUT AREA WITH PERFECT FOCUS HANDLING */}
+          {/* SIMPLIFIED INPUT AREA - NO COMPLEX FOCUS HANDLING */}
           <div className="p-6 bg-white/80 backdrop-blur-sm border-t border-blue-200">
             {error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
@@ -1262,30 +1014,13 @@ const SINDAAssistant = () => {
                     maxLength={2000}
                     autoComplete="off"
                     spellCheck="true"
-                    onFocus={() => {
-                      lastFocusTime.current = Date.now();
-                      isUserTyping.current = true;
-                    }}
-                    onBlur={(e) => {
-                      const timeSinceFocus = Date.now() - lastFocusTime.current;
-                      if (timeSinceFocus < 100) {
-                        e.preventDefault();
-                        requestAnimationFrame(() => {
-                          if (inputRef.current) {
-                            inputRef.current.focus();
-                          }
-                        });
-                      } else {
-                        isUserTyping.current = false;
-                      }
-                    }}
                   />
                   <div className="absolute bottom-2 right-2 text-xs text-gray-400">
                     {inputMessage.length}/2000
                   </div>
                 </div>
                 
-                {/* FIXED QUICK ACTION BUTTONS WITH FOCUS PRESERVATION */}
+                {/* SIMPLIFIED QUICK ACTION BUTTONS */}
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={() => setQuickMessage("I need emergency financial help right now")}
@@ -1330,8 +1065,6 @@ const SINDAAssistant = () => {
                     setMessages([]);
                     setAutoScroll(true);
                     setUserScrolled(false);
-                    previousMessageCountRef.current = 0;
-                    addNotification('Chat history cleared', 'info', 'chat');
                   }}
                   className="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-xl transition-all duration-300 hover:scale-110"
                   title="Clear Chat"
@@ -1472,7 +1205,6 @@ const SINDAAssistant = () => {
                   <button
                     onClick={() => {
                       setMessages([]);
-                      addNotification('Chat history cleared', 'info');
                     }}
                     className="w-full bg-red-100 text-red-700 py-2 rounded-lg hover:bg-red-200 transition-colors duration-200"
                   >
