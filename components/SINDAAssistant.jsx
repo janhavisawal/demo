@@ -1034,21 +1034,21 @@ const CleanSINDAApp = () => {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Choose Your Language</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(languages).map(([key, lang]) => (
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-blue-200 shadow-lg">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Ready to get started?</h3>
+              <p className="text-gray-600 mb-6">Access all SINDA programs and services through our AI-powered assistant</p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
-                  key={key}
-                  onClick={() => startChat(key)}
-                  className="bg-white/80 backdrop-blur-sm border-2 border-blue-200 hover:border-blue-500 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 group"
+                  onClick={() => startChat()}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center gap-3 justify-center shadow-lg hover:shadow-xl hover:scale-105"
                 >
-                  <div className="text-3xl mb-3">{lang.flag}</div>
-                  <div className="text-lg font-bold text-gray-800 group-hover:text-blue-600">
-                    {lang.native}
-                  </div>
-                  <div className="text-sm text-gray-500">{lang.name}</div>
+                  <MessageCircle size={20} />
+                  Enter SINDA Assistant
                 </button>
-              ))}
+              </div>
+              <p className="text-sm text-gray-500 mt-4 text-center">
+                🌍 Available in English, Tamil, Hindi & Malayalam
+              </p>
             </div>
           </div>
 
