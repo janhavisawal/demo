@@ -184,7 +184,7 @@ const SINDA_PROGRAMS = {
   }
 };
 
-// Dummy Analytics Data
+// Expanded Analytics Data with More Comprehensive Dummy Data
 const ANALYTICS_DATA = {
   overview: {
     totalUsers: 2847,
@@ -194,39 +194,45 @@ const ANALYTICS_DATA = {
     messagesPerMinute: 18,
     avgResponseTime: 0.8,
     resolutionRate: 96.7,
-    satisfactionScore: 4.6
+    satisfactionScore: 4.6,
+    totalFamiliesServed: 12847,
+    totalStudentsInSTEP: 5234,
+    emergencyCasesResolved: 1847,
+    communityEvents: 156,
+    volunteerHours: 18294,
+    scholarshipsAwarded: 342
   },
   
   dailyStats: [
-    { date: 'Mon', users: 198, messages: 1247, emergencies: 8, applications: 12 },
-    { date: 'Tue', users: 234, messages: 1456, emergencies: 5, applications: 18 },
-    { date: 'Wed', users: 267, messages: 1689, emergencies: 12, applications: 15 },
-    { date: 'Thu', users: 289, messages: 1834, emergencies: 7, applications: 22 },
-    { date: 'Fri', users: 321, messages: 2134, emergencies: 15, applications: 28 },
-    { date: 'Sat', users: 278, messages: 1567, emergencies: 9, applications: 19 },
-    { date: 'Sun', users: 245, messages: 1345, emergencies: 6, applications: 14 }
+    { date: 'Mon', users: 198, messages: 1247, emergencies: 8, applications: 12, queries: 156, counseling: 23 },
+    { date: 'Tue', users: 234, messages: 1456, emergencies: 5, applications: 18, queries: 189, counseling: 31 },
+    { date: 'Wed', users: 267, messages: 1689, emergencies: 12, applications: 15, queries: 203, counseling: 28 },
+    { date: 'Thu', users: 289, messages: 1834, emergencies: 7, applications: 22, queries: 234, counseling: 35 },
+    { date: 'Fri', users: 321, messages: 2134, emergencies: 15, applications: 28, queries: 267, counseling: 42 },
+    { date: 'Sat', users: 278, messages: 1567, emergencies: 9, applications: 19, queries: 198, counseling: 29 },
+    { date: 'Sun', users: 245, messages: 1345, emergencies: 6, applications: 14, queries: 167, counseling: 25 }
   ],
 
   monthlyTrends: [
-    { month: 'Jan', step: 456, family: 234, youth: 189, emergency: 89 },
-    { month: 'Feb', step: 489, family: 267, youth: 198, emergency: 67 },
-    { month: 'Mar', step: 523, family: 298, youth: 234, emergency: 78 },
-    { month: 'Apr', step: 567, family: 312, youth: 267, emergency: 92 },
-    { month: 'May', step: 598, family: 345, youth: 289, emergency: 84 },
-    { month: 'Jun', step: 634, family: 378, youth: 298, emergency: 96 }
+    { month: 'Jan', step: 456, family: 234, youth: 189, emergency: 89, women: 123, community: 78 },
+    { month: 'Feb', step: 489, family: 267, youth: 198, emergency: 67, women: 134, community: 82 },
+    { month: 'Mar', step: 523, family: 298, youth: 234, emergency: 78, women: 145, community: 91 },
+    { month: 'Apr', step: 567, family: 312, youth: 267, emergency: 92, women: 156, community: 89 },
+    { month: 'May', step: 598, family: 345, youth: 289, emergency: 84, women: 167, community: 94 },
+    { month: 'Jun', step: 634, family: 378, youth: 298, emergency: 96, women: 178, community: 102 }
   ],
 
   centerPerformance: [
-    { name: 'Ang Mo Kio', users: 287, satisfaction: 4.8, cases: 45 },
-    { name: 'Bedok', users: 234, satisfaction: 4.6, cases: 38 },
-    { name: 'Clementi', users: 298, satisfaction: 4.7, cases: 52 },
-    { name: 'Hougang', users: 267, satisfaction: 4.5, cases: 41 },
-    { name: 'Jurong West', users: 345, satisfaction: 4.9, cases: 58 },
-    { name: 'Sembawang', users: 198, satisfaction: 4.4, cases: 32 },
-    { name: 'Tampines', users: 312, satisfaction: 4.8, cases: 49 },
-    { name: 'Toa Payoh', users: 289, satisfaction: 4.6, cases: 44 },
-    { name: 'Woodlands', users: 267, satisfaction: 4.7, cases: 43 },
-    { name: 'Yishun', users: 245, satisfaction: 4.5, cases: 37 }
+    { name: 'Ang Mo Kio', users: 287, satisfaction: 4.8, cases: 45, events: 12, volunteers: 23 },
+    { name: 'Bedok', users: 234, satisfaction: 4.6, cases: 38, events: 9, volunteers: 18 },
+    { name: 'Clementi', users: 298, satisfaction: 4.7, cases: 52, events: 14, volunteers: 25 },
+    { name: 'Hougang', users: 267, satisfaction: 4.5, cases: 41, events: 11, volunteers: 20 },
+    { name: 'Jurong West', users: 345, satisfaction: 4.9, cases: 58, events: 16, volunteers: 28 },
+    { name: 'Sembawang', users: 198, satisfaction: 4.4, cases: 32, events: 8, volunteers: 15 },
+    { name: 'Tampines', users: 312, satisfaction: 4.8, cases: 49, events: 13, volunteers: 24 },
+    { name: 'Toa Payoh', users: 289, satisfaction: 4.6, cases: 44, events: 10, volunteers: 21 },
+    { name: 'Woodlands', users: 267, satisfaction: 4.7, cases: 43, events: 12, volunteers: 22 },
+    { name: 'Yishun', users: 245, satisfaction: 4.5, cases: 37, events: 9, volunteers: 19 }
   ],
 
   programDistribution: [
@@ -237,19 +243,83 @@ const ANALYTICS_DATA = {
   ],
 
   emergencyData: [
-    { type: 'Financial Crisis', count: 34, avgResponse: '12 min', resolved: 32 },
-    { type: 'Family Crisis', count: 28, avgResponse: '15 min', resolved: 26 },
-    { type: 'Mental Health', count: 19, avgResponse: '8 min', resolved: 18 },
-    { type: 'Medical Emergency', count: 15, avgResponse: '5 min', resolved: 15 },
-    { type: 'Housing Issues', count: 12, avgResponse: '18 min', resolved: 11 }
+    { type: 'Financial Crisis', count: 34, avgResponse: '12 min', resolved: 32, pending: 2 },
+    { type: 'Family Crisis', count: 28, avgResponse: '15 min', resolved: 26, pending: 2 },
+    { type: 'Mental Health', count: 19, avgResponse: '8 min', resolved: 18, pending: 1 },
+    { type: 'Medical Emergency', count: 15, avgResponse: '5 min', resolved: 15, pending: 0 },
+    { type: 'Housing Issues', count: 12, avgResponse: '18 min', resolved: 11, pending: 1 }
   ],
 
   userDemographics: [
-    { ageGroup: '18-25', percentage: 22, count: 627 },
-    { ageGroup: '26-35', percentage: 28, count: 797 },
-    { ageGroup: '36-45', percentage: 25, count: 712 },
-    { ageGroup: '46-55', percentage: 15, count: 427 },
-    { ageGroup: '55+', percentage: 10, count: 284 }
+    { ageGroup: '18-25', percentage: 22, count: 627, programs: ['Youth', 'Education'] },
+    { ageGroup: '26-35', percentage: 28, count: 797, programs: ['Family', 'Career'] },
+    { ageGroup: '36-45', percentage: 25, count: 712, programs: ['Family', 'Education'] },
+    { ageGroup: '46-55', percentage: 15, count: 427, programs: ['Community', 'Health'] },
+    { ageGroup: '55+', percentage: 10, count: 284, programs: ['Community', 'Health'] }
+  ],
+
+  recentActivity: [
+    { id: 1, type: 'Application', user: 'Priya S.', program: 'STEP Tuition', time: '2 min ago', status: 'approved' },
+    { id: 2, type: 'Emergency', user: 'Raj K.', program: 'Financial Aid', time: '5 min ago', status: 'resolved' },
+    { id: 3, type: 'Registration', user: 'Meera P.', program: 'Youth Club', time: '8 min ago', status: 'pending' },
+    { id: 4, type: 'Counseling', user: 'Kumar R.', program: 'Family Services', time: '12 min ago', status: 'completed' },
+    { id: 5, type: 'Event', user: 'Sita M.', program: 'Community', time: '15 min ago', status: 'attended' },
+    { id: 6, type: 'Application', user: 'Devi L.', program: 'Women Empowerment', time: '18 min ago', status: 'approved' },
+    { id: 7, type: 'Inquiry', user: 'Arjun N.', program: 'Scholarship', time: '22 min ago', status: 'responded' },
+    { id: 8, type: 'Workshop', user: 'Lakshmi T.', program: 'Skills Training', time: '25 min ago', status: 'registered' }
+  ],
+
+  financialData: [
+    { month: 'Jan', budget: 450000, spent: 387000, saved: 63000, assistance: 156000 },
+    { month: 'Feb', budget: 450000, spent: 421000, saved: 29000, assistance: 189000 },
+    { month: 'Mar', budget: 480000, spent: 445000, saved: 35000, assistance: 201000 },
+    { month: 'Apr', budget: 480000, spent: 467000, saved: 13000, assistance: 223000 },
+    { month: 'May', budget: 510000, spent: 489000, saved: 21000, assistance: 234000 },
+    { month: 'Jun', budget: 510000, spent: 492000, saved: 18000, assistance: 245000 }
+  ],
+
+  successStories: [
+    { name: 'Arjun Kumar', program: 'STEP', achievement: 'Scored 6 As in O-Levels', year: '2024' },
+    { name: 'Priya Sharma', program: 'Women Empowerment', achievement: 'Started Tech Company', year: '2024' },
+    { name: 'Ravi Family', program: 'Family Services', achievement: 'Overcome Financial Crisis', year: '2024' },
+    { name: 'Youth Group', program: 'Leadership', achievement: 'Community Service Award', year: '2024' }
+  ],
+
+  geographicData: [
+    { region: 'North', families: 2847, centers: 3, satisfaction: 4.7 },
+    { region: 'South', families: 3156, centers: 2, satisfaction: 4.6 },
+    { region: 'East', families: 2934, centers: 3, satisfaction: 4.8 },
+    { region: 'West', families: 3589, centers: 2, satisfaction: 4.9 }
+  ],
+
+  staffMetrics: [
+    { role: 'Counselors', count: 15, caseload: 45, satisfaction: 4.8 },
+    { role: 'Tutors', count: 42, students: 125, satisfaction: 4.7 },
+    { role: 'Social Workers', count: 8, families: 89, satisfaction: 4.9 },
+    { role: 'Youth Coordinators', count: 6, participants: 156, satisfaction: 4.6 }
+  ],
+
+  programEffectiveness: [
+    { program: 'STEP Tuition', participants: 5234, completion: 94, improvement: 87, satisfaction: 4.8 },
+    { program: 'Family Counseling', participants: 1247, completion: 89, improvement: 92, satisfaction: 4.9 },
+    { program: 'Youth Leadership', participants: 867, completion: 91, improvement: 85, satisfaction: 4.7 },
+    { program: 'Women Empowerment', participants: 456, completion: 88, improvement: 90, satisfaction: 4.8 }
+  ],
+
+  waitingLists: [
+    { program: 'STEP Primary', waiting: 145, avgWait: '2 weeks' },
+    { program: 'STEP Secondary', waiting: 89, avgWait: '3 weeks' },
+    { program: 'Family Counseling', waiting: 23, avgWait: '1 week' },
+    { program: 'Youth Club', waiting: 34, avgWait: '2 weeks' }
+  ],
+
+  volunteerData: [
+    { month: 'Jan', volunteers: 156, hours: 2340, programs: 12, impact: 'High' },
+    { month: 'Feb', volunteers: 167, hours: 2510, programs: 14, impact: 'High' },
+    { month: 'Mar', volunteers: 178, hours: 2670, programs: 15, impact: 'High' },
+    { month: 'Apr', volunteers: 189, hours: 2835, programs: 16, impact: 'Very High' },
+    { month: 'May', volunteers: 201, hours: 3015, programs: 18, impact: 'Very High' },
+    { month: 'Jun', volunteers: 218, hours: 3270, programs: 19, impact: 'Very High' }
   ]
 };
 
@@ -531,7 +601,7 @@ const DetailedAnalytics = ({ onBack, selectedView, setSelectedView }) => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
           {[
             { 
               label: 'Total Active Users', 
@@ -543,13 +613,22 @@ const DetailedAnalytics = ({ onBack, selectedView, setSelectedView }) => {
               detail: `${ANALYTICS_DATA.overview.dailyActive} active today`
             },
             { 
-              label: 'Messages Today', 
-              value: '2,134', 
-              change: '+18.2%',
+              label: 'Families Served', 
+              value: ANALYTICS_DATA.overview.totalFamiliesServed.toLocaleString(), 
+              change: '+5.2%',
               changeType: 'positive',
-              icon: MessageCircle, 
-              color: 'green',
-              detail: `${ANALYTICS_DATA.overview.messagesPerMinute}/min avg`
+              icon: Heart, 
+              color: 'pink',
+              detail: 'Since inception'
+            },
+            { 
+              label: 'STEP Students', 
+              value: ANALYTICS_DATA.overview.totalStudentsInSTEP.toLocaleString(), 
+              change: '+8.7%',
+              changeType: 'positive',
+              icon: BookOpen, 
+              color: 'indigo',
+              detail: 'Currently enrolled'
             },
             { 
               label: 'Response Time', 
@@ -561,13 +640,22 @@ const DetailedAnalytics = ({ onBack, selectedView, setSelectedView }) => {
               detail: 'Avg response time'
             },
             { 
-              label: 'Resolution Rate', 
+              label: 'Volunteer Hours', 
+              value: ANALYTICS_DATA.overview.volunteerHours.toLocaleString(), 
+              change: '+15.3%',
+              changeType: 'positive',
+              icon: Users, 
+              color: 'green',
+              detail: 'This year'
+            },
+            { 
+              label: 'Success Rate', 
               value: `${ANALYTICS_DATA.overview.resolutionRate}%`, 
               change: '+2.1%',
               changeType: 'positive',
               icon: CheckCircle, 
               color: 'purple',
-              detail: 'Cases resolved successfully'
+              detail: 'Cases resolved'
             }
           ].map((metric, index) => (
             <div 
@@ -577,18 +665,18 @@ const DetailedAnalytics = ({ onBack, selectedView, setSelectedView }) => {
             >
               <div className="flex items-center justify-between mb-4">
                 <div className={`bg-${metric.color}-100 p-3 rounded-xl`}>
-                  <metric.icon className={`text-${metric.color}-600`} size={24} />
+                  <metric.icon className={`text-${metric.color}-600`} size={20} />
                 </div>
-                <div className={`flex items-center gap-1 text-sm px-2 py-1 rounded-full ${
+                <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
                   metric.changeType === 'positive' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                 }`}>
-                  {metric.changeType === 'positive' ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                  {metric.changeType === 'positive' ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
                   {metric.change}
                 </div>
               </div>
               <div>
-                <p className="text-gray-600 text-sm">{metric.label}</p>
-                <p className={`text-2xl font-bold text-${metric.color}-600 mt-1`}>{metric.value}</p>
+                <p className="text-gray-600 text-xs">{metric.label}</p>
+                <p className={`text-xl font-bold text-${metric.color}-600 mt-1`}>{metric.value}</p>
                 <p className="text-gray-500 text-xs mt-1">{metric.detail}</p>
               </div>
             </div>
@@ -837,10 +925,10 @@ const CleanSINDAApp = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {[
-                { label: 'Today\'s Interactions', value: ANALYTICS_DATA.overview.dailyActive, icon: MessageCircle, color: 'blue' },
-                { label: 'Emergency Cases', value: '12', icon: Phone, color: 'red' },
-                { label: 'New Applications', value: '34', icon: Users, color: 'green' },
-                { label: 'System Health', value: '99.97%', icon: Activity, color: 'purple' }
+                { label: 'Today\'s Interactions', value: ANALYTICS_DATA.overview.dailyActive, icon: MessageCircle, color: 'blue', detail: `${ANALYTICS_DATA.overview.messagesPerMinute}/min avg` },
+                { label: 'Emergency Cases', value: '12', icon: Phone, color: 'red', detail: '2 pending response' },
+                { label: 'New Applications', value: '34', icon: Users, color: 'green', detail: '89% approval rate' },
+                { label: 'Program Satisfaction', value: `${ANALYTICS_DATA.overview.satisfactionScore}/5`, icon: Activity, color: 'purple', detail: `${ANALYTICS_DATA.overview.resolutionRate}% success rate` }
               ].map((stat, index) => (
                 <div 
                   key={index} 
@@ -851,6 +939,7 @@ const CleanSINDAApp = () => {
                     <div>
                       <p className="text-gray-600 text-sm">{stat.label}</p>
                       <p className={`text-2xl font-bold text-${stat.color}-600 mt-1`}>{stat.value}</p>
+                      <p className="text-gray-500 text-xs mt-1">{stat.detail}</p>
                     </div>
                     <div className={`bg-${stat.color}-100 p-3 rounded-xl`}>
                       <stat.icon className={`text-${stat.color}-600`} size={24} />
@@ -860,6 +949,63 @@ const CleanSINDAApp = () => {
               ))}
             </div>
 
+            {/* Additional Dashboard Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-200 shadow-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Stats</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 text-sm">Scholarships Awarded</span>
+                    <span className="font-bold text-green-600">{ANALYTICS_DATA.overview.scholarshipsAwarded}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 text-sm">Community Events</span>
+                    <span className="font-bold text-blue-600">{ANALYTICS_DATA.overview.communityEvents}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 text-sm">Crisis Cases Resolved</span>
+                    <span className="font-bold text-purple-600">{ANALYTICS_DATA.overview.emergencyCasesResolved}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-200 shadow-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">This Week</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 text-sm">New Registrations</span>
+                    <span className="font-bold text-green-600">+127</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 text-sm">Counseling Sessions</span>
+                    <span className="font-bold text-blue-600">89</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 text-sm">Volunteer Hours</span>
+                    <span className="font-bold text-purple-600">742</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-200 shadow-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Alerts & Updates</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                    <span className="text-gray-600">High demand for STEP Primary</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <span className="text-gray-600">Youth Club enrollment up 25%</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span className="text-gray-600">New volunteer training next week</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[
                 {
@@ -867,8 +1013,12 @@ const CleanSINDAApp = () => {
                   icon: BookOpen,
                   color: 'from-blue-500 to-indigo-600',
                   description: 'STEP tuition, scholarships, and academic support',
-                  beneficiaries: '5,234',
-                  metrics: { applications: '634 this month', success: '96.7% approval rate' }
+                  beneficiaries: ANALYTICS_DATA.overview.totalStudentsInSTEP.toLocaleString(),
+                  metrics: { 
+                    applications: `${ANALYTICS_DATA.monthlyTrends[5].step} this month`, 
+                    success: `${ANALYTICS_DATA.programEffectiveness[0].completion}% completion rate`,
+                    satisfaction: `${ANALYTICS_DATA.programEffectiveness[0].satisfaction}/5 rating`
+                  }
                 },
                 {
                   title: 'Family Services',
@@ -876,7 +1026,11 @@ const CleanSINDAApp = () => {
                   color: 'from-cyan-500 to-teal-600',
                   description: 'Counselling, financial aid, and family support',
                   beneficiaries: '3,489',
-                  metrics: { sessions: '378 sessions', satisfaction: '4.8/5 rating' }
+                  metrics: { 
+                    sessions: `${ANALYTICS_DATA.monthlyTrends[5].family} sessions`, 
+                    resolution: `${ANALYTICS_DATA.programEffectiveness[1].improvement}% success rate`,
+                    satisfaction: `${ANALYTICS_DATA.programEffectiveness[1].satisfaction}/5 rating`
+                  }
                 }
               ].map((program, index) => (
                 <div key={index} className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105">
@@ -892,13 +1046,13 @@ const CleanSINDAApp = () => {
                   <h3 className="text-xl font-bold text-gray-800 mb-2">{program.title}</h3>
                   <p className="text-gray-600 mb-4 text-sm">{program.description}</p>
                   
-                  <div className="grid grid-cols-2 gap-4 mb-4 text-xs">
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="font-medium text-gray-800">{Object.values(program.metrics)[0]}</div>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="font-medium text-gray-800">{Object.values(program.metrics)[1]}</div>
-                    </div>
+                  <div className="grid grid-cols-1 gap-2 mb-4 text-xs">
+                    {Object.entries(program.metrics).map(([key, value], idx) => (
+                      <div key={idx} className="bg-gray-50 rounded-lg p-3">
+                        <div className="font-medium text-gray-800">{value}</div>
+                        <div className="text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1')}</div>
+                      </div>
+                    ))}
                   </div>
                   
                   <button
@@ -910,6 +1064,67 @@ const CleanSINDAApp = () => {
                   </button>
                 </div>
               ))}
+            </div>
+
+            {/* Real-Time Metrics Dashboard */}
+            <div className="mt-8 bg-gradient-to-r from-gray-50 to-blue-50 rounded-3xl p-8 border border-blue-200">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">Live Community Dashboard</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                {[
+                  { label: 'Active Now', value: `${ANALYTICS_DATA.overview.dailyActive}`, trend: '+12%', color: 'green' },
+                  { label: 'This Month', value: `${(ANALYTICS_DATA.overview.totalUsers * 0.65).toFixed(0)}`, trend: '+8.3%', color: 'blue' },
+                  { label: 'Response Time', value: `${ANALYTICS_DATA.overview.avgResponseTime}s`, trend: '-15%', color: 'purple' },
+                  { label: 'Satisfaction', value: `${ANALYTICS_DATA.overview.satisfactionScore}/5`, trend: '+2.1%', color: 'yellow' }
+                ].map((metric, index) => (
+                  <div key={index} className="bg-white rounded-xl p-4 shadow-md border border-gray-200">
+                    <div className="text-center">
+                      <div className={`text-2xl font-bold text-${metric.color}-600`}>{metric.value}</div>
+                      <div className="text-sm text-gray-600 mt-1">{metric.label}</div>
+                      <div className={`text-xs mt-2 px-2 py-1 rounded-full ${
+                        metric.trend.startsWith('+') ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                      }`}>
+                        {metric.trend}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-xl p-4 shadow-md">
+                  <h4 className="font-semibold text-gray-800 mb-3">Top Performing Centers</h4>
+                  <div className="space-y-2">
+                    {ANALYTICS_DATA.centerPerformance.slice(0, 3).map((center, index) => (
+                      <div key={index} className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">{center.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{center.satisfaction}</span>
+                          <span className="text-yellow-500">★</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-4 shadow-md">
+                  <h4 className="font-semibold text-gray-800 mb-3">Recent Achievements</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                      <span className="text-gray-600">97% program completion rate</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                      <span className="text-gray-600">2,000+ families assisted this year</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
+                      <span className="text-gray-600">15 new community partnerships</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
