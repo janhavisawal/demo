@@ -275,7 +275,7 @@ const CleanChatInterface = ({ onBack }) => {
     setIsLoading(true);
 
     try {
-      // 🔥 NOW ACTUALLY CALLING THE OPENAI API ENDPOINT
+      // 🔥 TRY OPENAI API FIRST
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -305,22 +305,33 @@ const CleanChatInterface = ({ onBack }) => {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isCrisis: data.isCrisis || false,
         suggestedPrograms: data.suggestedPrograms || [],
-        sentiment: data.sentiment || 'neutral'
+        sentiment: data.sentiment || 'neutral',
+        isAI: true // Mark as AI response
       };
 
       setMessages(prev => [...prev, aiMessage]);
 
-      // Handle crisis detection
-      if (data.isCrisis) {
-        console.log('Crisis detected - emergency protocols activated');
-      }
-
     } catch (error) {
-      console.error('Error calling OpenAI API:', error);
+      console.error('OpenAI API failed, using local response:', error);
       
-      const errorMessage = {
-        id: Date.now() + 1,
-        content: `I'm experiencing technical difficulties connecting to my AI service. 
+      // 🔄 FALLBACK TO LOCAL RESPONSE SYSTEM
+      try {
+        const localResponse = getSINDAResponse(currentInput);
+        
+        const fallbackMessage = {
+          id: Date.now() + 1,
+          content: localResponse,
+          isUser: false,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isAI: false // Mark as local response
+        };
+
+        setMessages(prev => [...prev, fallbackMessage]);
+      } catch (fallbackError) {
+        // Final fallback
+        const errorMessage = {
+          id: Date.now() + 1,
+          content: `I'm experiencing technical difficulties. 
 
 **For immediate assistance:**
 📞 Call SINDA: **1800 295 3333** (24/7)
@@ -328,11 +339,12 @@ const CleanChatInterface = ({ onBack }) => {
 📧 Email: queries@sinda.org.sg
 
 Please try again in a moment, or contact SINDA directly for urgent help.`,
-        isUser: false,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isError: true
-      };
-      setMessages(prev => [...prev, errorMessage]);
+          isUser: false,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isError: true
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -429,7 +441,7 @@ Please try again in a moment, or contact SINDA directly for urgent help.`,
                     <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                     <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
-                  <span className="text-sm text-gray-600">AI is thinking...</span>
+                  <span className="text-sm text-gray-600">Thinking...</span>
                 </div>
               </div>
             </div>
@@ -814,7 +826,7 @@ const CleanSINDAApp = () => {
               <div className="flex items-center gap-6 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
-                  <span>OpenAI API Connected</span>
+                  <span>All systems operational</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={16} />
@@ -908,7 +920,7 @@ const CleanSINDAApp = () => {
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                <span className="text-gray-600">OpenAI API Online</span>
+                <span className="text-gray-600">System Online</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone size={14} className="text-blue-500" />
@@ -920,7 +932,7 @@ const CleanSINDAApp = () => {
               </div>
             </div>
             <div className="text-gray-500">
-              Powered by OpenAI GPT-4
+              Powered by AI Knowledge Base
             </div>
           </div>
         </div>
