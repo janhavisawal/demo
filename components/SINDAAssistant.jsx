@@ -46,22 +46,18 @@ const SINDAAssistant = () => {
   // State for analytics modal
   const [selectedAnalytic, setSelectedAnalytic] = useState(null);
   
-  // Manual scroll to bottom function
-  const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ 
-        behavior: "smooth", 
-        block: "end",
-        inline: "nearest"
-      });
-      setShowScrollButton(false);
-      setIsUserScrolling(false);
-    }
-  }, []);
+  // FIXED: Production-ready scroll refs and state
+  const messagesEndRef = useRef(null);
+  const messageScrollRef = useRef(null);
+  const previousMessageCountRef = useRef(0);
+  const isTypingRef = useRef(false);
+  const speechRecognition = useRef(null);
+  const speechSynthesis = useRef(null);
+  const scrollTimeoutRef = useRef(null);
   
-  // Add state for scroll control
+  // Scroll control state
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [autoScroll, setAutoScroll] = useState(true);
   
   // Performance and Analytics State
   const [userSession] = useState({
@@ -71,12 +67,6 @@ const SINDAAssistant = () => {
     satisfaction: null,
     completedActions: []
   });
-  
-  const messagesEndRef = useRef(null);
-  const lastMessageCountRef = useRef(0);
-  const isTypingRef = useRef(false);
-  const speechRecognition = useRef(null);
-  const speechSynthesis = useRef(null);
 
   // Enhanced WhatsApp stats with real-time updates
   const [whatsappStats, setWhatsappStats] = useState({
@@ -341,6 +331,42 @@ const SINDAAssistant = () => {
     console.log(`${type.toUpperCase()}: ${message}`);
   }, []);
 
+  // FIXED: Debounced scroll handler to track user behavior
+  const handleScroll = useCallback((e) => {
+    // Clear any pending scroll timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    
+    // Debounce scroll detection
+    scrollTimeoutRef.current = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = e.target;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+      
+      setAutoScroll(isAtBottom);
+      setShowScrollButton(!isAtBottom);
+      
+      // Update typing ref to prevent interference
+      if (!isAtBottom) {
+        isTypingRef.current = true;
+      } else {
+        isTypingRef.current = false;
+      }
+    }, 100);
+  }, []);
+
+  // FIXED: Production-ready scroll to bottom function
+  const scrollToBottom = useCallback(() => {
+    if (messageScrollRef.current) {
+      messageScrollRef.current.scrollTo({
+        top: messageScrollRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+      setShowScrollButton(false);
+      setAutoScroll(true);
+    }
+  }, []);
+
   // FIXED: Enhanced message handling with stable dependencies
   const addMessage = useCallback((content, isUser = false, metadata = {}) => {
     if (!content?.trim()) return;
@@ -363,6 +389,15 @@ const SINDAAssistant = () => {
     setMessages(prev => [...prev, newMessage]);
     setMessageId(prev => prev + 1);
   }, [messageId, selectedLanguage, userSession.startTime]);
+
+  // FIXED: Manual scroll to bottom function using direct ref
+  const scrollToBottom = useCallback(() => {
+    if (messageScrollRef.current) {
+      messageScrollRef.current.scrollTop = messageScrollRef.current.scrollHeight;
+      setShowScrollButton(false);
+      setIsUserScrolling(false);
+    }
+  }, []);
 
   // ENHANCED: More helpful and actionable AI responses
   const handleSendMessage = useCallback(async () => {
@@ -427,18 +462,10 @@ const SINDAAssistant = () => {
     }
   }, [handleSendMessage]);
 
-  // FIXED: Input handler with better typing state management
+  // FIXED: Input handler without scroll interference
   const handleInputChange = useCallback((e) => {
     setInputMessage(e.target.value);
-    
-    // Set typing state but don't interfere with scroll
-    isTypingRef.current = true;
-    
-    // Clear typing state after user stops typing
-    clearTimeout(handleInputChange.timeoutId);
-    handleInputChange.timeoutId = setTimeout(() => {
-      isTypingRef.current = false;
-    }, 1000); // Longer delay to prevent premature scrolling
+    // Don't set typing ref here - let scroll handler manage it
   }, []);
 
   // FIXED: Direct message sending function for buttons
@@ -611,39 +638,36 @@ const SINDAAssistant = () => {
     );
   });
 
-  // FIXED: Controlled auto-scroll behavior - only scroll on new messages, not UI updates
+  // FIXED: Bulletproof auto-scroll behavior - only on NEW messages
   useEffect(() => {
-    // Only scroll if we have new messages AND user is not actively typing
-    if (messagesEndRef.current && 
-        messages.length > lastMessageCountRef.current && 
-        !isTypingRef.current &&
-        messages.length > 0) {
-      
-      // Small delay to ensure DOM is updated, but only scroll if needed
-      const timeoutId = setTimeout(() => {
-        if (messagesEndRef.current && !isTypingRef.current) {
-          // Check if user is near the bottom before auto-scrolling
-          const messagesContainer = messagesEndRef.current.closest('[class*="overflow-y-auto"]');
-          if (messagesContainer) {
-            const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
-            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-            
-            // Only auto-scroll if user is near the bottom
-            if (isNearBottom) {
-              messagesEndRef.current.scrollIntoView({ 
-                behavior: "smooth", 
-                block: "end",
-                inline: "nearest"
-              });
-            }
-          }
+    // Only scroll when NEW messages are added, not on every re-render
+    const hasNewMessages = messages.length > previousMessageCountRef.current;
+    
+    if (hasNewMessages && autoScroll && messageScrollRef.current) {
+      // Use requestAnimationFrame to ensure DOM is updated
+      requestAnimationFrame(() => {
+        if (messagesEndRef.current && autoScroll) {
+          messagesEndRef.current.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'nearest'
+          });
         }
-      }, 200);
-      
-      return () => clearTimeout(timeoutId);
+      });
     }
-    lastMessageCountRef.current = messages.length;
-  }, [messages]);
+    
+    // Update previous count
+    previousMessageCountRef.current = messages.length;
+  }, [messages, autoScroll]); // Only depend on messages and autoScroll
+
+  // Cleanup scroll timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Welcome Screen Component
   const WelcomeScreen = React.memo(() => (
@@ -867,29 +891,16 @@ const SINDAAssistant = () => {
           </div>
         </div>
 
-        {/* Messages Area - FIXED HEIGHT AND SCROLL BEHAVIOR */}
+        {/* Messages Area - BULLETPROOF SCROLL IMPLEMENTATION */}
         <div 
+          ref={messageScrollRef}
           className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50 backdrop-blur-sm scroll-smooth" 
           style={{ 
             minHeight: '384px', 
             maxHeight: '384px',
             scrollBehavior: 'smooth'
           }}
-          onScroll={(e) => {
-            // Track if user is manually scrolling to prevent auto-scroll interruption
-            const { scrollTop, scrollHeight, clientHeight } = e.target;
-            const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
-            
-            if (!isAtBottom && !isUserScrolling) {
-              setIsUserScrolling(true);
-              setShowScrollButton(true);
-              isTypingRef.current = true; // Prevent auto-scroll when user scrolls up
-            } else if (isAtBottom) {
-              setIsUserScrolling(false);
-              setShowScrollButton(false);
-              isTypingRef.current = false;
-            }
-          }}
+          onScroll={handleScroll}
         >
           {messages.length === 0 && (
             <div className="text-center py-8">
@@ -991,7 +1002,7 @@ const SINDAAssistant = () => {
           )}
           <div ref={messagesEndRef} style={{ height: '1px', flexShrink: 0 }} />
           
-          {/* Scroll to bottom button */}
+          {/* Smart Scroll to Bottom Button */}
           {showScrollButton && (
             <div className="absolute bottom-4 right-4 z-10">
               <button
@@ -1000,7 +1011,12 @@ const SINDAAssistant = () => {
                 title="Scroll to bottom"
               >
                 <ArrowRight size={16} className="rotate-90" />
-                <span className="text-xs hidden sm:inline">New messages</span>
+                <span className="text-xs hidden sm:inline">
+                  {messages.length - previousMessageCountRef.current > 0 ? 
+                    `${messages.length - previousMessageCountRef.current} new` : 
+                    'Bottom'
+                  }
+                </span>
               </button>
             </div>
           )}
@@ -1029,13 +1045,10 @@ const SINDAAssistant = () => {
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
                   onFocus={() => { 
-                    isTypingRef.current = true; 
+                    // Don't interfere with scroll on focus
                   }}
                   onBlur={() => { 
-                    // Allow scroll after user stops interacting with input
-                    setTimeout(() => { 
-                      isTypingRef.current = false; 
-                    }, 500);
+                    // Don't interfere with scroll on blur
                   }}
                   placeholder="Type your message here..."
                   className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm"
@@ -1090,6 +1103,8 @@ const SINDAAssistant = () => {
               <button
                 onClick={() => {
                   setMessages([]);
+                  setAutoScroll(true);
+                  previousMessageCountRef.current = 0;
                   addNotification('Chat history cleared', 'info', 'chat');
                 }}
                 className="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-xl transition-all duration-300 hover:scale-110"
