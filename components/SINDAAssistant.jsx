@@ -328,6 +328,14 @@ const CleanChatInterface = ({ onBack }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState('english');
+
+  const languages = {
+    english: { name: 'English', native: 'English', flag: '🇬🇧' },
+    tamil: { name: 'Tamil', native: 'தமிழ்', flag: '🇮🇳' },
+    hindi: { name: 'Hindi', native: 'हिंदी', flag: '🇮🇳' },
+    malayalam: { name: 'Malayalam', native: 'മലയാളം', flag: '🇮🇳' }
+  };
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -357,7 +365,7 @@ const CleanChatInterface = ({ onBack }) => {
             role: msg.isUser ? 'user' : 'assistant',
             content: msg.content
           })),
-          userInfo: {},
+          userInfo: { preferredLanguage: selectedLanguage },
           conversationStage: 'general'
         }),
       });
@@ -435,16 +443,35 @@ Please try again in a moment, or contact SINDA directly for urgent help.`,
                 <h3 className="text-xl font-bold">SINDA Assistant</h3>
                 <div className="flex items-center gap-2 text-blue-100 text-sm">
                   <div className="w-2 h-2 rounded-full animate-pulse bg-green-300"></div>
-                  <span>AI Online • Ready to Help</span>
+                  <span>AI Online • {languages[selectedLanguage].native}</span>
                 </div>
               </div>
             </div>
-            <button 
-              onClick={onBack}
-              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
-            >
-              ← Back
-            </button>
+            
+            <div className="flex items-center gap-4">
+              {/* Language Selector */}
+              <div className="relative">
+                <select
+                  value={selectedLanguage}
+                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg px-3 py-2 text-white text-sm appearance-none cursor-pointer hover:bg-white/30 transition-colors min-w-[120px]"
+                  style={{ backgroundImage: "url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27white%27 viewBox=%270 0 16 16%27%3e%3cpath d=%27M8 13.1l4.2-4.2-1.4-1.4L8 10.3 5.2 7.5 3.8 8.9z%27/%3e%3c/svg%3e')", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '12px' }}
+                >
+                  {Object.entries(languages).map(([key, lang]) => (
+                    <option key={key} value={key} className="bg-blue-600 text-white">
+                      {lang.flag} {lang.native}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <button 
+                onClick={onBack}
+                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
+              >
+                ← Back
+              </button>
+            </div>
           </div>
         </div>
 
@@ -453,15 +480,49 @@ Please try again in a moment, or contact SINDA directly for urgent help.`,
           {messages.length === 0 && (
             <div className="text-center py-8">
               <MessageCircle size={48} className="mx-auto text-blue-400 mb-4" />
-              <h4 className="text-lg font-semibold text-gray-600 mb-2">How can I help you today?</h4>
-              <p className="text-gray-500 mb-6">Ask me about SINDA programs, eligibility, or applications</p>
+              <h4 className="text-lg font-semibold text-gray-600 mb-2">
+                {selectedLanguage === 'tamil' ? 'இன்று நான் உங்களுக்கு எப்படி உதவ முடியும்?' :
+                 selectedLanguage === 'hindi' ? 'आज मैं आपकी कैसे मदद कर सकता हूँ?' :
+                 selectedLanguage === 'malayalam' ? 'ഇന്ന് ഞാൻ നിങ്ങളെ എങ്ങനെ സഹായിക്കും?' :
+                 'How can I help you today?'}
+              </h4>
+              <p className="text-gray-500 mb-6">
+                {selectedLanguage === 'tamil' ? 'SINDA திட്டங்கள், தகுதி அல்லது விண்ணப்பங்கள் பற்றி என்னிடம் கேளுங்கள்' :
+                 selectedLanguage === 'hindi' ? 'SINDA कार्यक्रमों, पात्रता या आवेदनों के बारे में मुझसे पूछें' :
+                 selectedLanguage === 'malayalam' ? 'SINDA പ്രോഗ്രാമുകൾ, യോഗ്യത അല്ലെങ്കിൽ അപ്ലിക്കേഷനുകൾ എന്നിവയെക്കുറിച്ച് എന്നോട് ചോദിക്കുക' :
+                 'Ask me about SINDA programs, eligibility, or applications'}
+              </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-md mx-auto">
                 {[
-                  { text: 'Apply for STEP tuition', icon: '🎓' },
-                  { text: 'Emergency financial help', icon: '🚨' },
-                  { text: 'Join youth programs', icon: '🎯' },
-                  { text: 'Family counselling services', icon: '👨‍👩‍👧‍👦' }
+                  { 
+                    text: selectedLanguage === 'tamil' ? 'STEP பயிற்சிக்கு விண்ணப்பிக்கவும்' :
+                          selectedLanguage === 'hindi' ? 'STEP ट्यूशन के लिए आवेदन करें' :
+                          selectedLanguage === 'malayalam' ? 'STEP ട്യൂഷനായി അപേക്ഷിക്കുക' :
+                          'Apply for STEP tuition', 
+                    icon: '🎓' 
+                  },
+                  { 
+                    text: selectedLanguage === 'tamil' ? 'அவசர நிதி உதவி' :
+                          selectedLanguage === 'hindi' ? 'आपातकालीन वित्तीय सहायता' :
+                          selectedLanguage === 'malayalam' ? 'അടിയന്തര സാമ്പത്തിക സഹായം' :
+                          'Emergency financial help', 
+                    icon: '🚨' 
+                  },
+                  { 
+                    text: selectedLanguage === 'tamil' ? 'युवाओं के कार्यक्रमों में शामिल हों' :
+                          selectedLanguage === 'hindi' ? 'युवाओं के कार्यक्रमों में शामिल हों' :
+                          selectedLanguage === 'malayalam' ? 'യുവജന പ്രോഗ്രാമുകളിൽ ചേരുക' :
+                          'Join youth programs', 
+                    icon: '🎯' 
+                  },
+                  { 
+                    text: selectedLanguage === 'tamil' ? 'குടும்ப ஆலோசனை சேவைகள்' :
+                          selectedLanguage === 'hindi' ? 'पारिवारिक परामर्श सेवाएं' :
+                          selectedLanguage === 'malayalam' ? 'കുടുംബ കൗൺസിലിംഗ് സേവനങ്ങൾ' :
+                          'Family counselling services', 
+                    icon: '👨‍👩‍👧‍👦' 
+                  }
                 ].map((action, index) => (
                   <button
                     key={index}
@@ -474,6 +535,16 @@ Please try again in a moment, or contact SINDA directly for urgent help.`,
                     </div>
                   </button>
                 ))}
+              </div>
+
+              {/* Language Info */}
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <p className="text-sm text-blue-800">
+                  {selectedLanguage === 'tamil' ? '🌍 நான் தமிழ், ஹிந்தி, மலையாளம் மற்றும் ஆங்கிலத்தில் உதவ முடியும்' :
+                   selectedLanguage === 'hindi' ? '🌍 मैं तमिल, हिंदी, मलयालम और अंग्रेजी में मदद कर सकता हूं' :
+                   selectedLanguage === 'malayalam' ? '🌍 എനിക്ക് തമിഴ്, ഹിന്ദി, മലയാളം, ഇംഗ്ലീഷ് എന്നിവയിൽ സഹായിക്കാൻ കഴിയും' :
+                   '🌍 I can help in Tamil, Hindi, Malayalam, and English'}
+                </p>
               </div>
             </div>
           )}
@@ -495,6 +566,11 @@ Please try again in a moment, or contact SINDA directly for urgent help.`,
                   {message.isCrisis && (
                     <span className="ml-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">
                       Crisis Detected
+                    </span>
+                  )}
+                  {message.isAI && (
+                    <span className="ml-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs">
+                      AI • {languages[selectedLanguage].flag}
                     </span>
                   )}
                 </div>
@@ -531,7 +607,12 @@ Please try again in a moment, or contact SINDA directly for urgent help.`,
                     sendMessage();
                   }
                 }}
-                placeholder="Type your message here..."
+                placeholder={
+                  selectedLanguage === 'tamil' ? 'உங்கள் செய்தியை இங்கே தட்டச்சு செய்யுங்கள்...' :
+                  selectedLanguage === 'hindi' ? 'अपना संदेश यहाँ टाइप करें...' :
+                  selectedLanguage === 'malayalam' ? 'നിങ്ങളുടെ സന്ദേശം ഇവിടെ ടൈപ്പ് ചെയ്യുക...' :
+                  'Type your message here...'
+                }
                 className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm"
                 rows="2"
                 disabled={isLoading}
@@ -841,17 +922,10 @@ const CleanSINDAApp = () => {
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-blue-200 shadow-lg">
             <h3 className="text-xl font-bold text-gray-800 mb-4">Need immediate help?</h3>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="tel:18002953333" className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2">
+              <a href="tel:18002953333" className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2 justify-center">
                 <Phone size={18} />
                 Call 1800 295 3333
               </a>
-              <button
-                onClick={() => startChat('english')}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2"
-              >
-                <MessageCircle size={18} />
-                Start Chat
-              </button>
             </div>
           </div>
         </div>
