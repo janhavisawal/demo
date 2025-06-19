@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { LineChart as RechartsLineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart as RechartsBarChart, Bar, PieChart as RechartsPieChart, Cell, Pie } from "recharts";
 
-// Enhanced SINDA Assistant with Fixed Issues
+// Enhanced SINDA Assistant with Fixed Scroll Issues
 const SINDAAssistant = () => {
   // Core State Management
   const [currentView, setCurrentView] = useState('dashboard');
@@ -42,8 +42,26 @@ const SINDAAssistant = () => {
   const [compactMode, setCompactMode] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
+  
   // State for analytics modal
   const [selectedAnalytic, setSelectedAnalytic] = useState(null);
+  
+  // Manual scroll to bottom function
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: "smooth", 
+        block: "end",
+        inline: "nearest"
+      });
+      setShowScrollButton(false);
+      setIsUserScrolling(false);
+    }
+  }, []);
+  
+  // Add state for scroll control
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
   
   // Performance and Analytics State
   const [userSession] = useState({
@@ -346,7 +364,7 @@ const SINDAAssistant = () => {
     setMessageId(prev => prev + 1);
   }, [messageId, selectedLanguage, userSession.startTime]);
 
-  // FIXED: Enhanced message sending that resets typing state
+  // ENHANCED: More helpful and actionable AI responses
   const handleSendMessage = useCallback(async () => {
     const trimmedMessage = inputMessage.trim();
     if (!trimmedMessage || isTyping) return;
@@ -356,30 +374,49 @@ const SINDAAssistant = () => {
       return;
     }
     
-    // Reset typing state when sending
-    isTypingRef.current = false;
-    
+    // Add user message
     addMessage(trimmedMessage, true, { inputMethod: 'manual' });
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate AI response
+    // Generate more helpful and actionable AI responses
     setTimeout(() => {
-      const responses = [
-        `🎓 **STEP Tuition Program** - Our flagship education program offers heavily subsidized tuition at just $10-15/hour for eligible families. With 94.7% pass rates and expert MOE-qualified teachers, we're transforming academic journeys across Singapore.\n\n📞 **Ready to apply?** Call 1800 295 3333 or visit 1 Beatty Road!`,
-        `💰 **Financial Assistance Available** - We provide emergency aid within 24-48 hours, monthly support, and help with bills, rent, and medical expenses. Our 96% success rate shows families achieve stability within 12 months.\n\n🚨 **Need immediate help?** Call our crisis hotline: 1800 295 3333`,
-        `🎯 **Youth Development Programs** - Join our Youth Club (ages 18-35) for leadership training, networking, and career mentoring. 89% of participants report career advancement within 2 years!\n\n💼 **Interested?** Email queries@sinda.org.sg or call 1800 295 3333`,
-        `👨‍👩‍👧‍👦 **Family Services** - Our dedicated Family Service Centre offers professional counseling, crisis intervention, and culturally sensitive support. All services are completely confidential.\n\n🤝 **Get support today:** Walk-in at 1 Beatty Road or call 1800 295 3333`
-      ];
+      const lowerMessage = trimmedMessage.toLowerCase();
+      let response = '';
+
+      // Educational queries - More actionable
+      if (lowerMessage.includes('step') || lowerMessage.includes('tuition') || lowerMessage.includes('education') || lowerMessage.includes('school')) {
+        response = `🎓 **STEP Tuition Program - Let's Get You Started!**\n\n✅ **Immediate Actions You Can Take:**\n1. **Call now:** 1800 295 3333 (Mon-Fri 9AM-6PM)\n2. **Walk-in:** 1 Beatty Road, Level 2 Registration Counter\n3. **Required documents:** IC, latest report card, household income proof\n\n💰 **Cost:** Only $10-15/hour (90% subsidy!)\n📊 **Success rate:** 94.7% pass rate\n🎯 **Available for:** Primary 1 to JC2, all subjects\n\n⚡ **Fast-track application:** Mention "URGENT" for priority processing\n\n❓ **Questions?** Ask me about eligibility, subjects, or scheduling!`;
+      }
+      // Financial assistance - Immediate help focus
+      else if (lowerMessage.includes('financial') || lowerMessage.includes('assistance') || lowerMessage.includes('money') || lowerMessage.includes('aid') || lowerMessage.includes('emergency')) {
+        response = `💰 **Financial Help Available NOW**\n\n🚨 **IMMEDIATE SUPPORT:**\n• **Crisis hotline:** 1800 295 3333 (24/7)\n• **Emergency aid:** Decision within 24-48 hours\n• **Walk-in:** 1 Beatty Road (bring IC + income docs)\n\n💡 **What You Can Get:**\n✅ Emergency cash assistance ($200-$2000)\n✅ Monthly household support\n✅ Medical bill coverage\n✅ Utility bill help\n✅ School fee assistance\n\n📋 **Bring These Documents:**\n• IC/passport\n• Bank statements (3 months)\n• Income proof\n• Bills/receipts needing help\n\n⏰ **Best time to visit:** 9AM-12PM for faster service`;
+      }
+      // Youth programs - Clear next steps
+      else if (lowerMessage.includes('youth') || lowerMessage.includes('young') || lowerMessage.includes('leadership') || lowerMessage.includes('club') || lowerMessage.includes('job')) {
+        response = `🎯 **Youth Programs - Join Today!**\n\n🚀 **Immediate Registration:**\n1. **WhatsApp:** 9123 4567 with "YOUTH SIGNUP"\n2. **Email:** youth@sinda.org.sg\n3. **Visit:** 1 Beatty Road Level 3 Youth Centre\n\n🎪 **This Month's Activities:**\n• **Leadership Workshop:** Every Sat 2-5PM\n• **Career Mentoring:** 1-on-1 sessions available\n• **Networking Night:** Last Fri of month\n• **Skills Training:** IT, Communication, Public Speaking\n\n💼 **Job Placement Support:**\n• Resume writing help\n• Interview preparation\n• Industry connections\n• 67% job placement rate!\n\n🎁 **Membership perks:** Free workshops, priority job referrals, networking access`;
+      }
+      // Family services - Compassionate and immediate
+      else if (lowerMessage.includes('family') || lowerMessage.includes('counselling') || lowerMessage.includes('counseling') || lowerMessage.includes('support') || lowerMessage.includes('marriage') || lowerMessage.includes('relationship')) {
+        response = `👨‍👩‍👧‍👦 **Family Support - We're Here for You**\n\n💙 **Get Help Today:**\n• **24/7 Crisis Line:** 1800 295 3333\n• **Walk-in Counseling:** 1 Beatty Road Level 4 (9AM-8PM)\n• **Online booking:** sinda.org.sg/book-counseling\n\n🤝 **Professional Services:**\n✅ Individual counseling (free)\n✅ Family therapy sessions\n✅ Marriage counseling\n✅ Child behavioral support\n✅ Crisis intervention\n\n👥 **Our Counselors Speak:**\n• English, Tamil, Hindi, Malayalam\n• All sessions 100% confidential\n• Average 3-5 sessions show improvement\n\n⚡ **Urgent situations:** Call immediately - we prioritize crisis cases`;
+      }
+      // Application/eligibility questions
+      else if (lowerMessage.includes('eligible') || lowerMessage.includes('apply') || lowerMessage.includes('qualify') || lowerMessage.includes('requirement')) {
+        response = `📋 **Eligibility Check - Quick Assessment**\n\n✅ **You likely qualify if:**\n• Singapore citizen/PR\n• Household income <$4,500/month\n• Indian ethnicity (or spouse/child of Indian)\n\n🚀 **Fast Eligibility Check:**\n1. **Call:** 1800 295 3333 (2-minute phone check)\n2. **Online:** sinda.org.sg/eligibility-checker\n3. **WhatsApp:** 9123 4567 with "CHECK ELIGIBILITY"\n\n📄 **Bring for instant approval:**\n• IC/passport\n• Latest payslips (2 months)\n• Bank statements (3 months)\n\n⏰ **Processing time:** Same-day approval for most programs!\n\n💡 **Pro tip:** Higher income families may still qualify for specific programs - always check!`;
+      }
+      // General/unclear queries - More helpful guidance
+      else {
+        response = `🌟 **Welcome! Let me help you find exactly what you need**\n\n🔍 **Tell me more about:**\n• "I need help with school fees" → Education support\n• "I'm facing financial difficulties" → Emergency aid\n• "I want to join activities" → Youth programs\n• "I need counseling support" → Family services\n\n⚡ **Quick Actions:**\n📞 **Urgent help:** 1800 295 3333 (24/7)\n📧 **General info:** queries@sinda.org.sg\n📍 **Visit:** 1 Beatty Road (9AM-6PM)\n💬 **WhatsApp:** 9123 4567\n\n🎯 **Most Popular Right Now:**\n• STEP tuition registration (closes soon!)\n• Emergency financial aid\n• Youth job placement program\n\n❓ **What specific help do you need today?**`;
+      }
       
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      addMessage(randomResponse, false, {
+      addMessage(response, false, {
         aiGenerated: true,
-        confidence: 0.95,
-        sentiment: 'positive'
+        confidence: 0.98,
+        sentiment: 'helpful',
+        responseType: 'actionable'
       });
       setIsTyping(false);
-    }, 1500);
+    }, 1200);
   }, [inputMessage, isTyping, addMessage, addNotification]);
 
   // FIXED: Simple event handlers
@@ -390,27 +427,63 @@ const SINDAAssistant = () => {
     }
   }, [handleSendMessage]);
 
-  // FIXED: Input handler that tracks typing state
+  // FIXED: Input handler with better typing state management
   const handleInputChange = useCallback((e) => {
-    isTypingRef.current = true;
     setInputMessage(e.target.value);
     
-    // Clear typing state after user stops typing for a bit
+    // Set typing state but don't interfere with scroll
+    isTypingRef.current = true;
+    
+    // Clear typing state after user stops typing
     clearTimeout(handleInputChange.timeoutId);
     handleInputChange.timeoutId = setTimeout(() => {
       isTypingRef.current = false;
-    }, 500);
+    }, 1000); // Longer delay to prevent premature scrolling
   }, []);
 
-  // Enhanced program click handler
-  const handleProgramClick = useCallback((categoryTitle) => {
-    if (!categoryTitle) return;
+  // FIXED: Direct message sending function for buttons
+  const sendDirectMessage = useCallback((message) => {
+    if (!message?.trim() || isTyping) return;
     
-    const programMessage = `Tell me about ${categoryTitle}`;
-    addNotification(`Exploring ${categoryTitle}`, 'info', 'navigation');
-    addMessage(programMessage, true, { triggerType: 'programButton', category: categoryTitle });
-    setTimeout(() => handleSendMessage(), 100);
-  }, [addMessage, addNotification, handleSendMessage]);
+    // Add user message immediately
+    addMessage(message.trim(), true, { triggerType: 'programButton' });
+    setIsTyping(true);
+
+    // Generate response based on message content
+    setTimeout(() => {
+      const lowerMessage = message.toLowerCase();
+      let response = '';
+
+      // Educational queries - More actionable
+      if (lowerMessage.includes('education')) {
+        response = `🎓 **Education Programs - Let's Get You Started!**\n\n✅ **Immediate Actions You Can Take:**\n1. **Call now:** 1800 295 3333 (Mon-Fri 9AM-6PM)\n2. **Walk-in:** 1 Beatty Road, Level 2 Registration Counter\n3. **Required documents:** IC, latest report card, household income proof\n\n💰 **STEP Program:** Only $10-15/hour (90% subsidy!)\n📊 **Success rate:** 94.7% pass rate\n🎯 **Available for:** Primary 1 to JC2, all subjects\n\n⚡ **Fast-track application:** Mention "URGENT" for priority processing`;
+      }
+      // Family services
+      else if (lowerMessage.includes('family')) {
+        response = `👨‍👩‍👧‍👦 **Family Services - We're Here for You**\n\n💙 **Get Help Today:**\n• **24/7 Crisis Line:** 1800 295 3333\n• **Walk-in Counseling:** 1 Beatty Road Level 4 (9AM-8PM)\n• **Online booking:** sinda.org.sg/book-counseling\n\n🤝 **Professional Services:**\n✅ Individual counseling (free)\n✅ Family therapy sessions\n✅ Emergency financial assistance\n✅ Crisis intervention\n\n👥 **Our Counselors Speak:**\n• English, Tamil, Hindi, Malayalam\n• All sessions 100% confidential`;
+      }
+      // Youth programs
+      else if (lowerMessage.includes('youth')) {
+        response = `🎯 **Youth Development - Join Today!**\n\n🚀 **Immediate Registration:**\n1. **WhatsApp:** 9123 4567 with "YOUTH SIGNUP"\n2. **Email:** youth@sinda.org.sg\n3. **Visit:** 1 Beatty Road Level 3 Youth Centre\n\n🎪 **This Month's Activities:**\n• **Leadership Workshop:** Every Sat 2-5PM\n• **Career Mentoring:** 1-on-1 sessions available\n• **Networking Night:** Last Fri of month\n\n💼 **Job Placement Support:**\n• Resume writing help\n• Interview preparation\n• 67% job placement rate!`;
+      }
+      // Community outreach
+      else if (lowerMessage.includes('community')) {
+        response = `🌍 **Community Outreach - Get Involved!**\n\n🚀 **Join Our Programs:**\n1. **Call:** 1800 295 3333\n2. **Visit:** 1 Beatty Road Community Centre\n3. **Email:** community@sinda.org.sg\n\n🎪 **Current Initiatives:**\n• **Door Knocking:** Community visits\n• **SINDA Bus:** Mobile services\n• **Community Events:** Regular gatherings\n• **Volunteer Programs:** Give back opportunities\n\n🎁 **Benefits:** Connect with neighbors, make a difference, build community!`;
+      }
+      // Default response
+      else {
+        response = `🌟 **Welcome! Let me help you find exactly what you need**\n\n⚡ **Quick Actions:**\n📞 **Urgent help:** 1800 295 3333 (24/7)\n📧 **General info:** queries@sinda.org.sg\n📍 **Visit:** 1 Beatty Road (9AM-6PM)\n💬 **WhatsApp:** 9123 4567\n\n🎯 **Most Popular Programs:**\n• STEP tuition registration\n• Emergency financial aid\n• Youth leadership programs\n• Family counseling support`;
+      }
+      
+      addMessage(response, false, {
+        aiGenerated: true,
+        confidence: 0.98,
+        sentiment: 'helpful',
+        responseType: 'programInfo'
+      });
+      setIsTyping(false);
+    }, 1200);
+  }, [addMessage, isTyping]);
 
   // Analytics Modal Component
   const AnalyticsModal = React.memo(() => {
@@ -538,18 +611,36 @@ const SINDAAssistant = () => {
     );
   });
 
-  // FIXED: Completely prevent scroll during typing
+  // FIXED: Controlled auto-scroll behavior - only scroll on new messages, not UI updates
   useEffect(() => {
-    // Only scroll if we're not actively typing AND new messages were added
+    // Only scroll if we have new messages AND user is not actively typing
     if (messagesEndRef.current && 
         messages.length > lastMessageCountRef.current && 
-        !isTypingRef.current) {
-      // Small delay to ensure DOM is updated
-      setTimeout(() => {
+        !isTypingRef.current &&
+        messages.length > 0) {
+      
+      // Small delay to ensure DOM is updated, but only scroll if needed
+      const timeoutId = setTimeout(() => {
         if (messagesEndRef.current && !isTypingRef.current) {
-          messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+          // Check if user is near the bottom before auto-scrolling
+          const messagesContainer = messagesEndRef.current.closest('[class*="overflow-y-auto"]');
+          if (messagesContainer) {
+            const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
+            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+            
+            // Only auto-scroll if user is near the bottom
+            if (isNearBottom) {
+              messagesEndRef.current.scrollIntoView({ 
+                behavior: "smooth", 
+                block: "end",
+                inline: "nearest"
+              });
+            }
+          }
         }
-      }, 100);
+      }, 200);
+      
+      return () => clearTimeout(timeoutId);
     }
     lastMessageCountRef.current = messages.length;
   }, [messages]);
@@ -674,7 +765,63 @@ const SINDAAssistant = () => {
 
   // Chat Interface Component
   const ChatInterface = React.memo(() => (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
+      {/* Program Categories Quick Access - MOVED ABOVE CHAT */}
+      <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-blue-200 p-6 shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="text-lg font-semibold text-gray-800">Explore Our Programs</h4>
+          <div className="text-sm text-gray-600">
+            {programCategories.reduce((sum, cat) => sum + cat.beneficiaries, 0).toLocaleString()} total beneficiaries
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {programCategories.map((category, index) => {
+            const IconComponent = category.icon;
+            return (
+              <button
+                key={category.id}
+                onClick={() => {
+                  const programMessage = `Tell me about ${category.title}`;
+                  setInputMessage(programMessage);
+                  addMessage(programMessage, true, { triggerType: 'programButton', category: category.title });
+                  setTimeout(() => handleSendMessage(), 100);
+                }}
+                className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:border-blue-400 rounded-xl p-4 transition-all duration-500 hover:shadow-lg text-left group hover:scale-105 relative overflow-hidden"
+                disabled={isLoading}
+              >
+                <div className={`w-10 h-10 bg-gradient-to-r ${category.color} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300`}>
+                  <IconComponent className="text-white" size={20} />
+                </div>
+                <div className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
+                  {category.title}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">{category.count}</div>
+                <div className="text-xs text-green-600 mt-1 font-medium">{category.successRate}% success rate</div>
+                <div className="text-xs text-blue-600 mt-1">{category.beneficiaries.toLocaleString()} helped</div>
+                
+                {category.priority === 'critical' && (
+                  <div className="absolute top-2 right-2 bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">
+                    Critical
+                  </div>
+                )}
+                {category.featured && (
+                  <div className="absolute top-2 left-2 bg-yellow-100 text-yellow-600 text-xs px-2 py-1 rounded-full">
+                    ⭐ Featured
+                  </div>
+                )}
+                
+                {category.waitingList > 0 && (
+                  <div className="absolute bottom-2 right-2 bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full">
+                    {category.waitingList} waiting
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Main Chat Box */}
       <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-blue-200 overflow-hidden shadow-2xl">
         {/* Chat Header */}
         <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 p-6 text-white relative overflow-hidden">
@@ -720,58 +867,30 @@ const SINDAAssistant = () => {
           </div>
         </div>
 
-        {/* Program Categories Quick Access */}
-        <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-indigo-50 p-6 border-b border-blue-100">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-semibold text-gray-800">Explore Our Programs</h4>
-            <div className="text-sm text-gray-600">
-              {programCategories.reduce((sum, cat) => sum + cat.beneficiaries, 0).toLocaleString()} total beneficiaries
-            </div>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {programCategories.map((category, index) => {
-              const IconComponent = category.icon;
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => handleProgramClick(category.title)}
-                  className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:border-blue-400 rounded-xl p-4 transition-all duration-500 hover:shadow-lg text-left group hover:scale-105 relative overflow-hidden"
-                  disabled={isLoading}
-                >
-                  <div className={`w-10 h-10 bg-gradient-to-r ${category.color} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300`}>
-                    <IconComponent className="text-white" size={20} />
-                  </div>
-                  <div className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
-                    {category.title}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">{category.count}</div>
-                  <div className="text-xs text-green-600 mt-1 font-medium">{category.successRate}% success rate</div>
-                  <div className="text-xs text-blue-600 mt-1">{category.beneficiaries.toLocaleString()} helped</div>
-                  
-                  {category.priority === 'critical' && (
-                    <div className="absolute top-2 right-2 bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">
-                      Critical
-                    </div>
-                  )}
-                  {category.featured && (
-                    <div className="absolute top-2 left-2 bg-yellow-100 text-yellow-600 text-xs px-2 py-1 rounded-full">
-                      ⭐ Featured
-                    </div>
-                  )}
-                  
-                  {category.waitingList > 0 && (
-                    <div className="absolute bottom-2 right-2 bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full">
-                      {category.waitingList} waiting
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Messages Area */}
-        <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50 backdrop-blur-sm">
+        {/* Messages Area - FIXED HEIGHT AND SCROLL BEHAVIOR */}
+        <div 
+          className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50 backdrop-blur-sm scroll-smooth" 
+          style={{ 
+            minHeight: '384px', 
+            maxHeight: '384px',
+            scrollBehavior: 'smooth'
+          }}
+          onScroll={(e) => {
+            // Track if user is manually scrolling to prevent auto-scroll interruption
+            const { scrollTop, scrollHeight, clientHeight } = e.target;
+            const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+            
+            if (!isAtBottom && !isUserScrolling) {
+              setIsUserScrolling(true);
+              setShowScrollButton(true);
+              isTypingRef.current = true; // Prevent auto-scroll when user scrolls up
+            } else if (isAtBottom) {
+              setIsUserScrolling(false);
+              setShowScrollButton(false);
+              isTypingRef.current = false;
+            }
+          }}
+        >
           {messages.length === 0 && (
             <div className="text-center py-8">
               <div className="text-blue-400 mb-4">
@@ -781,38 +900,45 @@ const SINDAAssistant = () => {
               <p className="text-gray-500 mb-6">Ask me about SINDA programs, eligibility, or application processes</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-md mx-auto">
-                {quickHelp.slice(0, 6).map((help, index) => (
+                {[
+                  { text: 'Apply for STEP tuition now', priority: 'high', icon: '🎓', action: 'education' },
+                  { text: 'I need emergency financial help', priority: 'urgent', icon: '🚨', action: 'emergency' },
+                  { text: 'Join youth programs', priority: 'medium', icon: '🎯', action: 'youth' },
+                  { text: 'Family counseling services', priority: 'high', icon: '👨‍👩‍👧‍👦', action: 'family' },
+                  { text: 'Check my eligibility', priority: 'medium', icon: '📋', action: 'eligibility' },
+                  { text: 'What services do you offer?', priority: 'low', icon: '❓', action: 'general' }
+                ].map((help, index) => (
                   <button
                     key={index}
                     onClick={() => {
-                      addMessage(help.text, true, { quickHelp: true });
-                      setTimeout(() => handleSendMessage(), 100);
+                      addMessage(help.text, true, { quickHelp: true, action: help.action });
+                      setTimeout(() => {
+                        setInputMessage(help.text);
+                        handleSendMessage();
+                      }, 100);
                     }}
-                    className={`border rounded-lg p-3 text-sm text-left transition-all duration-300 hover:shadow-md hover:scale-105 ${
-                      help.priority === 'urgent' ? 'border-red-300 bg-red-50 hover:border-red-400' :
-                      help.priority === 'high' ? 'border-orange-300 bg-orange-50 hover:border-orange-400' :
-                      'bg-blue-50 border-blue-200 hover:border-blue-400'
+                    className={`border rounded-xl p-4 text-sm text-left transition-all duration-300 hover:shadow-lg hover:scale-105 ${
+                      help.priority === 'urgent' ? 'border-red-300 bg-red-50 hover:border-red-400 hover:bg-red-100' :
+                      help.priority === 'high' ? 'border-orange-300 bg-orange-50 hover:border-orange-400 hover:bg-orange-100' :
+                      help.priority === 'medium' ? 'border-blue-300 bg-blue-50 hover:border-blue-400 hover:bg-blue-100' :
+                      'bg-gray-50 border-gray-200 hover:border-gray-400 hover:bg-gray-100'
                     }`}
                     disabled={isLoading}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="flex-1">{help.text}</span>
-                      <div className="flex items-center gap-1 ml-2">
-                        {help.priority === 'urgent' && <AlertTriangle size={14} className="text-red-500" />}
-                        {help.tags.includes('popular') && <Star size={12} className="text-yellow-500" />}
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{help.icon}</span>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-800">{help.text}</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {help.priority === 'urgent' ? '⚡ Immediate response' :
+                           help.priority === 'high' ? '🚀 Fast-track available' :
+                           help.priority === 'medium' ? '📅 Same-day service' :
+                           '💬 General information'}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex justify-between items-center mt-2">
-                      <div className="flex gap-1">
-                        {help.tags.slice(0, 2).map((tag, tagIndex) => (
-                          <span key={tagIndex} className="text-xs bg-white/70 px-2 py-1 rounded-full text-gray-600">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {help.estimatedTime} • {help.successRate}%
-                      </div>
+                      {help.priority === 'urgent' && (
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                      )}
                     </div>
                   </button>
                 ))}
@@ -863,7 +989,21 @@ const SINDAAssistant = () => {
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} style={{ height: '1px', flexShrink: 0 }} />
+          
+          {/* Scroll to bottom button */}
+          {showScrollButton && (
+            <div className="absolute bottom-4 right-4 z-10">
+              <button
+                onClick={scrollToBottom}
+                className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center gap-2"
+                title="Scroll to bottom"
+              >
+                <ArrowRight size={16} className="rotate-90" />
+                <span className="text-xs hidden sm:inline">New messages</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* FIXED: Input Area with proper event handling */}
@@ -888,12 +1028,17 @@ const SINDAAssistant = () => {
                   value={inputMessage}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
-                  onFocus={() => { isTypingRef.current = true; }}
+                  onFocus={() => { 
+                    isTypingRef.current = true; 
+                  }}
                   onBlur={() => { 
-                    setTimeout(() => { isTypingRef.current = false; }, 200);
+                    // Allow scroll after user stops interacting with input
+                    setTimeout(() => { 
+                      isTypingRef.current = false; 
+                    }, 500);
                   }}
                   placeholder="Type your message here..."
-                  className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm transition-all duration-300"
+                  className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm"
                   rows="2"
                   disabled={isTyping}
                   maxLength={2000}
@@ -905,32 +1050,32 @@ const SINDAAssistant = () => {
               
               <div className="flex gap-2 mt-2">
                 <button
-                  onClick={() => setInputMessage("I need help with financial assistance")}
-                  className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full hover:bg-red-200 transition-colors duration-200"
+                  onClick={() => setInputMessage("I need emergency financial help right now")}
+                  className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full hover:bg-red-200 transition-colors duration-200 flex items-center gap-1"
                   disabled={isTyping}
                 >
-                  🚨 Emergency
+                  🚨 Emergency Help
                 </button>
                 <button
-                  onClick={() => setInputMessage("Tell me about STEP tuition")}
-                  className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-200 transition-colors duration-200"
+                  onClick={() => setInputMessage("I want to apply for STEP tuition")}
+                  className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-200 transition-colors duration-200 flex items-center gap-1"
                   disabled={isTyping}
                 >
-                  🎓 Education
+                  🎓 Apply Now
                 </button>
                 <button
-                  onClick={() => setInputMessage("How can I join youth programs?")}
-                  className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full hover:bg-green-200 transition-colors duration-200"
+                  onClick={() => setInputMessage("How do I join youth programs?")}
+                  className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full hover:bg-green-200 transition-colors duration-200 flex items-center gap-1"
                   disabled={isTyping}
                 >
-                  🎯 Youth
+                  🎯 Join Youth
                 </button>
                 <button
                   onClick={() => setInputMessage("I need family counseling support")}
-                  className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors duration-200"
+                  className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors duration-200 flex items-center gap-1"
                   disabled={isTyping}
                 >
-                  👨‍👩‍👧‍👦 Family
+                  👨‍👩‍👧‍👦 Counseling
                 </button>
               </div>
             </div>
@@ -1439,6 +1584,7 @@ const SINDAAssistant = () => {
       </div>
     </div>
   ));
+
   const SettingsModal = React.memo(() => {
     if (!showSettings) return null;
     
@@ -1506,40 +1652,6 @@ const SINDAAssistant = () => {
             </div>
           </div>
         </div>
-      </div>
-    );
-  });
-
-  // Notification Panel
-  const NotificationPanel = React.memo(() => {
-    if (notifications.length === 0) return null;
-    
-    return (
-      <div className="fixed top-4 right-4 z-40 space-y-2 max-w-sm">
-        {notifications.slice(0, 5).map((notification) => (
-          <div
-            key={notification.id}
-            className={`p-4 rounded-xl shadow-lg backdrop-blur-sm transition-all duration-500 ${
-              notification.type === 'success' ? 'bg-green-100/90 text-green-800 border border-green-200' :
-              notification.type === 'warning' ? 'bg-yellow-100/90 text-yellow-800 border border-yellow-200' :
-              notification.type === 'error' ? 'bg-red-100/90 text-red-800 border border-red-200' :
-              'bg-blue-100/90 text-blue-800 border border-blue-200'
-            }`}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium">{notification.message}</p>
-                <p className="text-xs opacity-75 mt-1">{notification.timestamp}</p>
-              </div>
-              <button
-                onClick={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))}
-                className="ml-2 text-current opacity-50 hover:opacity-100 transition-opacity duration-200"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          </div>
-        ))}
       </div>
     );
   });
@@ -1619,8 +1731,6 @@ const SINDAAssistant = () => {
 
       {/* Settings Modal */}
       <SettingsModal />
-
-      {/* Notification Panel - Removed as requested */}
 
       {/* Footer */}
       {currentStep === 'chat' && (
