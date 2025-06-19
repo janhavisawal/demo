@@ -537,14 +537,44 @@ Please try again in a moment, or contact SINDA directly for urgent help.`,
                 ))}
               </div>
 
-              {/* Language Info */}
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                <p className="text-sm text-blue-800">
-                  {selectedLanguage === 'tamil' ? '🌍 நான் தமிழ், ஹிந்தி, மலையாளம் மற்றும் ஆங்கிலத்தில் உதவ முடியும்' :
-                   selectedLanguage === 'hindi' ? '🌍 मैं तमिल, हिंदी, मलयालम और अंग्रेजी में मदद कर सकता हूं' :
-                   selectedLanguage === 'malayalam' ? '🌍 എനിക്ക് തമിഴ്, ഹിന്ദി, മലയാളം, ഇംഗ്ലീഷ് എന്നിവയിൽ സഹായിക്കാൻ കഴിയും' :
-                   '🌍 I can help in Tamil, Hindi, Malayalam, and English'}
-                </p>
+              {/* Language Info & WhatsApp Alternative */}
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <p className="text-sm text-blue-800">
+                    {selectedLanguage === 'tamil' ? '🌍 நான் தமிழ், ஹிந்தி, மலையாளம் மற்றும் ஆங்கிலத்தில் உதவ முடியும்' :
+                     selectedLanguage === 'hindi' ? '🌍 मैं तमिल, हिंदी, मलयालम और अंग्रेजी में मदद कर सकता हूं' :
+                     selectedLanguage === 'malayalam' ? '🌍 എനിക്ക് തമിഴ്, ഹിന്ദി, മലയാളം, ഇംഗ്ലീഷ് എന്നിവയിൽ സഹായിക്കാൻ കഴിയും' :
+                     '🌍 I can help in Tamil, Hindi, Malayalam, and English'}
+                  </p>
+                </div>
+                
+                <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <p className="text-sm text-green-800 mb-2">
+                    {selectedLanguage === 'tamil' ? '💬 விரும்பினால் WhatsApp இல் பேசலாம்' :
+                     selectedLanguage === 'hindi' ? '💬 चाहें तो WhatsApp पर भी बात कर सकते हैं' :
+                     selectedLanguage === 'malayalam' ? '💬 വേണമെങ്കിൽ WhatsApp-ൽ സംസാരിക്കാം' :
+                     '💬 Prefer WhatsApp? We\'re there too!'}
+                  </p>
+                  <a
+                    href={`https://wa.me/6591234567?text=${encodeURIComponent(
+                      selectedLanguage === 'tamil' ? 'வணக்கம்! SINDA திட்டங்கள் பற்றி தகவல் தேவை.' :
+                      selectedLanguage === 'hindi' ? 'नमस्ते! मुझे SINDA कार्यक्रमों के बारे में जानकारी चाहिए।' :
+                      selectedLanguage === 'malayalam' ? 'നമസ്കാരം! എനിക്ക് SINDA പ്രോഗ്രാമുകളെക്കുറിച്ച് വിവരങ്ങൾ വേണം.' :
+                      'Hello! I need information about SINDA programs.'
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-green-700 hover:text-green-800 font-medium"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.515"/>
+                    </svg>
+                    {selectedLanguage === 'tamil' ? 'WhatsApp இல் செல்லுங்கள்' :
+                     selectedLanguage === 'hindi' ? 'WhatsApp पर जाएं' :
+                     selectedLanguage === 'malayalam' ? 'WhatsApp-ൽ പോകുക' :
+                     'Open WhatsApp'}
+                  </a>
+                </div>
               </div>
             </div>
           )}
@@ -633,6 +663,45 @@ Please try again in a moment, or contact SINDA directly for urgent help.`,
               )}
             </button>
           </div>
+
+          {/* WhatsApp Quick Contact */}
+          <div className="mt-4 flex flex-col sm:flex-row gap-3 items-center justify-center">
+            <div className="text-xs text-gray-500 text-center">
+              {selectedLanguage === 'tamil' ? 'அல்லது உடனடி உதவிக்கு:' :
+               selectedLanguage === 'hindi' ? 'या तत्काल सहायता के लिए:' :
+               selectedLanguage === 'malayalam' ? 'അല്ലെങ്കിൽ ഉടനടി സഹായത്തിന്:' :
+               'Or for instant help:'}
+            </div>
+            
+            <div className="flex gap-3">
+              {/* WhatsApp Button */}
+              <a
+                href={`https://wa.me/6591234567?text=${encodeURIComponent(
+                  selectedLanguage === 'tamil' ? 'வணக்கம்! SINDA திட்டங்கள் பற்றி தகவல் தேவை.' :
+                  selectedLanguage === 'hindi' ? 'नमस्ते! मुझे SINDA कार्यक्रमों के बारे में जानकारी चाहिए।' :
+                  selectedLanguage === 'malayalam' ? 'നമസ്കാരം! എനിക്ക് SINDA പ്രോഗ്രാമുകളെക്കുറിച്ച് വിവരങ്ങൾ വേണം.' :
+                  'Hello! I need information about SINDA programs.'
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.515"/>
+                </svg>
+                WhatsApp
+              </a>
+
+              {/* Phone Button */}
+              <a
+                href="tel:18002953333"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl"
+              >
+                <Phone size={16} />
+                Call
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -678,6 +747,34 @@ const DetailedAnalytics = ({ onBack, selectedView, setSelectedView }) => {
             >
               ← Back
             </button>
+          </div>
+        </div>
+
+        {/* WhatsApp Support Banner */}
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-4 mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.515"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Need Help Understanding These Analytics?</h3>
+                <p className="text-sm text-gray-600">Our team is available on WhatsApp for personalized assistance</p>
+              </div>
+            </div>
+            <a
+              href="https://wa.me/6591234567?text=Hello!%20I%20need%20help%20understanding%20SINDA%20analytics%20and%20program%20data."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.515"/>
+              </svg>
+              Ask Expert
+            </a>
           </div>
         </div>
 
@@ -857,15 +954,51 @@ const CleanSINDAApp = () => {
     malayalam: { name: 'Malayalam', native: 'മലയാളം', flag: '🇮🇳' }
   };
 
-  const startChat = (language) => {
-    setSelectedLanguage(language);
+  const startChat = () => {
     setCurrentView('dashboard');
   };
+
+  // Floating WhatsApp Button Component
+  const FloatingWhatsApp = () => (
+    <div className="fixed bottom-6 right-6 z-50">
+      <a
+        href={`https://wa.me/6591234567?text=${encodeURIComponent(
+          selectedLanguage === 'tamil' ? 'வணக்கம்! SINDA திட்டங்கள் பற்றி தகவல் தேவை.' :
+          selectedLanguage === 'hindi' ? 'नमस्ते! मुझे SINDA कार्यक्रमों के बारे में जानकारी चाहिए।' :
+          selectedLanguage === 'malayalam' ? 'നമസ്കാരം! എനിക്ക് SINDA പ്രോഗ്രാമുകളെക്കുറിച്ച് വിവരങ്ങൾ വേണം.' :
+          'Hello! I need information about SINDA programs.'
+        )}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group bg-green-500 hover:bg-green-600 text-white w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center animate-bounce hover:animate-none relative"
+        aria-label="Contact SINDA via WhatsApp"
+      >
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.515"/>
+        </svg>
+        
+        {/* Tooltip */}
+        <div className="absolute bottom-16 right-0 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+          {selectedLanguage === 'tamil' ? 'WhatsApp இல் உடனடி உதவி' :
+           selectedLanguage === 'hindi' ? 'WhatsApp पर तुरंत मदद' :
+           selectedLanguage === 'malayalam' ? 'WhatsApp-ൽ ഉടനടി സഹായം' :
+           'Instant help on WhatsApp'}
+          <div className="absolute top-full right-4 border-4 border-transparent border-t-gray-800"></div>
+        </div>
+
+        {/* Notification Badge */}
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+          <span className="text-xs font-bold text-white">!</span>
+        </div>
+      </a>
+    </div>
+  );
 
   // Welcome Screen
   if (currentView === 'welcome') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100 flex items-center justify-center p-6">
+        <FloatingWhatsApp />
         <div className="max-w-4xl w-full text-center">
           <div className="mb-12">
             <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-8 flex items-center justify-center shadow-xl">
@@ -925,6 +1058,17 @@ const CleanSINDAApp = () => {
               <a href="tel:18002953333" className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2 justify-center">
                 <Phone size={18} />
                 Call 1800 295 3333
+              </a>
+              <a
+                href="https://wa.me/6591234567?text=Hello%21%20I%20need%20information%20about%20SINDA%20programs."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2 justify-center"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.515"/>
+                </svg>
+                WhatsApp Support
               </a>
             </div>
           </div>
@@ -1205,16 +1349,27 @@ const CleanSINDAApp = () => {
 
         {/* Footer */}
         <div className="bg-white/80 backdrop-blur-sm border-t border-blue-200">
-          <div className="max-w-7xl mx-auto flex justify-between items-center text-sm py-4 px-6">
-            <div className="flex items-center space-x-6">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center text-sm py-4 px-6 gap-4">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start space-x-6">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
                 <span className="text-gray-600">System Online</span>
               </div>
-              <div className="flex items-center space-x-2">
+              <a href="tel:18002953333" className="flex items-center space-x-2 hover:text-blue-600 transition-colors">
                 <Phone size={14} className="text-blue-500" />
                 <span className="text-gray-600">1800 295 3333</span>
-              </div>
+              </a>
+              <a
+                href="https://wa.me/6591234567?text=Hello%21%20I%20need%20information%20about%20SINDA%20programs."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 hover:text-green-600 transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-green-500">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.515"/>
+                </svg>
+                <span className="text-gray-600">WhatsApp</span>
+              </a>
               <div className="flex items-center space-x-2">
                 <MapPin size={14} className="text-blue-500" />
                 <span className="text-gray-600">1 Beatty Road, Singapore</span>
@@ -1231,11 +1386,21 @@ const CleanSINDAApp = () => {
 
   // Other Views
   if (currentView === 'chat') {
-    return <CleanChatInterface onBack={() => setCurrentView('dashboard')} />;
+    return (
+      <>
+        <FloatingWhatsApp />
+        <CleanChatInterface onBack={() => setCurrentView('dashboard')} />
+      </>
+    );
   }
 
   if (currentView === 'analytics') {
-    return <DetailedAnalytics onBack={() => setCurrentView('dashboard')} selectedView={analyticsView} setSelectedView={setAnalyticsView} />;
+    return (
+      <>
+        <FloatingWhatsApp />
+        <DetailedAnalytics onBack={() => setCurrentView('dashboard')} selectedView={analyticsView} setSelectedView={setAnalyticsView} />
+      </>
+    );
   }
 
   return null;
