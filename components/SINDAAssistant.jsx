@@ -22,9 +22,11 @@ const SINDAAssistant = () => {
   const [currentStep, setCurrentStep] = useState('welcome');
   const [selectedLanguage, setSelectedLanguage] = useState('english');
   const [messages, setMessages] = useState([]);
+  // COMPLETELY STABLE input handling to prevent focus loss
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [messageId, setMessageId] = useState(0);
+  const stableInputRef = useRef('');
   
   // Advanced Features State
   const [whatsappMessages, setWhatsappMessages] = useState([]);
@@ -91,6 +93,24 @@ const SINDAAssistant = () => {
     peakUsers: 1247,
     dailyActiveUsers: 8456
   });
+  
+  // FIXED: Stable handlers that NEVER change
+  const handleInputChange = useCallback((e) => {
+    const value = e.target.value;
+    stableInputRef.current = value;
+    setInputMessage(value);
+  }, []); // NO dependencies at all
+  
+  const handleKeyPress = useCallback((e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      // Use the ref value to avoid dependency issues
+      const message = stableInputRef.current?.trim();
+      if (message && message.length > 0) {
+        handleSendMessage();
+      }
+    }
+  }, []); // NO dependencies
 
   // FIXED: Static data moved outside render with useMemo
   const analyticsData = useMemo(() => ({
@@ -368,67 +388,76 @@ const SINDAAssistant = () => {
     }
   }, []);
 
-  // FIXED: Enhanced message handling - preserve scroll control and prevent re-renders
+  // FIXED: Enhanced message handling with minimal dependencies
   const addMessage = useCallback((content, isUser = false, metadata = {}) => {
     if (!content?.trim()) return;
 
-    const newMessage = {
-      id: messageId,
-      content: content.trim(),
-      isUser,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      metadata: {
-        ...metadata,
-        responseTime: isUser ? null : Math.random() * 2 + 0.5,
-        language: selectedLanguage,
-        wordCount: content.trim().split(' ').length,
-        characterCount: content.trim().length,
-        sessionId: userSession.startTime
-      }
-    };
-    
-    // Use functional update and update count simultaneously to prevent race conditions
     setMessages(prev => {
+      const newMessage = {
+        id: prev.length + Date.now(), // Simple unique ID
+        content: content.trim(),
+        isUser,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        metadata: {
+          ...metadata,
+          responseTime: isUser ? null : Math.random() * 2 + 0.5,
+          language: selectedLanguage,
+          wordCount: content.trim().split(' ').length,
+          characterCount: content.trim().length,
+          sessionId: userSession.startTime
+        }
+      };
+      
       const updated = [...prev, newMessage];
       previousMessageCountRef.current = updated.length;
       return updated;
     });
-    setMessageId(prev => prev + 1);
-  }, [messageId, selectedLanguage, userSession.startTime]);
+  }, [selectedLanguage, userSession.startTime]); // Only essential dependencies
 
-  // ENHANCED: More stable handleSendMessage function
+  // ENHANCED: Completely stable send message function
   const handleSendMessage = useCallback(async () => {
-    const trimmedMessage = inputMessageRef.current.trim();
+    const trimmedMessage = stableInputRef.current?.trim();
     if (!trimmedMessage || isTyping) return;
 
     if (trimmedMessage.length > 2000) {
-      addNotification('Message too long. Please keep under 2000 characters.', 'warning');
+      console.log('Message too long. Please keep under 2000 characters.');
       return;
     }
     
-    // Add user message
-    addMessage(trimmedMessage, true, { inputMethod: 'manual' });
+    // Add user message using direct state update
+    setMessages(prev => {
+      const newMessage = {
+        id: prev.length + Date.now(),
+        content: trimmedMessage,
+        isUser: true,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        metadata: { inputMethod: 'manual' }
+      };
+      return [...prev, newMessage];
+    });
+    
     setInputMessage('');
+    stableInputRef.current = '';
     setIsTyping(true);
 
-    // Generate more helpful and actionable AI responses
+    // Generate response
     setTimeout(() => {
       const lowerMessage = trimmedMessage.toLowerCase();
       let response = '';
 
-      // Educational queries - More actionable
+      // Educational queries
       if (lowerMessage.includes('step') || lowerMessage.includes('tuition') || lowerMessage.includes('education') || lowerMessage.includes('school')) {
         response = `🎓 **STEP Tuition Program - Let's Get You Started!**\n\n✅ **Immediate Actions You Can Take:**\n1. **Call now:** 1800 295 3333 (Mon-Fri 9AM-6PM)\n2. **Walk-in:** 1 Beatty Road, Level 2 Registration Counter\n3. **Required documents:** IC, latest report card, household income proof\n\n💰 **Cost:** Only $10-15/hour (90% subsidy!)\n📊 **Success rate:** 94.7% pass rate\n🎯 **Available for:** Primary 1 to JC2, all subjects\n\n⚡ **Fast-track application:** Mention "URGENT" for priority processing\n\n❓ **Questions?** Ask me about eligibility, subjects, or scheduling!`;
       }
-      // Financial assistance - Immediate help focus
+      // Financial assistance
       else if (lowerMessage.includes('financial') || lowerMessage.includes('assistance') || lowerMessage.includes('money') || lowerMessage.includes('aid') || lowerMessage.includes('emergency')) {
         response = `💰 **Financial Help Available NOW**\n\n🚨 **IMMEDIATE SUPPORT:**\n• **Crisis hotline:** 1800 295 3333 (24/7)\n• **Emergency aid:** Decision within 24-48 hours\n• **Walk-in:** 1 Beatty Road (bring IC + income docs)\n\n💡 **What You Can Get:**\n✅ Emergency cash assistance ($200-$2000)\n✅ Monthly household support\n✅ Medical bill coverage\n✅ Utility bill help\n✅ School fee assistance\n\n📋 **Bring These Documents:**\n• IC/passport\n• Bank statements (3 months)\n• Income proof\n• Bills/receipts needing help\n\n⏰ **Best time to visit:** 9AM-12PM for faster service`;
       }
-      // Youth programs - Clear next steps
+      // Youth programs
       else if (lowerMessage.includes('youth') || lowerMessage.includes('young') || lowerMessage.includes('leadership') || lowerMessage.includes('club') || lowerMessage.includes('job')) {
         response = `🎯 **Youth Programs - Join Today!**\n\n🚀 **Immediate Registration:**\n1. **WhatsApp:** 9123 4567 with "YOUTH SIGNUP"\n2. **Email:** youth@sinda.org.sg\n3. **Visit:** 1 Beatty Road Level 3 Youth Centre\n\n🎪 **This Month's Activities:**\n• **Leadership Workshop:** Every Sat 2-5PM\n• **Career Mentoring:** 1-on-1 sessions available\n• **Networking Night:** Last Fri of month\n• **Skills Training:** IT, Communication, Public Speaking\n\n💼 **Job Placement Support:**\n• Resume writing help\n• Interview preparation\n• Industry connections\n• 67% job placement rate!\n\n🎁 **Membership perks:** Free workshops, priority job referrals, networking access`;
       }
-      // Family services - Compassionate and immediate
+      // Family services
       else if (lowerMessage.includes('family') || lowerMessage.includes('counselling') || lowerMessage.includes('counseling') || lowerMessage.includes('support') || lowerMessage.includes('marriage') || lowerMessage.includes('relationship')) {
         response = `👨‍👩‍👧‍👦 **Family Support - We're Here for You**\n\n💙 **Get Help Today:**\n• **24/7 Crisis Line:** 1800 295 3333\n• **Walk-in Counseling:** 1 Beatty Road Level 4 (9AM-8PM)\n• **Online booking:** sinda.org.sg/book-counseling\n\n🤝 **Professional Services:**\n✅ Individual counseling (free)\n✅ Family therapy sessions\n✅ Marriage counseling\n✅ Child behavioral support\n✅ Crisis intervention\n\n👥 **Our Counselors Speak:**\n• English, Tamil, Hindi, Malayalam\n• All sessions 100% confidential\n• Average 3-5 sessions show improvement\n\n⚡ **Urgent situations:** Call immediately - we prioritize crisis cases`;
       }
@@ -436,52 +465,48 @@ const SINDAAssistant = () => {
       else if (lowerMessage.includes('eligible') || lowerMessage.includes('apply') || lowerMessage.includes('qualify') || lowerMessage.includes('requirement')) {
         response = `📋 **Eligibility Check - Quick Assessment**\n\n✅ **You likely qualify if:**\n• Singapore citizen/PR\n• Household income <$4,500/month\n• Indian ethnicity (or spouse/child of Indian)\n\n🚀 **Fast Eligibility Check:**\n1. **Call:** 1800 295 3333 (2-minute phone check)\n2. **Online:** sinda.org.sg/eligibility-checker\n3. **WhatsApp:** 9123 4567 with "CHECK ELIGIBILITY"\n\n📄 **Bring for instant approval:**\n• IC/passport\n• Latest payslips (2 months)\n• Bank statements (3 months)\n\n⏰ **Processing time:** Same-day approval for most programs!\n\n💡 **Pro tip:** Higher income families may still qualify for specific programs - always check!`;
       }
-      // General/unclear queries - More helpful guidance
+      // General queries
       else {
         response = `🌟 **Welcome! Let me help you find exactly what you need**\n\n🔍 **Tell me more about:**\n• "I need help with school fees" → Education support\n• "I'm facing financial difficulties" → Emergency aid\n• "I want to join activities" → Youth programs\n• "I need counseling support" → Family services\n\n⚡ **Quick Actions:**\n📞 **Urgent help:** 1800 295 3333 (24/7)\n📧 **General info:** queries@sinda.org.sg\n📍 **Visit:** 1 Beatty Road (9AM-6PM)\n💬 **WhatsApp:** 9123 4567\n\n🎯 **Most Popular Right Now:**\n• STEP tuition registration (closes soon!)\n• Emergency financial aid\n• Youth job placement program\n\n❓ **What specific help do you need today?**`;
       }
       
-      addMessage(response, false, {
-        aiGenerated: true,
-        confidence: 0.98,
-        sentiment: 'helpful',
-        responseType: 'actionable'
+      // Add AI response
+      setMessages(prev => {
+        const aiMessage = {
+          id: prev.length + Date.now(),
+          content: response,
+          isUser: false,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          metadata: {
+            aiGenerated: true,
+            confidence: 0.98,
+            sentiment: 'helpful',
+            responseType: 'actionable'
+          }
+        };
+        return [...prev, aiMessage];
       });
+      
       setIsTyping(false);
     }, 1200);
-  }, [isTyping, addMessage, addNotification]);
+  }, []); // NO dependencies that could cause re-renders
 
-  // FIXED: Stable key handler to prevent re-renders
-  const handleKeyPress = useCallback((e) => {
-    if (e.key === 'Enter' && !e.shiftKey && !isTyping) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  }, [handleSendMessage, isTyping]);
-
-  // FIXED: Stable input handler to prevent focus loss
-  const handleInputChange = useCallback((e) => {
-    const value = e.target.value;
-    setInputMessage(value);
-  }, []);
-
-  // Add input ref to maintain focus
-  const inputRef = useRef(null);
-  
-  // Use refs for values that don't need to trigger re-renders
-  const inputMessageRef = useRef('');
-  
-  // Update ref when inputMessage changes
-  useEffect(() => {
-    inputMessageRef.current = inputMessage;
-  }, [inputMessage]);
-
-  // FIXED: Direct message sending function for buttons
+  // FIXED: Direct message sending function - completely stable
   const sendDirectMessage = useCallback((message) => {
     if (!message?.trim() || isTyping) return;
     
     // Add user message immediately
-    addMessage(message.trim(), true, { triggerType: 'programButton' });
+    setMessages(prev => {
+      const newMessage = {
+        id: prev.length + Date.now(),
+        content: message.trim(),
+        isUser: true,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        metadata: { triggerType: 'programButton' }
+      };
+      return [...prev, newMessage];
+    });
+    
     setIsTyping(true);
 
     // Generate response based on message content
@@ -489,7 +514,7 @@ const SINDAAssistant = () => {
       const lowerMessage = message.toLowerCase();
       let response = '';
 
-      // Educational queries - More actionable
+      // Educational queries
       if (lowerMessage.includes('education')) {
         response = `🎓 **Education Programs - Let's Get You Started!**\n\n✅ **Immediate Actions You Can Take:**\n1. **Call now:** 1800 295 3333 (Mon-Fri 9AM-6PM)\n2. **Walk-in:** 1 Beatty Road, Level 2 Registration Counter\n3. **Required documents:** IC, latest report card, household income proof\n\n💰 **STEP Program:** Only $10-15/hour (90% subsidy!)\n📊 **Success rate:** 94.7% pass rate\n🎯 **Available for:** Primary 1 to JC2, all subjects\n\n⚡ **Fast-track application:** Mention "URGENT" for priority processing`;
       }
@@ -510,15 +535,26 @@ const SINDAAssistant = () => {
         response = `🌟 **Welcome! Let me help you find exactly what you need**\n\n⚡ **Quick Actions:**\n📞 **Urgent help:** 1800 295 3333 (24/7)\n📧 **General info:** queries@sinda.org.sg\n📍 **Visit:** 1 Beatty Road (9AM-6PM)\n💬 **WhatsApp:** 9123 4567\n\n🎯 **Most Popular Programs:**\n• STEP tuition registration\n• Emergency financial aid\n• Youth leadership programs\n• Family counseling support`;
       }
       
-      addMessage(response, false, {
-        aiGenerated: true,
-        confidence: 0.98,
-        sentiment: 'helpful',
-        responseType: 'programInfo'
+      // Add AI response
+      setMessages(prev => {
+        const aiMessage = {
+          id: prev.length + Date.now(),
+          content: response,
+          isUser: false,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          metadata: {
+            aiGenerated: true,
+            confidence: 0.98,
+            sentiment: 'helpful',
+            responseType: 'programInfo'
+          }
+        };
+        return [...prev, aiMessage];
       });
+      
       setIsTyping(false);
     }, 1200);
-  }, [addMessage, isTyping]);
+  }, []); // NO dependencies to cause re-renders
 
   // Analytics Modal Component - FIXED VERSION
   const AnalyticsModal = React.memo(() => {
@@ -1221,28 +1257,40 @@ const SINDAAssistant = () => {
                 
                 <div className="flex gap-2 mt-2">
                   <button
-                    onClick={() => setInputMessage("I need emergency financial help right now")}
+                    onClick={() => {
+                      setInputMessage("I need emergency financial help right now");
+                      stableInputRef.current = "I need emergency financial help right now";
+                    }}
                     className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full hover:bg-red-200 transition-colors duration-200 flex items-center gap-1"
                     disabled={isTyping}
                   >
                     🚨 Emergency Help
                   </button>
                   <button
-                    onClick={() => setInputMessage("I want to apply for STEP tuition")}
+                    onClick={() => {
+                      setInputMessage("I want to apply for STEP tuition");
+                      stableInputRef.current = "I want to apply for STEP tuition";
+                    }}
                     className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-200 transition-colors duration-200 flex items-center gap-1"
                     disabled={isTyping}
                   >
                     🎓 Apply Now
                   </button>
                   <button
-                    onClick={() => setInputMessage("How do I join youth programs?")}
+                    onClick={() => {
+                      setInputMessage("How do I join youth programs?");
+                      stableInputRef.current = "How do I join youth programs?";
+                    }}
                     className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full hover:bg-green-200 transition-colors duration-200 flex items-center gap-1"
                     disabled={isTyping}
                   >
                     🎯 Join Youth
                   </button>
                   <button
-                    onClick={() => setInputMessage("I need family counseling support")}
+                    onClick={() => {
+                      setInputMessage("I need family counseling support");
+                      stableInputRef.current = "I need family counseling support";
+                    }}
                     className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors duration-200 flex items-center gap-1"
                     disabled={isTyping}
                   >
