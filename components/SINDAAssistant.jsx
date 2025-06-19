@@ -1,1536 +1,802 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo, Suspense } from 'react';
+import React, { useState } from 'react';
 import { 
-  Send, MessageCircle, Users, Globe, AlertTriangle, 
-  BarChart3, Shield, Settings, Download, TrendingUp,
-  Clock, MapPin, DollarSign, Calendar, Activity,
-  Eye, Target, Zap, Lock, CheckCircle, XCircle, 
-  BookOpen, Heart, Home, Phone, Mail, Star,
-  GraduationCap, HandHeart, Award, UserCheck,
-  ChevronRight, Info, HelpCircle, ArrowRight, Waves,
-  PieChart, LineChart, BarChart, TrendingDown, RefreshCw,
-  Filter, Search, Bell, Menu, X, Plus, Minus,
-  Copy, Share, Edit, Trash2, Save, Upload, Loader,
-  Volume2, VolumeX, Maximize2, Minimize2, RotateCcw,
-  FileText, Database, Headphones, Mic
-} from "lucide-react";
-import { LineChart as RechartsLineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart as RechartsBarChart, Bar, PieChart as RechartsPieChart, Cell, Pie } from "recharts";
+  BookOpen, MessageCircle, BarChart3, Phone, Users, 
+  Globe, ArrowRight, Clock, Heart, Activity, MapPin, Mail
+} from 'lucide-react';
 
-// FIXED SINDA Assistant - Input Focus Issue Resolved
-const SINDAAssistant = () => {
-  // Core State Management
-  const [currentView, setCurrentView] = useState('dashboard');
-  const [currentStep, setCurrentStep] = useState('welcome');
-  const [selectedLanguage, setSelectedLanguage] = useState('english');
-  const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  
-  // Fixed refs - proper focus management
-  const inputRef = useRef(null);
-  const messageScrollRef = useRef(null);
-  const scrollTimeoutRef = useRef(null);
-  const focusTimeoutRef = useRef(null);
-  
-  // Advanced Features State
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  
-  // State for analytics modal
-  const [selectedAnalytic, setSelectedAnalytic] = useState(null);
-  
-  // Scroll control state
-  const [showScrollButton, setShowScrollButton] = useState(false);
-  const [autoScroll, setAutoScroll] = useState(true);
-  const [userScrolled, setUserScrolled] = useState(false);
-  
-  // Performance and Analytics State
-  const [userSession] = useState({
-    startTime: Date.now(),
-    messageCount: 0,
-    programsExplored: new Set(),
-    satisfaction: null,
-    completedActions: []
-  });
-
-  // FIXED: Enhanced input change handler with focus preservation
-  const handleInputChange = useCallback((e) => {
-    const newValue = e.target.value;
-    setInputMessage(newValue);
-    
-    // Clear any existing focus timeout
-    if (focusTimeoutRef.current) {
-      clearTimeout(focusTimeoutRef.current);
-    }
-    
-    // Ensure focus stays on input during typing
-    if (e.target !== document.activeElement) {
-      focusTimeoutRef.current = setTimeout(() => {
-        if (inputRef.current && !isTyping) {
-          inputRef.current.focus();
-          inputRef.current.setSelectionRange(newValue.length, newValue.length);
-        }
-      }, 0);
-    }
-  }, [isTyping]);
-  
-  // FIXED: Enhanced key press handler with proper dependencies
-  const handleKeyPress = useCallback((e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (inputMessage.trim() && !isTyping) {
-        handleSendMessage();
-      }
-    }
-  }, [inputMessage, isTyping]);
-
-  // FIXED: Enhanced send message function with focus restoration
-  const handleSendMessage = useCallback(() => {
-    const trimmedMessage = inputMessage.trim();
-    if (!trimmedMessage || isTyping) return;
-
-    if (trimmedMessage.length > 2000) {
-      setError('Message too long. Please keep under 2000 characters.');
-      // Restore focus even on error
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 100);
-      return;
-    }
-    
-    // Clear any existing error
-    setError(null);
-    
-    // Add user message
-    setMessages(prev => [...prev, {
-      id: Date.now(),
-      content: trimmedMessage,
-      isUser: true,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      metadata: { inputMethod: 'manual' }
-    }]);
-    
-    // Clear input immediately
-    setInputMessage('');
-    setIsTyping(true);
-
-    // CRITICAL FIX: Restore focus immediately after state update
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-        inputRef.current.setSelectionRange(0, 0);
-      }
-    }, 10);
-
-    // Generate response
-    setTimeout(() => {
-      const lowerMessage = trimmedMessage.toLowerCase();
-      let response = '';
-
-      if (lowerMessage.includes('step') || lowerMessage.includes('tuition') || lowerMessage.includes('education') || lowerMessage.includes('school')) {
-        response = `🎓 **STEP Tuition Program - Let's Get You Started!**\n\n✅ **Immediate Actions You Can Take:**\n1. **Call now:** 1800 295 3333 (Mon-Fri 9AM-6PM)\n2. **Walk-in:** 1 Beatty Road, Level 2 Registration Counter\n3. **Required documents:** IC, latest report card, household income proof\n\n💰 **Cost:** Only $10-15/hour (90% subsidy!)\n📊 **Success rate:** 94.7% pass rate\n🎯 **Available for:** Primary 1 to JC2, all subjects\n\n⚡ **Fast-track application:** Mention "URGENT" for priority processing\n\n❓ **Questions?** Ask me about eligibility, subjects, or scheduling!`;
-      }
-      else if (lowerMessage.includes('financial') || lowerMessage.includes('assistance') || lowerMessage.includes('money') || lowerMessage.includes('aid') || lowerMessage.includes('emergency')) {
-        response = `💰 **Financial Help Available NOW**\n\n🚨 **IMMEDIATE SUPPORT:**\n• **Crisis hotline:** 1800 295 3333 (24/7)\n• **Emergency aid:** Decision within 24-48 hours\n• **Walk-in:** 1 Beatty Road (bring IC + income docs)\n\n💡 **What You Can Get:**\n✅ Emergency cash assistance ($200-$2000)\n✅ Monthly household support\n✅ Medical bill coverage\n✅ Utility bill help\n✅ School fee assistance\n\n📋 **Bring These Documents:**\n• IC/passport\n• Bank statements (3 months)\n• Income proof\n• Bills/receipts needing help\n\n⏰ **Best time to visit:** 9AM-12PM for faster service`;
-      }
-      else if (lowerMessage.includes('youth') || lowerMessage.includes('young') || lowerMessage.includes('leadership') || lowerMessage.includes('club') || lowerMessage.includes('job')) {
-        response = `🎯 **Youth Programs - Join Today!**\n\n🚀 **Immediate Registration:**\n1. **WhatsApp:** 9123 4567 with "YOUTH SIGNUP"\n2. **Email:** youth@sinda.org.sg\n3. **Visit:** 1 Beatty Road Level 3 Youth Centre\n\n🎪 **This Month's Activities:**\n• **Leadership Workshop:** Every Sat 2-5PM\n• **Career Mentoring:** 1-on-1 sessions available\n• **Networking Night:** Last Fri of month\n• **Skills Training:** IT, Communication, Public Speaking\n\n💼 **Job Placement Support:**\n• Resume writing help\n• Interview preparation\n• Industry connections\n• 67% job placement rate!\n\n🎁 **Membership perks:** Free workshops, priority job referrals, networking access`;
-      }
-      else if (lowerMessage.includes('family') || lowerMessage.includes('counselling') || lowerMessage.includes('counseling') || lowerMessage.includes('support') || lowerMessage.includes('marriage') || lowerMessage.includes('relationship')) {
-        response = `👨‍👩‍👧‍👦 **Family Support - We're Here for You**\n\n💙 **Get Help Today:**\n• **24/7 Crisis Line:** 1800 295 3333\n• **Walk-in Counseling:** 1 Beatty Road Level 4 (9AM-8PM)\n• **Online booking:** sinda.org.sg/book-counseling\n\n🤝 **Professional Services:**\n✅ Individual counseling (free)\n✅ Family therapy sessions\n✅ Marriage counseling\n✅ Child behavioral support\n✅ Crisis intervention\n\n👥 **Our Counselors Speak:**\n• English, Tamil, Hindi, Malayalam\n• All sessions 100% confidential\n• Average 3-5 sessions show improvement\n\n⚡ **Urgent situations:** Call immediately - we prioritize crisis cases`;
-      }
-      else if (lowerMessage.includes('eligible') || lowerMessage.includes('apply') || lowerMessage.includes('qualify') || lowerMessage.includes('requirement')) {
-        response = `📋 **Eligibility Check - Quick Assessment**\n\n✅ **You likely qualify if:**\n• Singapore citizen/PR\n• Household income <$4,500/month\n• Indian ethnicity (or spouse/child of Indian)\n\n🚀 **Fast Eligibility Check:**\n1. **Call:** 1800 295 3333 (2-minute phone check)\n2. **Online:** sinda.org.sg/eligibility-checker\n3. **WhatsApp:** 9123 4567 with "CHECK ELIGIBILITY"\n\n📄 **Bring for instant approval:**\n• IC/passport\n• Latest payslips (2 months)\n• Bank statements (3 months)\n\n⏰ **Processing time:** Same-day approval for most programs!\n\n💡 **Pro tip:** Higher income families may still qualify for specific programs - always check!`;
-      }
-      else {
-        response = `🌟 **Welcome! Let me help you find exactly what you need**\n\n🔍 **Tell me more about:**\n• "I need help with school fees" → Education support\n• "I'm facing financial difficulties" → Emergency aid\n• "I want to join activities" → Youth programs\n• "I need counseling support" → Family services\n\n⚡ **Quick Actions:**\n📞 **Urgent help:** 1800 295 3333 (24/7)\n📧 **General info:** queries@sinda.org.sg\n📍 **Visit:** 1 Beatty Road (9AM-6PM)\n💬 **WhatsApp:** 9123 4567\n\n🎯 **Most Popular Right Now:**\n• STEP tuition registration (closes soon!)\n• Emergency financial aid\n• Youth job placement program\n\n❓ **What specific help do you need today?**`;
-      }
-      
-      // Add AI response
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        content: response,
-        isUser: false,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        metadata: {
-          aiGenerated: true,
-          confidence: 0.98,
-          sentiment: 'helpful',
-          responseType: 'actionable'
-        }
-      }]);
-      
-      setIsTyping(false);
-      
-      // CRITICAL FIX: Restore focus after AI response
-      setTimeout(() => {
-        if (inputRef.current && currentView === 'chat' && currentStep === 'chat') {
-          inputRef.current.focus();
-        }
-      }, 100);
-    }, 1200);
-  }, [inputMessage, isTyping, currentView, currentStep]);
-
-  // FIXED: Enhanced direct message sending with focus restoration
-  const sendDirectMessage = useCallback((message) => {
-    if (!message?.trim() || isTyping) return;
-    
-    setMessages(prev => [...prev, {
-      id: Date.now(),
-      content: message.trim(),
-      isUser: true,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      metadata: { triggerType: 'programButton' }
-    }]);
-    
-    setIsTyping(true);
-
-    // Restore focus after sending direct message
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
-    }, 50);
-
-    setTimeout(() => {
-      const lowerMessage = message.toLowerCase();
-      let response = '';
-
-      if (lowerMessage.includes('education')) {
-        response = `🎓 **Education Programs - Let's Get You Started!**\n\n✅ **Immediate Actions You Can Take:**\n1. **Call now:** 1800 295 3333 (Mon-Fri 9AM-6PM)\n2. **Walk-in:** 1 Beatty Road, Level 2 Registration Counter\n3. **Required documents:** IC, latest report card, household income proof\n\n💰 **STEP Program:** Only $10-15/hour (90% subsidy!)\n📊 **Success rate:** 94.7% pass rate\n🎯 **Available for:** Primary 1 to JC2, all subjects\n\n⚡ **Fast-track application:** Mention "URGENT" for priority processing`;
-      }
-      else if (lowerMessage.includes('family')) {
-        response = `👨‍👩‍👧‍👦 **Family Services - We're Here for You**\n\n💙 **Get Help Today:**\n• **24/7 Crisis Line:** 1800 295 3333\n• **Walk-in Counseling:** 1 Beatty Road Level 4 (9AM-8PM)\n• **Online booking:** sinda.org.sg/book-counseling\n\n🤝 **Professional Services:**\n✅ Individual counseling (free)\n✅ Family therapy sessions\n✅ Emergency financial assistance\n✅ Crisis intervention\n\n👥 **Our Counselors Speak:**\n• English, Tamil, Hindi, Malayalam\n• All sessions 100% confidential`;
-      }
-      else if (lowerMessage.includes('youth')) {
-        response = `🎯 **Youth Development - Join Today!**\n\n🚀 **Immediate Registration:**\n1. **WhatsApp:** 9123 4567 with "YOUTH SIGNUP"\n2. **Email:** youth@sinda.org.sg\n3. **Visit:** 1 Beatty Road Level 3 Youth Centre\n\n🎪 **This Month's Activities:**\n• **Leadership Workshop:** Every Sat 2-5PM\n• **Career Mentoring:** 1-on-1 sessions available\n• **Networking Night:** Last Fri of month\n\n💼 **Job Placement Support:**\n• Resume writing help\n• Interview preparation\n• 67% job placement rate!`;
-      }
-      else if (lowerMessage.includes('community')) {
-        response = `🌍 **Community Outreach - Get Involved!**\n\n🚀 **Join Our Programs:**\n1. **Call:** 1800 295 3333\n2. **Visit:** 1 Beatty Road Community Centre\n3. **Email:** community@sinda.org.sg\n\n🎪 **Current Initiatives:**\n• **Door Knocking:** Community visits\n• **SINDA Bus:** Mobile services\n• **Community Events:** Regular gatherings\n• **Volunteer Programs:** Give back opportunities\n\n🎁 **Benefits:** Connect with neighbors, make a difference, build community!`;
-      }
-      else {
-        response = `🌟 **Welcome! Let me help you find exactly what you need**\n\n⚡ **Quick Actions:**\n📞 **Urgent help:** 1800 295 3333 (24/7)\n📧 **General info:** queries@sinda.org.sg\n📍 **Visit:** 1 Beatty Road (9AM-6PM)\n💬 **WhatsApp:** 9123 4567\n\n🎯 **Most Popular Programs:**\n• STEP tuition registration\n• Emergency financial aid\n• Youth leadership programs\n• Family counseling support`;
-      }
-      
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        content: response,
-        isUser: false,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        metadata: {
-          aiGenerated: true,
-          confidence: 0.98,
-          sentiment: 'helpful',
-          responseType: 'programInfo'
-        }
-      }]);
-      
-      setIsTyping(false);
-      
-      // Restore focus after response
-      setTimeout(() => {
-        if (inputRef.current && currentView === 'chat' && currentStep === 'chat') {
-          inputRef.current.focus();
-        }
-      }, 100);
-    }, 1200);
-  }, [isTyping, currentView, currentStep]);
-
-  // FIXED: Enhanced quick message setter with proper focus management
-  const setQuickMessage = useCallback((message) => {
-    setInputMessage(message);
-    
-    // Clear any existing focus timeout
-    if (focusTimeoutRef.current) {
-      clearTimeout(focusTimeoutRef.current);
-    }
-    
-    // Ensure focus and cursor position
-    focusTimeoutRef.current = setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-        inputRef.current.setSelectionRange(message.length, message.length);
-      }
-    }, 0);
-  }, []);
-
-  // Static data moved outside render with useMemo
-  const analyticsData = useMemo(() => ({
-    realTimeMetrics: {
-      activeUsers: 247,
-      messagesPerMinute: 18,
-      responseTime: 0.8,
-      resolutionRate: 96.7,
-      whatsappUsers: 156,
-      webUsers: 91,
-      totalInteractions: 15432,
-      successfulResolutions: 14912,
-      averageSatisfaction: 4.7,
-      peakHours: [9, 14, 18],
-      systemLoad: 45.2,
-      emergencyRequests: 12,
-      languageDistribution: {
-        english: 67,
-        tamil: 18,
-        hindi: 10,
-        malayalam: 5
-      }
-    },
-    intentAccuracy: 98.2,
-    userSatisfaction: 97.5,
-    totalServed: 12847,
-    
-    trendingTopics: [
-      { 
-        topic: 'STEP Tuition Registration',
-        count: 245,
-        growth: '+12%',
-        sentiment: 'positive',
-        category: 'education',
-        urgency: 'medium',
-        timeToResolve: '2.3 days'
+// SINDA Program Database
+const SINDA_PROGRAMS = {
+  education: {
+    title: "Education Programs",
+    programs: [
+      {
+        name: "STEP (Student Tuition Scheme)",
+        description: "Subsidized tuition for students from low-income families",
+        eligibility: "Students from families with monthly household income ≤ $2,000",
+        benefits: "Up to 90% subsidy for tuition fees",
+        contact: "Call 6298 9771 or visit SINDA centers"
       },
-      { 
-        topic: 'Financial Aid Applications',
-        count: 189,
-        growth: '+24%',
-        sentiment: 'positive',
-        category: 'financial',
-        urgency: 'high',
-        timeToResolve: '1.2 days'
+      {
+        name: "Merit Scholarships",
+        description: "Academic excellence awards for outstanding students",
+        eligibility: "Academic achievers from SINDA member families",
+        benefits: "Cash awards and continuing education support",
+        contact: "Apply during scholarship periods"
       },
-      { 
-        topic: 'Youth Leadership Program',
-        count: 156,
-        growth: '+8%',
-        sentiment: 'positive',
-        category: 'youth',
-        urgency: 'low',
-        timeToResolve: '3.1 days'
-      },
-      { 
-        topic: 'Emergency Crisis Support',
-        count: 134,
-        growth: '+45%',
-        sentiment: 'urgent',
-        category: 'crisis',
-        urgency: 'critical',
-        timeToResolve: '4 hours'
+      {
+        name: "Homework Centers",
+        description: "After-school study support and mentoring",
+        eligibility: "Primary and secondary school students",
+        benefits: "Free homework supervision and academic guidance",
+        contact: "Available at 10 SINDA centers islandwide"
       }
-    ],
-    
-    monthlyEngagement: [
-      { month: 'Jan', users: 820, programs: 245, assistance: 89000, satisfaction: 94.2, issues: 45, responseTime: 2.1 },
-      { month: 'Feb', users: 950, programs: 287, assistance: 102000, satisfaction: 95.1, issues: 38, responseTime: 1.9 },
-      { month: 'Mar', users: 1100, programs: 324, assistance: 125000, satisfaction: 96.3, issues: 42, responseTime: 1.7 },
-      { month: 'Apr', users: 890, programs: 298, assistance: 98000, satisfaction: 95.7, issues: 51, responseTime: 1.8 },
-      { month: 'May', users: 1250, programs: 356, assistance: 145000, satisfaction: 97.1, issues: 29, responseTime: 1.4 },
-      { month: 'Jun', users: 1380, programs: 398, assistance: 167000, satisfaction: 97.8, issues: 23, responseTime: 1.2 }
-    ],
-    
-    programDistribution: [
-      { name: 'Education Support', value: 42, count: 5234, color: '#3B82F6', growth: '+15%', budget: 850000, waitingList: 234 },
-      { name: 'Family Services', value: 28, count: 3489, color: '#06B6D4', growth: '+22%', budget: 640000, waitingList: 45 },
-      { name: 'Youth Development', value: 18, count: 2245, color: '#6366F1', growth: '+8%', budget: 320000, waitingList: 89 },
-      { name: 'Community Outreach', value: 12, count: 1496, color: '#14B8A6', growth: '+35%', budget: 280000, waitingList: 12 }
-    ],
-    
-    helpMetrics: {
-      totalFamiliesHelped: 8456,
-      emergencySupport: 234,
-      scholarshipsAwarded: 1834,
-      jobPlacements: 567,
-      counselingSessions: 3421,
-      financialAidDistributed: 2100000,
-      communityEvents: 89,
-      volunteerHours: 12450,
-      averageCaseResolutionTime: 4.2,
-      repeatCustomers: 1247,
-      crisisInterventions: 156,
-      successStories: 2341
-    },
-    
-    geographicData: [
-      { region: 'Central', count: 3420, percentage: 28, avgIncome: 3200, programs: 12 },
-      { region: 'East', count: 2890, percentage: 24, avgIncome: 2800, programs: 8 },
-      { region: 'North', count: 2340, percentage: 19, avgIncome: 2900, programs: 7 },
-      { region: 'West', count: 2156, percentage: 18, avgIncome: 3100, programs: 9 },
-      { region: 'North-East', count: 1340, percentage: 11, avgIncome: 2700, programs: 5 }
-    ],
-    
-    satisfactionTrend: [
-      { week: 'W1', satisfaction: 94.2, resolved: 89, issues: 12, responseTime: 2.1, follow_ups: 23 },
-      { week: 'W2', satisfaction: 95.8, resolved: 92, issues: 8, responseTime: 1.8, follow_ups: 19 },
-      { week: 'W3', satisfaction: 96.1, resolved: 88, issues: 15, responseTime: 2.3, follow_ups: 31 },
-      { week: 'W4', satisfaction: 97.5, resolved: 96, issues: 6, responseTime: 1.4, follow_ups: 12 },
-      { week: 'W5', satisfaction: 96.8, resolved: 94, issues: 9, responseTime: 1.7, follow_ups: 18 },
-      { week: 'W6', satisfaction: 98.2, resolved: 97, issues: 4, responseTime: 1.1, follow_ups: 8 }
     ]
-  }), []);
+  },
+  family: {
+    title: "Family Services",
+    programs: [
+      {
+        name: "Family Service Centre",
+        description: "Comprehensive family counseling and support services",
+        eligibility: "Families facing relationship, financial, or social challenges",
+        benefits: "Professional counseling, casework, and referral services",
+        contact: "Call 6841 9491 for appointments"
+      },
+      {
+        name: "Emergency Financial Assistance",
+        description: "Immediate financial help for families in crisis",
+        eligibility: "Families with urgent financial needs",
+        benefits: "One-time financial grants and payment assistance",
+        contact: "Call 1800 295 3333 for urgent cases"
+      },
+      {
+        name: "Marriage Counseling",
+        description: "Professional marriage and relationship counseling",
+        eligibility: "Couples seeking relationship support",
+        benefits: "Confidential counseling sessions",
+        contact: "Book through Family Service Centre"
+      }
+    ]
+  },
+  youth: {
+    title: "Youth Development",
+    programs: [
+      {
+        name: "Youth Leadership Programs",
+        description: "Leadership development and community engagement for youth",
+        eligibility: "Youth aged 16-25",
+        benefits: "Leadership training, networking, and project opportunities",
+        contact: "Contact youth coordinators at SINDA centers"
+      },
+      {
+        name: "Skills Training Workshops",
+        description: "Vocational and life skills development programs",
+        eligibility: "Youth and young adults",
+        benefits: "Certification courses and job readiness training",
+        contact: "Check SINDA website for schedules"
+      }
+    ]
+  },
+  elderly: {
+    title: "Elderly Care",
+    programs: [
+      {
+        name: "Senior Citizens' Programs",
+        description: "Health, wellness and social activities for seniors",
+        eligibility: "Senior citizens aged 55 and above",
+        benefits: "Regular activities, health screenings, and social support",
+        contact: "Visit nearest SINDA center"
+      }
+    ]
+  }
+};
 
-  // Language data moved to useMemo
-  const languages = useMemo(() => ({
-    english: { 
-      name: 'English', 
-      native: 'English',
-      greeting: 'Welcome to SINDA! 🙏 I\'m here to help you discover our programs and guide you through your journey with us. How can I assist you today?',
-      flag: '🇬🇧',
-      code: 'en',
-      rtl: false,
-      culturalGreeting: 'Hello'
-    },
-    tamil: { 
-      name: 'Tamil', 
-      native: 'தமிழ்',
-      greeting: 'SINDA வில் உங்களை வரவேற்கிறோம்! 🙏 நான் உங்கள் பயணத்தில் உதவ இங்கே இருக்கிறேன். இன்று நான் எப்படி உதவ முடியும்?',
-      flag: '🇮🇳',
-      code: 'ta',
-      rtl: false,
-      culturalGreeting: 'வணக்கம்'
-    },
-    hindi: { 
-      name: 'Hindi', 
-      native: 'हिंदी',
-      greeting: 'SINDA में आपका स्वागत है! 🙏 मैं आपकी यात्रा में सहायता के लिए यहाँ हूँ। आज मैं आपकी कैसे मदद कर सकता हूँ?',
-      flag: '🇮🇳',
-      code: 'hi',
-      rtl: false,
-      culturalGreeting: 'नमस्ते'
-    },
-    malayalam: {
-      name: 'Malayalam',
-      native: 'മലയാളം',
-      greeting: 'SINDA യിലേക്ക് സ്വാഗതം! 🙏 നിങ്ങളുടെ യാത്രയിൽ സഹായിക്കാൻ ഞാനിവിടെയുണ്ട്. ഇന്ന് എങ്ങനെ സഹായിക്കാം?',
-      flag: '🇮🇳',
-      code: 'ml',
-      rtl: false,
-      culturalGreeting: 'നമസ്കാരം'
-    }
-  }), []);
+// Smart response system for SINDA queries
+const getSINDAResponse = (userMessage) => {
+  const message = userMessage.toLowerCase();
+  
+  // Emergency keywords
+  if (message.includes('emergency') || message.includes('urgent') || message.includes('crisis')) {
+    return `🚨 **Emergency Support Available**
 
-  // Program categories moved to useMemo
-  const programCategories = useMemo(() => [
-    {
-      id: 'education',
-      title: 'Education Programs',
-      icon: BookOpen,
-      color: 'from-blue-500 to-indigo-600',
-      description: 'Academic support from pre-school to tertiary education',
-      programs: ['STEP Tuition', 'A-Level Support', 'ITE Programs', 'Bursaries', 'GUIDE Programme', 'TEACH Programme'],
-      count: '8 Programs',
-      beneficiaries: 5234,
-      successRate: 94.7,
-      budget: 850000,
-      waitingList: 234,
-      averageWaitTime: '2-3 weeks',
-      priority: 'high',
-      featured: true
-    },
-    {
-      id: 'family',
-      title: 'Family Services',
-      icon: Heart,
-      color: 'from-cyan-500 to-teal-600',
-      description: 'Counselling, financial aid, and family support',
-      programs: ['Family Service Centre', 'Financial Assistance', 'Crisis Support', 'Project Athena', 'Prisons Outreach'],
-      count: '5 Services',
-      beneficiaries: 3489,
-      successRate: 96.2,
-      budget: 640000,
-      waitingList: 45,
-      averageWaitTime: '24-48 hours',
-      priority: 'critical',
-      featured: true
-    },
-    {
-      id: 'youth',
-      title: 'Youth Development',
-      icon: Users,
-      color: 'from-sky-500 to-blue-600',
-      description: 'Leadership and skills development for ages 18-35',
-      programs: ['Youth Club', 'Leadership Seminars', 'Mentoring', 'Corporate Partnerships', 'Youth Awards'],
-      count: '5 Programs',
-      beneficiaries: 2245,
-      successRate: 91.8,
-      budget: 320000,
-      waitingList: 89,
-      averageWaitTime: '1-2 weeks',
-      priority: 'medium',
-      featured: false
-    },
-    {
-      id: 'community',
-      title: 'Community Outreach',
-      icon: Globe,
-      color: 'from-indigo-500 to-purple-600',
-      description: 'Bringing SINDA services to your neighborhood',
-      programs: ['Door Knocking', 'SINDA Bus', 'Community Events', 'Volunteer Programs', 'Back to School Festival'],
-      count: '6 Initiatives',
-      beneficiaries: 1496,
-      successRate: 88.4,
-      budget: 280000,
-      waitingList: 12,
-      averageWaitTime: 'Immediate',
-      priority: 'low',
-      featured: false
-    }
-  ], []);
+For immediate help, please call our 24/7 hotline: **1800 295 3333**
 
-  // Quick help moved to useMemo
-  const quickHelp = useMemo(() => [
-    { text: 'Apply for STEP tuition', category: 'education', priority: 'high', tags: ['popular', 'urgent'], estimatedTime: '15 min', successRate: 95 },
-    { text: 'Financial assistance eligibility', category: 'family', priority: 'high', tags: ['urgent', 'assessment'], estimatedTime: '10 min', successRate: 98 },
-    { text: 'Join Youth Club', category: 'youth', priority: 'medium', tags: ['networking', 'skills'], estimatedTime: '5 min', successRate: 92 },
-    { text: 'Emergency support', category: 'family', priority: 'urgent', tags: ['crisis', '24/7'], estimatedTime: 'Immediate', successRate: 100 },
-    { text: 'Job placement assistance', category: 'career', priority: 'medium', tags: ['career', 'employment'], estimatedTime: '20 min', successRate: 87 },
-    { text: 'Community events near me', category: 'community', priority: 'low', tags: ['events', 'local'], estimatedTime: '5 min', successRate: 95 },
-    { text: 'Scholarship information', category: 'education', priority: 'medium', tags: ['funding', 'tertiary'], estimatedTime: '10 min', successRate: 89 },
-    { text: 'Family counselling services', category: 'family', priority: 'medium', tags: ['mental health', 'support'], estimatedTime: '30 min', successRate: 96 }
-  ], []);
+**Emergency Financial Assistance:**
+- One-time financial grants for urgent needs
+- Payment assistance for utilities, rent, medical bills
+- Crisis intervention and counseling
 
-  // Simple scroll handler
-  const handleScroll = useCallback((e) => {
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-    
-    scrollTimeoutRef.current = setTimeout(() => {
-      const { scrollTop, scrollHeight, clientHeight } = e.target;
-      const isAtBottom = scrollHeight - scrollTop - clientHeight <= 5;
-      setShowScrollButton(!isAtBottom);
-      setAutoScroll(isAtBottom);
-      setUserScrolled(!isAtBottom);
-    }, 150);
-  }, []);
+**How to Apply:**
+1. Call our hotline immediately
+2. Speak with our duty officer
+3. Provide basic family information
+4. Emergency assessment within 24 hours
 
-  // Simple scroll to bottom
-  const scrollToBottom = useCallback(() => {
-    if (messageScrollRef.current) {
-      messageScrollRef.current.scrollTo({
-        top: messageScrollRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-      setShowScrollButton(false);
-      setAutoScroll(true);
-      setUserScrolled(false);
-    }
-  }, []);
+Our team is here to help you through difficult times.`;
+  }
 
-  // Analytics Modal Component
-  const AnalyticsModal = React.memo(() => {
-    if (!selectedAnalytic) return null;
-    
-    return (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-white/95 backdrop-blur-sm border border-blue-200 rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
-          <div className="p-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">{selectedAnalytic.title}</h2>
-              <button 
-                onClick={() => setSelectedAnalytic(null)}
-                className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-blue-50 transition-all duration-300"
-              >
-                <X size={24} />
-              </button>
+  // STEP/Tuition queries
+  if (message.includes('step') || message.includes('tuition') || message.includes('school')) {
+    const stepProgram = SINDA_PROGRAMS.education.programs[0];
+    return `🎓 **STEP (Student Tuition Scheme)**
+
+${stepProgram.description}
+
+**Eligibility:** ${stepProgram.eligibility}
+**Benefits:** ${stepProgram.benefits}
+
+**How to Apply:**
+1. Bring family income documents
+2. Student's latest school report
+3. Visit any SINDA center
+4. Complete application form
+
+**Contact:** ${stepProgram.contact}
+
+**10 SINDA Centers Available Islandwide**
+We're here to support your child's education!`;
+  }
+
+  // Family services
+  if (message.includes('family') || message.includes('counseling') || message.includes('marriage')) {
+    const familyProgram = SINDA_PROGRAMS.family.programs[0];
+    return `👨‍👩‍👧‍👦 **Family Support Services**
+
+${familyProgram.description}
+
+**Services Available:**
+• Marriage and relationship counseling
+• Family mediation
+• Child behavioral support
+• Financial counseling
+• Crisis intervention
+
+**Eligibility:** ${familyProgram.eligibility}
+**Contact:** ${familyProgram.contact}
+
+All services are confidential and provided by qualified social workers.`;
+  }
+
+  // Youth programs
+  if (message.includes('youth') || message.includes('leadership') || message.includes('skills')) {
+    const youthProgram = SINDA_PROGRAMS.youth.programs[0];
+    return `🎯 **Youth Development Programs**
+
+${youthProgram.description}
+
+**Available Programs:**
+• Leadership training workshops
+• Community service projects
+• Skills development courses
+• Mentorship programs
+• Networking events
+
+**Eligibility:** ${youthProgram.eligibility}
+**Contact:** ${youthProgram.contact}
+
+Join our vibrant youth community and develop your potential!`;
+  }
+
+  // Scholarship queries
+  if (message.includes('scholarship') || message.includes('merit') || message.includes('award')) {
+    const scholarship = SINDA_PROGRAMS.education.programs[1];
+    return `🏆 **Merit Scholarships**
+
+${scholarship.description}
+
+**Available Scholarships:**
+• Academic Excellence Awards
+• Higher Education Scholarships
+• Vocational Training Support
+• Special Recognition Awards
+
+**Eligibility:** ${scholarship.eligibility}
+**Benefits:** ${scholarship.benefits}
+
+**Application Period:** Usually opens in November-December
+**Contact:** Visit www.sinda.org.sg for latest updates`;
+  }
+
+  // General program information
+  if (message.includes('programs') || message.includes('services') || message.includes('help')) {
+    return `📋 **SINDA Programs & Services**
+
+**🎓 Education (Ages 4-25)**
+• STEP Tuition Scheme (90% subsidy)
+• Merit Scholarships
+• Homework Centers at 10 locations
+
+**👨‍👩‍👧‍👦 Family Services**
+• Family counseling and mediation
+• Emergency financial assistance
+• Crisis intervention support
+
+**🎯 Youth Development (Ages 16-25)**
+• Leadership training programs
+• Skills workshops and certification
+• Community engagement projects
+
+**👴 Senior Citizens (55+)**
+• Health and wellness programs
+• Social activities and support
+
+**📞 Contact Information:**
+• General: 6298 9771
+• Emergency: 1800 295 3333
+• Family Service: 6841 9491
+
+How can I help you with any specific program?`;
+  }
+
+  // Location/center queries
+  if (message.includes('location') || message.includes('center') || message.includes('address')) {
+    return `📍 **SINDA Centers & Locations**
+
+**Main Office:**
+1 Beatty Road, Singapore 209943
+Phone: 6298 9771
+
+**10 Centers Islandwide:**
+• Ang Mo Kio
+• Bedok
+• Clementi  
+• Hougang
+• Jurong West
+• Sembawang
+• Tampines
+• Toa Payoh
+• Woodlands
+• Yishun
+
+**Operating Hours:**
+Monday - Friday: 9:00 AM - 6:00 PM
+Saturday: 9:00 AM - 1:00 PM
+Sunday: Closed
+
+**Emergency Hotline Available 24/7:** 1800 295 3333
+
+Which center would you like to visit?`;
+  }
+
+  // Membership queries
+  if (message.includes('member') || message.includes('join') || message.includes('registration')) {
+    return `👥 **SINDA Membership**
+
+**Membership Benefits:**
+• Access to all SINDA programs and services
+• Priority for scholarships and financial aid
+• Community events and networking
+• Educational workshops and seminars
+
+**Membership Types:**
+• Individual Membership: $10/year
+• Family Membership: $20/year
+• Life Membership: $200 (one-time)
+
+**How to Join:**
+1. Visit any SINDA center
+2. Complete membership form
+3. Provide NRIC and address proof
+4. Pay membership fee
+5. Receive membership card
+
+**Required Documents:**
+• NRIC (original and copy)
+• Proof of address
+• Passport-size photo
+
+Join our community of over 12,000 families!`;
+  }
+
+  // Default response for other queries
+  return `Hello! I'm here to help you learn about SINDA's programs and services.
+
+**Quick Options:**
+• Type "programs" - View all available services
+• Type "STEP" - Learn about tuition assistance
+• Type "emergency" - Get urgent help information
+• Type "family" - Family counseling services
+• Type "youth" - Youth development programs
+• Type "location" - Find SINDA centers
+
+**Need immediate help?**
+Call our 24/7 hotline: **1800 295 3333**
+
+What would you like to know about SINDA?`;
+};
+
+const CleanChatInterface = ({ onBack }) => {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const sendMessage = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = {
+      id: Date.now(),
+      content: input.trim(),
+      isUser: true,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    // Simulate processing delay for better UX
+    setTimeout(() => {
+      try {
+        // Use our SINDA knowledge base first
+        const response = getSINDAResponse(userMessage.content);
+        
+        const aiMessage = {
+          id: Date.now() + 1,
+          content: response,
+          isUser: false,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        setMessages(prev => [...prev, aiMessage]);
+      } catch (error) {
+        const errorMessage = {
+          id: Date.now() + 1,
+          content: 'I\'m experiencing technical difficulties. For immediate help, please call SINDA at 1800 295 3333.',
+          isUser: false,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isError: true
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 1000);
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-blue-200 overflow-hidden shadow-2xl">
+        
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <BookOpen className="text-white" size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">SINDA Assistant</h3>
+                <div className="flex items-center gap-2 text-blue-100 text-sm">
+                  <div className="w-2 h-2 rounded-full animate-pulse bg-green-300"></div>
+                  <span>AI Online • Ready to Help</span>
+                </div>
+              </div>
             </div>
+            <button 
+              onClick={onBack}
+              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
+            >
+              ← Back
+            </button>
           </div>
         </div>
-      </div>
-    );
-  });
 
-  // FIXED: Enhanced auto-scroll effect with focus preservation
-  useEffect(() => {
-    if (autoScroll && !userScrolled && messageScrollRef.current) {
-      messageScrollRef.current.scrollTo({
-        top: messageScrollRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }, [messages.length, autoScroll, userScrolled]);
+        {/* Messages */}
+        <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50">
+          {messages.length === 0 && (
+            <div className="text-center py-8">
+              <MessageCircle size={48} className="mx-auto text-blue-400 mb-4" />
+              <h4 className="text-lg font-semibold text-gray-600 mb-2">How can I help you today?</h4>
+              <p className="text-gray-500 mb-6">Ask me about SINDA programs, eligibility, or applications</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-md mx-auto">
+                {[
+                  { text: 'Apply for STEP tuition', icon: '🎓' },
+                  { text: 'Emergency financial help', icon: '🚨' },
+                  { text: 'Join youth programs', icon: '🎯' },
+                  { text: 'Family counselling services', icon: '👨‍👩‍👧‍👦' }
+                ].map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setInput(action.text)}
+                    className="bg-white border border-blue-200 hover:border-blue-400 hover:bg-blue-50 rounded-xl p-4 text-sm transition-all duration-300 hover:scale-105"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{action.icon}</span>
+                      <span className="font-medium text-gray-800">{action.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-  // FIXED: Focus management effect
-  useEffect(() => {
-    // Maintain focus on input when in chat mode and not typing
-    if (currentView === 'chat' && currentStep === 'chat' && !isTyping) {
-      const focusInput = () => {
-        if (inputRef.current && document.activeElement !== inputRef.current) {
-          inputRef.current.focus();
-        }
-      };
+          {messages.map((message) => (
+            <div key={message.id} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-xs lg:max-w-md px-6 py-4 rounded-2xl shadow-lg ${
+                message.isUser 
+                  ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-br-md' 
+                  : message.isError
+                  ? 'bg-red-50 border border-red-200 text-red-800 rounded-bl-md'
+                  : 'bg-white border border-blue-200 text-gray-800 rounded-bl-md'
+              }`}>
+                <div className="text-sm leading-relaxed whitespace-pre-line">{message.content}</div>
+                <div className={`text-xs mt-2 ${message.isUser ? 'text-blue-100' : 'text-gray-500'}`}>
+                  {message.timestamp}
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-white border border-blue-200 rounded-2xl rounded-bl-md px-6 py-4 shadow-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  <span className="text-sm text-gray-600">Thinking...</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
-      // Small delay to ensure DOM is ready
-      const focusTimeout = setTimeout(focusInput, 100);
-      
-      return () => clearTimeout(focusTimeout);
-    }
-  }, [currentView, currentStep, isTyping, messages.length]);
-
-  // FIXED: Global focus management
-  useEffect(() => {
-    const handleGlobalClick = (e) => {
-      // If clicking inside chat interface but not on input/button, restore focus
-      if (currentView === 'chat' && currentStep === 'chat' && !isTyping) {
-        const chatInterface = document.querySelector('.max-w-4xl');
-        const isInsideChatInterface = chatInterface?.contains(e.target);
-        const isInputOrButton = e.target.tagName === 'TEXTAREA' || 
-                                e.target.tagName === 'BUTTON' || 
-                                e.target.closest('button') ||
-                                e.target.closest('textarea');
-        
-        if (isInsideChatInterface && !isInputOrButton) {
-          setTimeout(() => {
-            if (inputRef.current) {
-              inputRef.current.focus();
-            }
-          }, 100);
-        }
-      }
-    };
-
-    document.addEventListener('click', handleGlobalClick);
-    return () => document.removeEventListener('click', handleGlobalClick);
-  }, [currentView, currentStep, isTyping]);
-
-  // Cleanup timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      if (focusTimeoutRef.current) {
-        clearTimeout(focusTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // FIXED: Memoized Chat Input Component
-  const ChatInput = React.memo(() => (
-    <div className="flex gap-4 items-end">
-      <div className="flex-1">
-        <div className="relative">
-          <textarea
-            ref={inputRef}
-            value={inputMessage}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyPress}
-            placeholder="Type your message here..."
-            className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm"
-            rows="2"
-            disabled={isTyping}
-            maxLength={2000}
-            autoComplete="off"
-            spellCheck="true"
-            autoFocus={currentView === 'chat' && currentStep === 'chat'}
-          />
-          <div className="absolute bottom-2 right-2 text-xs text-gray-400">
-            {inputMessage.length}/2000
+        {/* Input - SIMPLE AND CLEAN */}
+        <div className="p-6 bg-white/80 backdrop-blur-sm border-t border-blue-200">
+          <div className="flex gap-4 items-end">
+            <div className="flex-1">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                placeholder="Type your message here..."
+                className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm"
+                rows="2"
+                disabled={isLoading}
+                maxLength={1000}
+              />
+              <div className="text-xs text-gray-400 mt-1">{input.length}/1000</div>
+            </div>
+            
+            <button
+              onClick={sendMessage}
+              disabled={!input.trim() || isLoading}
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white p-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <MessageCircle size={20} />
+              )}
+            </button>
           </div>
         </div>
-        
-        {/* FIXED: Quick action buttons with proper focus handling */}
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={() => setQuickMessage("I need emergency financial help right now")}
-            className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full hover:bg-red-200 transition-colors duration-200 flex items-center gap-1"
-            disabled={isTyping}
-          >
-            🚨 Emergency Help
-          </button>
-          <button
-            onClick={() => setQuickMessage("I want to apply for STEP tuition")}
-            className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-200 transition-colors duration-200 flex items-center gap-1"
-            disabled={isTyping}
-          >
-            🎓 Apply Now
-          </button>
-          <button
-            onClick={() => setQuickMessage("How do I join youth programs?")}
-            className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full hover:bg-green-200 transition-colors duration-200 flex items-center gap-1"
-            disabled={isTyping}
-          >
-            🎯 Join Youth
-          </button>
-          <button
-            onClick={() => setQuickMessage("I need family counseling support")}
-            className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors duration-200 flex items-center gap-1"
-            disabled={isTyping}
-          >
-            👨‍👩‍👧‍👦 Counseling
-          </button>
-        </div>
-      </div>
-      <div className="flex flex-col gap-2">
-        <button
-          onClick={handleSendMessage}
-          disabled={!inputMessage.trim() || isTyping}
-          className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 hover:from-blue-600 hover:via-cyan-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white p-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110 disabled:transform-none flex items-center justify-center"
-        >
-          {isTyping ? <Loader size={20} className="animate-spin" /> : <Send size={20} />}
-        </button>
-        <button
-          onClick={() => {
-            setMessages([]);
-            setAutoScroll(true);
-            setUserScrolled(false);
-            setError(null);
-            // Restore focus after clearing
-            setTimeout(() => {
-              if (inputRef.current) {
-                inputRef.current.focus();
-              }
-            }, 100);
-          }}
-          className="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-xl transition-all duration-300 hover:scale-110"
-          title="Clear Chat"
-          disabled={isTyping}
-        >
-          <Trash2 size={16} />
-        </button>
       </div>
     </div>
-  ));
+  );
+};
 
-  // Welcome Screen Component
-  const WelcomeScreen = React.memo(() => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100 flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-blue-200/20 rounded-full animate-float-slow"></div>
-        <div className="absolute top-60 right-32 w-24 h-24 bg-cyan-200/20 rounded-full animate-float-medium"></div>
-        <div className="absolute bottom-32 left-1/3 w-40 h-40 bg-indigo-200/20 rounded-full animate-float-fast"></div>
+const SimpleAnalytics = ({ onBack }) => (
+  <div className="p-6">
+    <div className="max-w-6xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-3xl font-bold text-gray-800">Analytics Dashboard</h2>
+        <button 
+          onClick={onBack}
+          className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors"
+        >
+          ← Back
+        </button>
       </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {[
+          { label: 'Active Users', value: '247', icon: Users, color: 'blue' },
+          { label: 'Messages/Min', value: '18', icon: MessageCircle, color: 'green' },
+          { label: 'Response Time', value: '0.8s', icon: Clock, color: 'yellow' },
+          { label: 'Resolution Rate', value: '96.7%', icon: Activity, color: 'purple' }
+        ].map((metric, index) => (
+          <div key={index} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm">{metric.label}</p>
+                <p className={`text-2xl font-bold text-${metric.color}-600 mt-1`}>{metric.value}</p>
+              </div>
+              <div className={`bg-${metric.color}-100 p-3 rounded-xl`}>
+                <metric.icon className={`text-${metric.color}-600`} size={24} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="bg-white rounded-2xl p-6 shadow-lg">
+        <h3 className="text-lg font-semibold mb-4">System Status</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span>Knowledge Base</span>
+            <span className="text-green-600 font-medium">Updated</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span>Response System</span>
+            <span className="text-green-600 font-medium">Online</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span>Emergency Hotline</span>
+            <span className="text-green-600 font-medium">24/7 Active</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
-      <div className="max-w-6xl w-full relative z-10 space-y-8">
-        <div className="text-center mb-12">
-          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-8 flex items-center justify-center shadow-xl animate-glow">
-            <BookOpen className="text-white animate-pulse" size={40} />
+// ✅ MAIN CLEAN APP COMPONENT
+const CleanSINDAApp = () => {
+  const [currentView, setCurrentView] = useState('welcome');
+  const [selectedLanguage, setSelectedLanguage] = useState('english');
+
+  const languages = {
+    english: { name: 'English', native: 'English', flag: '🇬🇧' },
+    tamil: { name: 'Tamil', native: 'தமிழ்', flag: '🇮🇳' },
+    hindi: { name: 'Hindi', native: 'हिंदी', flag: '🇮🇳' },
+    malayalam: { name: 'Malayalam', native: 'മലയാളം', flag: '🇮🇳' }
+  };
+
+  const startChat = (language) => {
+    setSelectedLanguage(language);
+    setCurrentView('dashboard');
+  };
+
+  // Welcome Screen
+  if (currentView === 'welcome') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100 flex items-center justify-center p-6">
+        <div className="max-w-4xl w-full text-center">
+          <div className="mb-12">
+            <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-8 flex items-center justify-center shadow-xl">
+              <BookOpen className="text-white" size={40} />
+            </div>
+            
+            <h1 className="text-5xl font-bold text-gray-800 mb-4">
+              Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">SINDA</span>
+            </h1>
+            
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Your AI-powered guide to Singapore Indian Development Association programs and services.
+            </p>
           </div>
-          
-          <h1 className="text-5xl font-bold text-gray-800 mb-4 animate-slide-up">
-            Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">SINDA</span>
-          </h1>
-          
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Your AI-powered guide to Singapore Indian Development Association programs and services. 
-            Building stronger communities together since 1991.
-          </p>
-          
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span className="text-sm font-medium">AI System Online</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-700">
-              <Users size={16} />
-              <span className="text-sm font-medium">{analyticsData.realTimeMetrics.activeUsers} users online</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 text-purple-700">
-              <Activity size={16} />
-              <span className="text-sm font-medium">99.97% uptime</span>
-            </div>
-          </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
             {[
-              { value: '30+', label: 'Years Serving', color: 'blue', icon: Calendar },
-              { value: '12K+', label: 'Families Helped', color: 'cyan', icon: Heart },
-              { value: '25+', label: 'Programs', color: 'indigo', icon: BookOpen },
-              { value: '24/7', label: 'Support', color: 'teal', icon: Phone }
+              { value: '30+', label: 'Years Serving', icon: Clock },
+              { value: '12K+', label: 'Families Helped', icon: Heart },
+              { value: '25+', label: 'Programs', icon: BookOpen },
+              { value: '24/7', label: 'Support', icon: Phone }
             ].map((stat, index) => (
-              <div key={index} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-blue-100 hover:scale-105 transition-all duration-500">
+              <div key={index} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-blue-100">
                 <div className="flex items-center justify-between mb-2">
                   <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                     <stat.icon className="text-blue-600" size={20} />
                   </div>
                   <div className="text-3xl font-bold text-blue-600">{stat.value}</div>
                 </div>
-                <div className="text-sm text-gray-600 mt-1">{stat.label}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
               </div>
             ))}
           </div>
 
-          <button
-            onClick={() => setCurrentStep('language')}
-            className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 hover:from-blue-600 hover:via-cyan-600 hover:to-indigo-700 text-white px-12 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105 flex items-center gap-3 mx-auto group"
-          >
-            Start Your Journey
-            <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform duration-300" />
-          </button>
-        </div>
-      </div>
-    </div>
-  ));
-
-  // Language Selection Component
-  const LanguageSelection = React.memo(() => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100 flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="max-w-4xl w-full relative z-10">
-        <div className="text-center mb-12">
-          <button
-            onClick={() => setCurrentStep('welcome')}
-            className="mb-6 bg-white/80 hover:bg-white/90 p-3 rounded-xl border border-blue-200 transition-all duration-300 hover:scale-110"
-          >
-            <ArrowRight size={20} className="rotate-180 text-blue-600" />
-          </button>
-          
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Choose Your Language</h2>
-          <p className="text-lg text-gray-600 mb-12">Select your preferred language to continue with personalized support</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Object.entries(languages).map(([key, lang], index) => (
-              <button
-                key={key}
-                onClick={() => {
-                  setSelectedLanguage(key);
-                  setCurrentStep('chat');
-                  setTimeout(() => {
-                    setMessages([{
-                      id: Date.now(),
-                      content: lang.greeting,
-                      isUser: false,
-                      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                      metadata: { welcome: true }
-                    }]);
-                  }, 500);
-                }}
-                className={`bg-white/80 backdrop-blur-sm border-2 hover:border-blue-500 rounded-2xl p-8 transition-all duration-500 hover:shadow-xl hover:transform hover:scale-110 group ${
-                  selectedLanguage === key ? 'border-blue-500 bg-blue-50' : 'border-blue-200'
-                }`}
-              >
-                <div className="text-4xl mb-4">{lang.flag}</div>
-                <div className="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors duration-300">
-                  {lang.native}
-                </div>
-                <div className="text-sm text-gray-500">{lang.name}</div>
-                <div className="text-xs text-blue-600 mt-2 font-medium">{lang.culturalGreeting}</div>
-                {selectedLanguage === key && (
-                  <div className="mt-2">
-                    <CheckCircle className="text-blue-500 mx-auto" size={20} />
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  ));
-
-  // Programs Page Component
-  const ProgramsPage = React.memo(() => (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
-      <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 rounded-3xl p-8 text-white">
-        <h2 className="text-3xl font-bold mb-2">SINDA Programs & Services</h2>
-        <p className="text-blue-100 mb-4">Comprehensive support for the Indian community in Singapore</p>
-        <div className="flex items-center gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <Users size={16} />
-            <span>{programCategories.reduce((sum, cat) => sum + cat.beneficiaries, 0).toLocaleString()} total beneficiaries served</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <DollarSign size={16} />
-            <span>${(programCategories.reduce((sum, cat) => sum + cat.budget, 0) / 1000000).toFixed(1)}M total budget</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <TrendingUp size={16} />
-            <span>96.2% average success rate</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {programCategories.map((category, index) => {
-          const IconComponent = category.icon;
-          return (
-            <div
-              key={category.id}
-              className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105 relative overflow-hidden group"
-            >
-              <div className={`absolute inset-0 bg-gradient-to-r ${category.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}></div>
-              
-              {category.priority === 'critical' && (
-                <div className="absolute top-4 right-4 bg-red-100 text-red-600 text-xs px-3 py-1 rounded-full font-medium">
-                  🚨 Critical Priority
-                </div>
-              )}
-              {category.featured && (
-                <div className="absolute top-4 left-4 bg-yellow-100 text-yellow-600 text-xs px-3 py-1 rounded-full font-medium">
-                  ⭐ Featured Program
-                </div>
-              )}
-              
-              <div className="flex items-start justify-between mb-6 relative z-10">
-                <div className={`w-16 h-16 bg-gradient-to-r ${category.color} rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                  <IconComponent className="text-white" size={32} />
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-gray-800">{category.beneficiaries.toLocaleString()}</div>
-                  <div className="text-sm text-gray-500">beneficiaries</div>
-                </div>
-              </div>
-
-              <div className="relative z-10">
-                <h3 className="text-2xl font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                  {category.title}
-                </h3>
-                <p className="text-gray-600 mb-4 leading-relaxed">
-                  {category.description}
-                </p>
-
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-blue-50 rounded-xl p-4">
-                    <div className="text-lg font-bold text-blue-600">{category.successRate}%</div>
-                    <div className="text-xs text-blue-500">Success Rate</div>
-                  </div>
-                  <div className="bg-green-50 rounded-xl p-4">
-                    <div className="text-lg font-bold text-green-600">${(category.budget / 1000).toLocaleString()}K</div>
-                    <div className="text-xs text-green-500">Annual Budget</div>
-                  </div>
-                  <div className="bg-purple-50 rounded-xl p-4">
-                    <div className="text-lg font-bold text-purple-600">{category.count}</div>
-                    <div className="text-xs text-purple-500">Available</div>
-                  </div>
-                  <div className="bg-orange-50 rounded-xl p-4">
-                    <div className="text-lg font-bold text-orange-600">{category.averageWaitTime}</div>
-                    <div className="text-xs text-orange-500">Wait Time</div>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <h4 className="font-semibold text-gray-700 mb-3">Available Programs:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {category.programs.map((program, idx) => (
-                      <span
-                        key={idx}
-                        className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-blue-100 hover:text-blue-700 transition-colors duration-200 cursor-pointer"
-                      >
-                        {program}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setCurrentView('chat');
-                      sendDirectMessage(`I want to apply for ${category.title}`);
-                    }}
-                    className={`flex-1 bg-gradient-to-r ${category.color} text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2`}
-                  >
-                    <Send size={16} />
-                    Apply Now
-                  </button>
-                  <button
-                    onClick={() => {
-                      setCurrentView('chat');
-                      sendDirectMessage(`Tell me more about ${category.title}`);
-                    }}
-                    className="bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
-                  >
-                    <Info size={16} />
-                    Learn More
-                  </button>
-                </div>
-
-                {category.waitingList > 0 && (
-                  <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <div className="flex items-center gap-2 text-amber-700 text-sm">
-                      <Clock size={16} />
-                      <span>{category.waitingList} people currently on waiting list</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-blue-200 p-8 shadow-lg">
-        <h3 className="text-2xl font-bold text-gray-800 mb-6">Need Quick Help?</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickHelp.slice(0, 8).map((help, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setCurrentView('chat');
-                sendDirectMessage(help.text);
-              }}
-              className={`border rounded-xl p-4 text-sm text-left transition-all duration-300 hover:shadow-lg hover:scale-105 ${
-                help.priority === 'urgent' ? 'border-red-300 bg-red-50 hover:border-red-400 hover:bg-red-100' :
-                help.priority === 'high' ? 'border-orange-300 bg-orange-50 hover:border-orange-400 hover:bg-orange-100' :
-                help.priority === 'medium' ? 'border-blue-300 bg-blue-50 hover:border-blue-400 hover:bg-blue-100' :
-                'bg-gray-50 border-gray-200 hover:border-gray-400 hover:bg-gray-100'
-              }`}
-            >
-              <div className="font-medium text-gray-800 mb-2">{help.text}</div>
-              <div className="text-xs text-gray-500 mb-2">
-                {help.priority === 'urgent' ? '⚡ Immediate response' :
-                 help.priority === 'high' ? '🚀 Fast-track available' :
-                 help.priority === 'medium' ? '📅 Same-day service' :
-                 '💬 General information'}
-              </div>
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>~{help.estimatedTime}</span>
-                <span>{help.successRate}% success</span>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-3xl p-8 border border-gray-200">
-        <h3 className="text-2xl font-bold text-gray-800 mb-6">Get Started Today</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Phone className="text-white" size={24} />
-            </div>
-            <h4 className="font-semibold text-gray-800 mb-2">Call Us</h4>
-            <p className="text-gray-600 text-sm mb-3">24/7 Hotline for urgent support</p>
-            <p className="text-blue-600 font-medium">1800 295 3333</p>
-          </div>
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <MapPin className="text-white" size={24} />
-            </div>
-            <h4 className="font-semibold text-gray-800 mb-2">Visit Us</h4>
-            <p className="text-gray-600 text-sm mb-3">Walk-in services available</p>
-            <p className="text-green-600 font-medium">1 Beatty Road<br />Singapore 209943</p>
-          </div>
-          <div className="text-center">
-            <div className="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <MessageCircle className="text-white" size={24} />
-            </div>
-            <h4 className="font-semibold text-gray-800 mb-2">Chat Online</h4>
-            <p className="text-gray-600 text-sm mb-3">AI-powered instant support</p>
-            <button
-              onClick={() => setCurrentView('chat')}
-              className="text-purple-600 font-medium hover:text-purple-700 transition-colors duration-200"
-            >
-              Start Chat →
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  ));
-
-  // FIXED: Chat Interface Component with proper input handling
-  const ChatInterface = React.memo(() => {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-blue-200 overflow-hidden shadow-2xl">
-          <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 p-6 text-white relative overflow-hidden">
-            <div className="flex items-center justify-between relative z-10">
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                  <BookOpen className="text-white" size={28} />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold">SINDA Assistant</h3>
-                  <div className="flex items-center gap-4 text-blue-100 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full animate-pulse bg-green-300"></div>
-                      <span>AI Online</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users size={14} />
-                      <span>{analyticsData.realTimeMetrics.activeUsers} users</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock size={14} />
-                      <span>{analyticsData.realTimeMetrics.responseTime}s avg</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => setSoundEnabled(!soundEnabled)}
-                  className="bg-white/20 backdrop-blur-sm p-3 rounded-xl hover:bg-white/30 transition-all duration-300"
-                  title={soundEnabled ? "Disable sound" : "Enable sound"}
-                >
-                  {soundEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
-                </button>
-                <button 
-                  onClick={() => setShowSettings(true)}
-                  className="bg-white/20 backdrop-blur-sm p-3 rounded-xl hover:bg-white/30 transition-all duration-300"
-                  title="Settings"
-                >
-                  <Settings size={20} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div 
-            ref={messageScrollRef}
-            className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50 backdrop-blur-sm relative" 
-            style={{ 
-              minHeight: '384px', 
-              maxHeight: '384px'
-            }}
-            onScroll={handleScroll}
-          >
-            {messages.length === 0 && (
-              <div className="text-center py-8">
-                <div className="text-blue-400 mb-4">
-                  <MessageCircle size={48} className="mx-auto" />
-                </div>
-                <h4 className="text-lg font-semibold text-gray-600 mb-2">How can I help you today?</h4>
-                <p className="text-gray-500 mb-6">Ask me about SINDA programs, eligibility, or application processes</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-md mx-auto">
-                  {[
-                    { text: 'Apply for STEP tuition now', priority: 'high', icon: '🎓', action: 'education' },
-                    { text: 'I need emergency financial help', priority: 'urgent', icon: '🚨', action: 'emergency' },
-                    { text: 'Join youth programs', priority: 'medium', icon: '🎯', action: 'youth' },
-                    { text: 'Family counseling services', priority: 'high', icon: '👨‍👩‍👧‍👦', action: 'family' },
-                    { text: 'Check my eligibility', priority: 'medium', icon: '📋', action: 'eligibility' },
-                    { text: 'What services do you offer?', priority: 'low', icon: '❓', action: 'general' }
-                  ].map((help, index) => (
-                    <button
-                      key={index}
-                      onClick={() => sendDirectMessage(help.text)}
-                      className={`border rounded-xl p-4 text-sm text-left transition-all duration-300 hover:shadow-lg hover:scale-105 ${
-                        help.priority === 'urgent' ? 'border-red-300 bg-red-50 hover:border-red-400 hover:bg-red-100' :
-                        help.priority === 'high' ? 'border-orange-300 bg-orange-50 hover:border-orange-400 hover:bg-orange-100' :
-                        help.priority === 'medium' ? 'border-blue-300 bg-blue-50 hover:border-blue-400 hover:bg-blue-100' :
-                        'bg-gray-50 border-gray-200 hover:border-gray-400 hover:bg-gray-100'
-                      }`}
-                      disabled={isLoading}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{help.icon}</span>
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-800">{help.text}</div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {help.priority === 'urgent' ? '⚡ Immediate response' :
-                             help.priority === 'high' ? '🚀 Fast-track available' :
-                             help.priority === 'medium' ? '📅 Same-day service' :
-                             '💬 General information'}
-                          </div>
-                        </div>
-                        {help.priority === 'urgent' && (
-                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {messages.map((msg, index) => (
-              <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'} group`}>
-                <div className={`max-w-xs lg:max-w-md px-6 py-4 rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 relative ${
-                  msg.isUser 
-                    ? 'bg-gradient-to-br from-blue-500 via-cyan-500 to-indigo-600 text-white' 
-                    : 'bg-white/90 backdrop-blur-sm text-gray-800 border border-blue-200'
-                } ${msg.isUser ? 'rounded-br-md' : 'rounded-bl-md'}`}>
-                  <p className="text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
-                  <div className={`flex items-center justify-between mt-2 text-xs ${
-                    msg.isUser ? 'text-blue-100' : 'text-gray-500'
-                  }`}>
-                    <span>{msg.timestamp}</span>
-                    <div className="flex items-center gap-2">
-                      {!msg.isUser && msg.metadata?.aiGenerated && (
-                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">
-                          AI ({(msg.metadata.confidence * 100).toFixed(0)}%)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-2xl rounded-bl-md px-6 py-4 shadow-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                    <span className="text-sm text-gray-600">SINDA Assistant is thinking...</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {showScrollButton && (
-              <div className="absolute bottom-4 right-4 z-10">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Choose Your Language</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(languages).map(([key, lang]) => (
                 <button
-                  onClick={scrollToBottom}
-                  className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center gap-2"
-                  title="Scroll to bottom"
+                  key={key}
+                  onClick={() => startChat(key)}
+                  className="bg-white/80 backdrop-blur-sm border-2 border-blue-200 hover:border-blue-500 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 group"
                 >
-                  <ArrowRight size={16} className="rotate-90" />
-                  <span className="text-xs hidden sm:inline">New messages</span>
+                  <div className="text-3xl mb-3">{lang.flag}</div>
+                  <div className="text-lg font-bold text-gray-800 group-hover:text-blue-600">
+                    {lang.native}
+                  </div>
+                  <div className="text-sm text-gray-500">{lang.name}</div>
                 </button>
-              </div>
-            )}
-          </div>
-
-          {/* FIXED INPUT AREA - Using Memoized Component */}
-          <div className="p-6 bg-white/80 backdrop-blur-sm border-t border-blue-200">
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
-                <AlertTriangle size={16} />
-                <span>{error}</span>
-                <button 
-                  onClick={() => {
-                    setError(null);
-                    // Restore focus after clearing error
-                    setTimeout(() => {
-                      if (inputRef.current) {
-                        inputRef.current.focus();
-                      }
-                    }, 100);
-                  }}
-                  className="ml-auto text-red-500 hover:text-red-700"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-            
-            <ChatInput />
-
-            <div className="flex items-center justify-between mt-4 text-xs text-gray-500">
-              <div className="flex items-center gap-4">
-                <span>Messages: {messages.length}</span>
-                <span>Language: {languages[selectedLanguage].native}</span>
-                <span className="text-green-600">API: Connected</span>
-                <span>Session: {Math.floor((Date.now() - userSession.startTime) / 60000)}min</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span>Uptime: 99.97%</span>
-                <span>Load: 0.8s</span>
-              </div>
+              ))}
             </div>
           </div>
-        </div>
-      </div>
-    );
-  });
 
-  // Dashboard Component (simplified for brevity)
-  const MainDashboard = React.memo(() => (
-    <div className="space-y-8 p-6">
-      <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 rounded-3xl p-8 text-white">
-        <h2 className="text-3xl font-bold mb-2">Welcome to SINDA Dashboard</h2>
-        <p className="text-blue-100 mb-4">Your comprehensive overview of community support and engagement</p>
-        <div className="flex items-center gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
-            <span>All systems operational</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock size={16} />
-            <span>Last updated: {new Date().toLocaleTimeString()}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { label: 'Today\'s Interactions', value: '247', icon: MessageCircle, color: 'blue' },
-          { label: 'Emergency Cases', value: '12', icon: AlertTriangle, color: 'red' },
-          { label: 'New Applications', value: '34', icon: FileText, color: 'green' },
-          { label: 'System Health', value: '99.97%', icon: Shield, color: 'purple' }
-        ].map((stat, index) => (
-          <div key={index} className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg hover:scale-105 transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm">{stat.label}</p>
-                <p className={`text-2xl font-bold text-${stat.color}-600 mt-1`}>{stat.value}</p>
-              </div>
-              <div className={`bg-${stat.color}-100 p-3 rounded-xl`}>
-                <stat.icon className={`text-${stat.color}-600`} size={24} />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  ));
-
-  // Placeholder components for other views
-  const AnalyticsDashboard = React.memo(() => (
-    <div className="p-6 text-center">
-      <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
-      <p>Analytics features coming soon...</p>
-    </div>
-  ));
-
-  const WhatsAppInterface = React.memo(() => (
-    <div className="p-6 text-center">
-      <h2 className="text-2xl font-bold">WhatsApp Interface</h2>
-      <p>WhatsApp integration coming soon...</p>
-    </div>
-  ));
-
-  const SettingsModal = React.memo(() => {
-    if (!showSettings) return null;
-    
-    return (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-3xl max-w-md w-full shadow-2xl">
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Settings</h2>
-              <button 
-                onClick={() => setShowSettings(false)}
-                className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-blue-50 transition-all duration-300"
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-blue-200 shadow-lg">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Need immediate help?</h3>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a href="tel:18002953333" className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2">
+                <Phone size={18} />
+                Call 1800 295 3333
+              </a>
+              <button
+                onClick={() => startChat('english')}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2"
               >
-                <X size={24} />
+                <MessageCircle size={18} />
+                Start Chat
               </button>
             </div>
-            
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">Audio</h3>
-                <div className="space-y-3">
-                  <label className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Sound Effects</span>
-                    <button
-                      onClick={() => setSoundEnabled(!soundEnabled)}
-                      className={`w-12 h-6 rounded-full transition-all duration-300 ${
-                        soundEnabled ? 'bg-blue-500' : 'bg-gray-300'
-                      }`}
-                    >
-                      <div className={`w-5 h-5 bg-white rounded-full transition-transform duration-300 ${
-                        soundEnabled ? 'translate-x-6' : 'translate-x-1'
-                      }`} />
-                    </button>
-                  </label>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">Language</h3>
-                <select
-                  value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value)}
-                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {Object.entries(languages).map(([key, lang]) => (
-                    <option key={key} value={key}>{lang.native} ({lang.name})</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">Data & Privacy</h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => {
-                      setMessages([]);
-                      setError(null);
-                      // Restore focus after clearing
-                      setTimeout(() => {
-                        if (inputRef.current && currentView === 'chat') {
-                          inputRef.current.focus();
-                        }
-                      }, 100);
-                    }}
-                    className="w-full bg-red-100 text-red-700 py-2 rounded-lg hover:bg-red-200 transition-colors duration-200"
-                  >
-                    Clear All Data
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
     );
-  });
+  }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100">
-      {/* Header */}
-      {currentStep === 'chat' && (
-        <div className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-blue-200">
+  // Dashboard
+  if (currentView === 'dashboard') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100">
+        
+        {/* Header */}
+        <div className="bg-white/90 backdrop-blur-sm shadow-lg border-b border-blue-200">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-2xl shadow-lg">
-                <BookOpen className="text-white" size={28} />
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-xl shadow-lg">
+                <BookOpen className="text-white" size={24} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">SINDA Assistant</h1>
-                <div className="flex items-center gap-4 text-gray-600 text-sm">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full animate-pulse bg-green-400"></div>
-                    <span>AI-Powered Community Support • Since 1991 • {languages[selectedLanguage].native}</span>
-                  </div>
+                <h1 className="text-xl font-bold text-gray-800">SINDA Assistant</h1>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                  <span>AI Online • {languages[selectedLanguage].native}</span>
                 </div>
               </div>
             </div>
             
             <div className="flex space-x-2">
               {[
-                { key: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-                { key: 'programs', label: 'Programs', icon: BookOpen },
-                { key: 'chat', label: 'Web Chat', icon: MessageCircle },
-                { key: 'whatsapp', label: 'WhatsApp', icon: Phone },
-                { key: 'analytics', label: 'Analytics', icon: Activity }
+                { key: 'chat', label: 'Chat', icon: MessageCircle },
+                { key: 'analytics', label: 'Analytics', icon: BarChart3 }
               ].map((view) => (
                 <button
                   key={view.key}
                   onClick={() => setCurrentView(view.key)}
-                  className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 hover:scale-105 ${
-                    currentView === view.key 
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
+                  className="px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                 >
-                  <view.icon size={18} />
+                  <view.icon size={16} />
                   {view.label}
-                  {view.key === 'chat' && messages.length > 0 && (
-                    <span className="bg-white/20 text-xs px-2 py-1 rounded-full">
-                      {messages.length}
-                    </span>
-                  )}
                 </button>
+              ))}
+              
+              <button
+                onClick={() => setCurrentView('welcome')}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-xl transition-colors"
+              >
+                ← Back
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Dashboard Content */}
+        <div className="p-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 rounded-3xl p-8 text-white mb-8">
+              <h2 className="text-3xl font-bold mb-2">Welcome to SINDA Dashboard</h2>
+              <p className="text-blue-100 mb-4">Your comprehensive overview of community support</p>
+              <div className="flex items-center gap-6 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+                  <span>All systems operational</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock size={16} />
+                  <span>Last updated: {new Date().toLocaleTimeString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {[
+                { label: 'Today\'s Interactions', value: '247', icon: MessageCircle, color: 'blue' },
+                { label: 'Emergency Cases', value: '12', icon: Phone, color: 'red' },
+                { label: 'New Applications', value: '34', icon: Users, color: 'green' },
+                { label: 'System Health', value: '99.97%', icon: Activity, color: 'purple' }
+              ].map((stat, index) => (
+                <div key={index} className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 shadow-lg hover:scale-105 transition-all duration-300">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-600 text-sm">{stat.label}</p>
+                      <p className={`text-2xl font-bold text-${stat.color}-600 mt-1`}>{stat.value}</p>
+                    </div>
+                    <div className={`bg-${stat.color}-100 p-3 rounded-xl`}>
+                      <stat.icon className={`text-${stat.color}-600`} size={24} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {[
+                {
+                  title: 'Education Programs',
+                  icon: BookOpen,
+                  color: 'from-blue-500 to-indigo-600',
+                  description: 'STEP tuition, scholarships, and academic support',
+                  beneficiaries: '5,234'
+                },
+                {
+                  title: 'Family Services',
+                  icon: Heart,
+                  color: 'from-cyan-500 to-teal-600',
+                  description: 'Counselling, financial aid, and family support',
+                  beneficiaries: '3,489'
+                }
+              ].map((program, index) => (
+                <div key={index} className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-12 h-12 bg-gradient-to-r ${program.color} rounded-xl flex items-center justify-center`}>
+                      <program.icon className="text-white" size={24} />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-gray-800">{program.beneficiaries}</div>
+                      <div className="text-xs text-gray-500">beneficiaries</div>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">{program.title}</h3>
+                  <p className="text-gray-600 mb-4 text-sm">{program.description}</p>
+                  <button
+                    onClick={() => setCurrentView('chat')}
+                    className={`w-full bg-gradient-to-r ${program.color} text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2`}
+                  >
+                    <MessageCircle size={16} />
+                    Get Started
+                  </button>
+                </div>
               ))}
             </div>
           </div>
         </div>
-      )}
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto py-8">
-        <Suspense fallback={
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <Loader className="animate-spin mx-auto mb-4" size={48} />
-              <p className="text-gray-600">Loading SINDA Assistant...</p>
-            </div>
-          </div>
-        }>
-          {currentStep === 'welcome' && <WelcomeScreen />}
-          {currentStep === 'language' && <LanguageSelection />}
-          {currentStep === 'chat' && currentView === 'dashboard' && <MainDashboard />}
-          {currentStep === 'chat' && currentView === 'programs' && <ProgramsPage />}
-          {currentStep === 'chat' && currentView === 'chat' && <ChatInterface />}
-          {currentStep === 'chat' && currentView === 'whatsapp' && <WhatsAppInterface />}
-          {currentStep === 'chat' && currentView === 'analytics' && <AnalyticsDashboard />}
-        </Suspense>
-      </div>
-
-      {/* Analytics Modal */}
-      <AnalyticsModal />
-
-      {/* Settings Modal */}
-      <SettingsModal />
-
-      {/* Footer */}
-      {currentStep === 'chat' && (
-        <div className="bg-white/80 backdrop-blur-sm border-t border-blue-200 mt-12">
-          <div className="max-w-7xl mx-auto flex justify-between items-center text-sm py-6 px-6">
-            <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full animate-pulse bg-green-400"></div>
-                <span className="text-gray-600">System Status: Operational</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Phone size={16} className="text-blue-500" />
-                <span className="text-gray-600">Hotline: 1800 295 3333</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <MapPin size={16} className="text-blue-500" />
-                <span className="text-gray-600">1 Beatty Road, Singapore 209943</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Mail size={16} className="text-blue-500" />
-                <span className="text-gray-600">queries@sinda.org.sg</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-6 text-gray-500">
+        {/* Footer */}
+        <div className="bg-white/80 backdrop-blur-sm border-t border-blue-200">
+          <div className="max-w-7xl mx-auto flex justify-between items-center text-sm py-4 px-6">
+            <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-2">
-                <Lock size={16} className="text-green-500" />
-                <span>Secure & Confidential</span>
+                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                <span className="text-gray-600">System Online</span>
               </div>
-              <div className="text-xs">
-                <div>Session: {Math.floor((Date.now() - userSession.startTime) / 60000)}min</div>
-                <div>Messages: {messages.length}</div>
+              <div className="flex items-center space-x-2">
+                <Phone size={14} className="text-blue-500" />
+                <span className="text-gray-600">1800 295 3333</span>
               </div>
+              <div className="flex items-center space-x-2">
+                <MapPin size={14} className="text-blue-500" />
+                <span className="text-gray-600">1 Beatty Road, Singapore</span>
+              </div>
+            </div>
+            <div className="text-gray-500">
+              Powered by AI Knowledge Base
             </div>
           </div>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* Styles */}
-      <style jsx>{`
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        @keyframes float-medium {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-15px) rotate(90deg); }
-        }
-        @keyframes float-fast {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-25px) rotate(270deg); }
-        }
-        @keyframes glow {
-          0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
-          50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8); }
-        }
-        @keyframes slide-up {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes bounce-gentle {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        
-        .animate-float-slow { animation: float-slow 6s ease-in-out infinite; }
-        .animate-float-medium { animation: float-medium 4s ease-in-out infinite; }
-        .animate-float-fast { animation: float-fast 3s ease-in-out infinite; }
-        .animate-glow { animation: glow 3s ease-in-out infinite; }
-        .animate-slide-up { animation: slide-up 0.6s ease-out; }
-        .animate-fade-in { animation: fade-in 1s ease-out; }
-        .animate-bounce-gentle { animation: bounce-gentle 2s ease-in-out infinite; }
-        
-        .bg-clip-text {
-          background-clip: text;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-        
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #dbeafe; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { 
-          background: linear-gradient(to bottom, #3b82f6, #1d4ed8); 
-          border-radius: 4px; 
-        }
-        
-        @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-          }
-        }
-      `}</style>
-    </div>
-  );
+  // Other Views
+  if (currentView === 'chat') {
+    return <CleanChatInterface onBack={() => setCurrentView('dashboard')} />;
+  }
+
+  if (currentView === 'analytics') {
+    return <SimpleAnalytics onBack={() => setCurrentView('dashboard')} />;
+  }
+
+  return null;
 };
 
-export default SINDAAssistant;
+export default CleanSINDAApp;
