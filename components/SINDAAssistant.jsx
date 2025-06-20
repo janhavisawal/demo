@@ -556,7 +556,7 @@ Please try again in a moment, or contact SINDA directly for urgent help.`,
                      '💬 Prefer WhatsApp? We\'re there too!'}
                   </p>
                   <a
-                    href={`https://wa.me/6591234567?text=${encodeURIComponent(
+                    href={`https://wa.me/659123456718?text=${encodeURIComponent(
                       selectedLanguage === 'tamil' ? 'வணக்கம்! SINDA திட்டங்கள் பற்றி தகவல் தேவை.' :
                       selectedLanguage === 'hindi' ? 'नमस्ते! मुझे SINDA कार्यक्रमों के बारे में जानकारी चाहिए।' :
                       selectedLanguage === 'malayalam' ? 'നമസ്കാരം! എനിക്ക് SINDA പ്രോഗ്രാമുകളെക്കുറിച്ച് വിവരങ്ങൾ വേണം.' :
