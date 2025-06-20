@@ -556,7 +556,7 @@ Please try again in a moment, or contact SINDA directly for urgent help.`,
                      '💬 Prefer WhatsApp? We\'re there too!'}
                   </p>
                   <a
-                    href={`https://wa.me/659123456718?text=${encodeURIComponent(
+                    href={`https://wa.me/65912345671818?text=${encodeURIComponent(
                       selectedLanguage === 'tamil' ? 'வணக்கம்! SINDA திட்டங்கள் பற்றி தகவல் தேவை.' :
                       selectedLanguage === 'hindi' ? 'नमस्ते! मुझे SINDA कार्यक्रमों के बारे में जानकारी चाहिए।' :
                       selectedLanguage === 'malayalam' ? 'നമസ്കാരം! എനിക്ക് SINDA പ്രോഗ്രാമുകളെക്കുറിച്ച് വിവരങ്ങൾ വേണം.' :
@@ -676,7 +676,7 @@ Please try again in a moment, or contact SINDA directly for urgent help.`,
             <div className="flex gap-3">
               {/* WhatsApp Button */}
               <a
-                href={`https://wa.me/6591234567?text=${encodeURIComponent(
+                href={`https://wa.me/659123456718?text=${encodeURIComponent(
                   selectedLanguage === 'tamil' ? 'வணக்கம்! SINDA திட்டங்கள் பற்றி தகவல் தேவை.' :
                   selectedLanguage === 'hindi' ? 'नमस्ते! मुझे SINDA कार्यक्रमों के बारे में जानकारी चाहिए।' :
                   selectedLanguage === 'malayalam' ? 'നമസ്കാരം! എനിക്ക് SINDA പ്രോഗ്രാമുകളെക്കുറിച്ച് വിവരങ്ങൾ വേണം.' :
@@ -765,7 +765,7 @@ const DetailedAnalytics = ({ onBack, selectedView, setSelectedView }) => {
               </div>
             </div>
             <a
-              href="https://wa.me/6591234567?text=Hello!%20I%20need%20help%20understanding%20SINDA%20analytics%20and%20program%20data."
+              href="https://wa.me/659123456718?text=Hello!%20I%20need%20help%20understanding%20SINDA%20analytics%20and%20program%20data."
               target="_blank"
               rel="noopener noreferrer"
               className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
@@ -962,7 +962,7 @@ const CleanSINDAApp = () => {
   const FloatingWhatsApp = () => (
     <div className="fixed bottom-6 right-6 z-50">
       <a
-        href={`https://wa.me/6591234567?text=${encodeURIComponent(
+        href={`https://wa.me/659123456718?text=${encodeURIComponent(
           selectedLanguage === 'tamil' ? 'வணக்கம்! SINDA திட்டங்கள் பற்றி தகவல் தேவை.' :
           selectedLanguage === 'hindi' ? 'नमस्ते! मुझे SINDA कार्यक्रमों के बारे में जानकारी चाहिए।' :
           selectedLanguage === 'malayalam' ? 'നമസ്കാരം! എനിക്ക് SINDA പ്രോഗ്രാമുകളെക്കുറിച്ച് വിവരങ്ങൾ വേണം.' :
@@ -1060,7 +1060,7 @@ const CleanSINDAApp = () => {
                 Call 1800 295 3333
               </a>
               <a
-                href="https://wa.me/6591234567?text=Hello%21%20I%20need%20information%20about%20SINDA%20programs."
+                href="https://wa.me/659123456718?text=Hello%21%20I%20need%20information%20about%20SINDA%20programs."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2 justify-center"
@@ -1360,7 +1360,7 @@ const CleanSINDAApp = () => {
                 <span className="text-gray-600">1800 295 3333</span>
               </a>
               <a
-                href="https://wa.me/6591234567?text=Hello%21%20I%20need%20information%20about%20SINDA%20programs."
+                href="https://wa.me/659123456718?text=Hello%21%20I%20need%20information%20about%20SINDA%20programs."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center space-x-2 hover:text-green-600 transition-colors"
